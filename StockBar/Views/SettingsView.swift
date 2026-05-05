@@ -81,6 +81,7 @@ struct SettingsView: View {
                         Text("P&L + % (+321.09€ +2.3%)").tag("pnlFull")
                         Text("Total Value (14396.67€)").tag("totalValue")
                         Text("Best Stock (▲ AAPL +1.2%)").tag("bestStock")
+                        Text("Watchlist #1 (AAPL $192.50 +1.2%)").tag("bestStockPrice")
                         Text("Worst Stock (▼ TSLA -0.8%)").tag("worstStock")
                         Text("Best & Worst").tag("bestWorst")
                         Text("Icon Only").tag("icon")

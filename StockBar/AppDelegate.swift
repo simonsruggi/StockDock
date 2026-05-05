@@ -247,6 +247,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 color = .secondaryLabelColor
             }
 
+        case "bestStockPrice":
+            let firstSymbol = storageService.watchlist.first
+            if let symbol = firstSymbol, let quote = stockService.quotes[symbol] {
+                let sign = quote.changePercent >= 0 ? "+" : ""
+                let curr = StorageService.currencySymbol(for: quote.currency)
+                title = " \(quote.symbol) \(curr)\(String(format: "%.2f", quote.price)) (\(sign)\(String(format: "%.1f", quote.changePercent))%)"
+                color = quote.changePercent >= 0 ? .systemGreen : .systemRed
+            } else {
+                title = " --"
+                color = .secondaryLabelColor
+            }
+
         case "worstStock":
             if let worst = worstStock {
                 let sign = worst.changePercent >= 0 ? "+" : ""

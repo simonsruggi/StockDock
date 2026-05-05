@@ -7,18 +7,10 @@ struct WatchlistView: View {
     @State private var searchText = ""
     @State private var addToPortfolio: (symbol: String, portfolioId: UUID)? = nil
 
-    var sortedSymbols: [String] {
-        storageService.watchlist.sorted { a, b in
-            let pctA = stockService.quotes[a]?.changePercent ?? 0
-            let pctB = stockService.quotes[b]?.changePercent ?? 0
-            return pctA > pctB
-        }
-    }
-
     var filteredSymbols: [String] {
-        guard !searchText.isEmpty else { return sortedSymbols }
+        guard !searchText.isEmpty else { return storageService.watchlist }
         let query = searchText.lowercased()
-        return sortedSymbols.filter { symbol in
+        return storageService.watchlist.filter { symbol in
             symbol.lowercased().contains(query) ||
             (stockService.quotes[symbol]?.name.lowercased().contains(query) ?? false) ||
             (storageService.isinMap[symbol]?.lowercased().contains(query) ?? false)
