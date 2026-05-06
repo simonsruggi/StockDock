@@ -9,9 +9,14 @@ final class WebSocketService: NSObject, ObservableObject {
 
     private var webSocketTask: URLSessionWebSocketTask?
     private var heartbeatTimer: Timer?
+    private var watchdogTimer: Timer?
+    private var lastTickTime: Date?
     private var subscribedSymbols: [String] = []
     private var reconnectAttempts = 0
     private var reconnectTimer: Timer?
+
+    private static let watchdogInterval: TimeInterval = 30
+    private static let watchdogTimeout: TimeInterval = 60
 
     /// Called on main actor whenever a new tick arrives
     var onTick: ((Yaticker) -> Void)?
@@ -62,8 +67,11 @@ final class WebSocketService: NSObject, ObservableObject {
     func disconnect() {
         heartbeatTimer?.invalidate()
         heartbeatTimer = nil
+        watchdogTimer?.invalidate()
+        watchdogTimer = nil
         reconnectTimer?.invalidate()
         reconnectTimer = nil
+        lastTickTime = nil
         webSocketTask?.cancel(with: .goingAway, reason: nil)
         webSocketTask = nil
         isConnected = false
@@ -85,9 +93,11 @@ final class WebSocketService: NSObject, ObservableObject {
     private func sendJSON(_ dict: [String: [String]]) {
         guard let data = try? JSONSerialization.data(withJSONObject: dict),
               let str = String(data: data, encoding: .utf8) else { return }
-        webSocketTask?.send(.string(str)) { error in
-            if let error {
-                print("[WSS] Send error: \(error.localizedDescription)")
+        webSocketTask?.send(.string(str)) { [weak self] error in
+            guard let error else { return }
+            print("[WSS] Send error: \(error.localizedDescription)")
+            Task { @MainActor in
+                self?.handleDisconnect()
             }
         }
     }
@@ -133,6 +143,7 @@ final class WebSocketService: NSObject, ObservableObject {
             if let directData = Data(base64Encoded: text),
                let ticker = try? Yaticker(serializedBytes: directData),
                ticker.quoteType != .heartbeat {
+                lastTickTime = Date()
                 onTick?(ticker)
             }
             return
@@ -141,11 +152,12 @@ final class WebSocketService: NSObject, ObservableObject {
         guard let ticker = try? Yaticker(serializedBytes: protoData) else { return }
         if ticker.quoteType == .heartbeat { return }
 
+        lastTickTime = Date()
         onTick?(ticker)
     }
 
 
-    // MARK: - Heartbeat
+    // MARK: - Heartbeat & Watchdog
 
     private func startHeartbeat() {
         heartbeatTimer?.invalidate()
@@ -153,6 +165,21 @@ final class WebSocketService: NSObject, ObservableObject {
             Task { @MainActor in
                 guard let self, !self.subscribedSymbols.isEmpty else { return }
                 self.sendJSON(["subscribe": self.subscribedSymbols])
+            }
+        }
+    }
+
+    private func startWatchdog() {
+        watchdogTimer?.invalidate()
+        lastTickTime = Date()
+        watchdogTimer = Timer.scheduledTimer(withTimeInterval: Self.watchdogInterval, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.isConnected else { return }
+                guard let last = self.lastTickTime else { return }
+                if Date().timeIntervalSince(last) > Self.watchdogTimeout {
+                    print("[WSS] Watchdog: no ticks for \(Self.watchdogTimeout)s, reconnecting")
+                    self.handleDisconnect()
+                }
             }
         }
     }
@@ -188,6 +215,7 @@ extension WebSocketService: URLSessionWebSocketDelegate {
             self.reconnectAttempts = 0
             self.sendJSON(["subscribe": self.subscribedSymbols])
             self.startHeartbeat()
+            self.startWatchdog()
             self.receiveMessage()
         }
     }

@@ -165,8 +165,7 @@ class StockService: ObservableObject {
         }
     }
 
-    private func fetchQuotesV7(symbols: [String]) async -> Bool {
-        // Ensure we have a crumb
+    private func fetchQuotesV7(symbols: [String], retried: Bool = false) async -> Bool {
         if crumb == nil {
             guard await fetchCrumb() else { return false }
         }
@@ -181,11 +180,11 @@ class StockService: ObservableObject {
             let (data, response) = try await session.data(from: url)
             guard let httpResp = response as? HTTPURLResponse else { return false }
 
-            // If 401, re-fetch crumb once and retry
             if httpResp.statusCode == 401 {
+                guard !retried else { return false }
                 self.crumb = nil
                 guard await fetchCrumb() else { return false }
-                return await fetchQuotesV7(symbols: symbols)
+                return await fetchQuotesV7(symbols: symbols, retried: true)
             }
 
             guard httpResp.statusCode == 200 else { return false }

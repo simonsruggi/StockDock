@@ -17,6 +17,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var tickerIndex = 0
     private var eventMonitor: Any?
     private var isRefreshing = false
+    private var refreshTask: Task<Void, Never>?
     private var pendingTicks: [Yaticker] = []
     private var tickBatchTimer: Timer?
     private var storageServiceObserver: AnyCancellable?
@@ -45,9 +46,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(rootView: contentView)
 
-        // Initial REST fetch for full data (names, currencies, exchange rates)
-        Task {
+        refreshTask = Task {
+            isRefreshing = true
+            defer { isRefreshing = false }
             await stockService.refreshAll(storageService: storageService)
+            guard !Task.isCancelled else { return }
             updateMenuBarTitle()
             startWebSocket()
         }
@@ -154,10 +157,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             Task { @MainActor in
                 guard let self, !self.isRefreshing else { return }
                 self.isRefreshing = true
+                defer { self.isRefreshing = false }
                 await self.stockService.refreshExchangeRates(storageService: self.storageService)
                 self.updateMenuBarTitle()
-                self.isRefreshing = false
-                // Update WSS subscriptions in case symbols changed
                 self.webSocketService.updateSymbols(Array(self.collectSymbols()))
             }
         }
@@ -168,16 +170,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func handleSleep() {
         timer?.invalidate()
         timer = nil
+        refreshTask?.cancel()
+        refreshTask = nil
+        isRefreshing = false
         webSocketService.disconnect()
     }
 
     @objc private func handleWake() {
-        Task {
-            guard !isRefreshing else { return }
+        refreshTask?.cancel()
+        refreshTask = Task {
             isRefreshing = true
+            defer { isRefreshing = false }
             await stockService.refreshAll(storageService: storageService)
+            guard !Task.isCancelled else { return }
             updateMenuBarTitle()
-            isRefreshing = false
             startWebSocket()
         }
         scheduleRESTPolling()
