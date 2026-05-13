@@ -14,6 +14,8 @@
     <string>1</string>
     <key>CFBundleShortVersionString</key>
     <string>1.0</string>
+    <key>SUPublicEDKey</key>
+    <string>YhqibkoYNFRlULx9zJDQXE7SuBTAO3csjAKD2Hjm9NE=</string>
     <key>SUFeedURL</key>
     <string>https://raw.githubusercontent.com/simonsruggi/StockDock/main/appcast.xml</string>
     <key>SUEnableAutomaticChecks</key>
