@@ -76,7 +76,7 @@ struct ContentView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text("StockBar")
+                Text("StockDock")
                     .font(.headline)
                     .fontWeight(.bold)
 
@@ -103,7 +103,7 @@ struct ContentView: View {
                         .font(.system(size: 11))
                 }
                 .buttonStyle(.borderless)
-                .help("Quit StockBar")
+                .help("Quit StockDock")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)

@@ -1,4 +1,4 @@
-# StockBar
+# StockDock
 
 A lightweight macOS menu bar app for tracking stocks and portfolios in real time.
 
@@ -26,26 +26,26 @@ Built with SwiftUI. No account required, no API keys needed — data comes direc
 Requires **Xcode 15+** and **macOS 14 Sonoma** or later.
 
 ```bash
-git clone https://github.com/simonsruggi/StockBar.git
-cd StockBar
+git clone https://github.com/simonsruggi/StockDock.git
+cd StockDock
 swift build -c release
 ```
 
-The binary will be at `.build/release/StockBar`.
+The binary will be at `.build/release/StockDock`.
 
 To create an app bundle and install:
 
 ```bash
-xcodebuild -scheme StockBar -configuration Release -destination 'platform=macOS' -derivedDataPath .build/xcode build
-cp .build/xcode/Build/Products/Release/StockBar /Applications/StockBar.app/Contents/MacOS/StockBar
+xcodebuild -scheme StockDock -configuration Release -destination 'platform=macOS' -derivedDataPath .build/xcode build
+cp .build/xcode/Build/Products/Release/StockDock /Applications/StockDock.app/Contents/MacOS/StockDock
 ```
 
 ### Run
 
-Double-click `StockBar.app` or:
+Double-click `StockDock.app` or:
 
 ```bash
-open /Applications/StockBar.app
+open /Applications/StockDock.app
 ```
 
 The app runs in the menu bar — look for the chart icon (or your chosen display) in the top-right of your screen. Click it to open the popover.
@@ -104,7 +104,7 @@ Best/Worst are based on daily change % from your watchlist.
 ## Data
 
 - Prices refresh automatically every 5 seconds
-- All data is stored locally in `~/Library/Application Support/StockBar/data.json`
+- All data is stored locally in `~/Library/Application Support/StockDock/data.json` (migrated automatically from StockBar)
 - No data is sent anywhere — the app only talks to Yahoo Finance APIs
 - Exchange rates are fetched live for currency conversions
 

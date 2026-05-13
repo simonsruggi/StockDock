@@ -1,10 +1,10 @@
-# StockBar
+# StockDock
 
 App macOS per la menu bar che mostra in tempo reale le quotazioni di borsa e il P&L del portafoglio. Non richiede account né API key: i dati vengono direttamente da Yahoo Finance.
 
 ## Descrizione
 
-StockBar è un'app leggera che vive nella menu bar di macOS. Con un click sull'icona si apre un popover con watchlist, portafogli e impostazioni. I prezzi si aggiornano in tempo reale via WebSocket (~1 update/sec per simbolo).
+StockDock è un'app leggera che vive nella menu bar di macOS. Con un click sull'icona si apre un popover con watchlist, portafogli e impostazioni. I prezzi si aggiornano in tempo reale via WebSocket (~1 update/sec per simbolo).
 
 ## Stack tecnologico
 
@@ -19,10 +19,10 @@ StockBar è un'app leggera che vive nella menu bar di macOS. Con un click sull'i
 ## Struttura cartelle principali
 
 ```
-StockBar/
+StockDock/
 ├── Package.swift               # Configurazione SPM, target unico, macOS 14+
-├── StockBar/
-│   ├── StockBarApp.swift       # Entry point (@main), collega AppDelegate
+├── StockDock/
+│   ├── StockDockApp.swift       # Entry point (@main), collega AppDelegate
 │   ├── AppDelegate.swift       # NSStatusItem, popover, timer aggiornamento 5s
 │   ├── Models/
 │   │   └── StockQuote.swift    # Modelli: StockQuote, Portfolio, Holding, SearchResult
@@ -50,7 +50,7 @@ StockBar/
 - **Portafogli multipli**: prezzo medio di carico, data acquisto per tasso di cambio storico, P&L per holding e totale
 - **Conversione valuta**: supporta EUR, USD, GBP, CHF, JPY, CAD, AUD; tassi di cambio live e storici
 - **Extended hours**: prezzi pre-market e after-hours con rispettivo P&L
-- **Persistenza**: dati salvati in `~/Library/Application Support/StockBar/data.json` (watchlist, portafogli, isinMap, preferenze); nessun dato inviato a server esterni
+- **Persistenza**: dati salvati in `~/Library/Application Support/StockDock/data.json` (watchlist, portafogli, isinMap, preferenze); nessun dato inviato a server esterni
 - **Menu bar reattiva**: si aggiorna immediatamente ad ogni modifica di portafoglio, impostazioni o chiusura popover (oltre ai tick WebSocket e REST polling)
 - **Save debounced**: le scritture su disco sono debounced a 100ms per non bloccare il main thread; save immediato alla chiusura dell'app; nessun save ridondante al caricamento iniziale
 - **Reactive subscriptions**: un observer Combine su `$portfolios` + `$watchlist` (debounce 500ms) aggiorna automaticamente le subscription WebSocket e triggera `refreshAll` dopo qualsiasi mutazione
@@ -60,16 +60,16 @@ StockBar/
 ### Da sorgente con Swift PM
 
 ```bash
-git clone https://github.com/simonsruggi/StockBar.git
-cd StockBar
+git clone https://github.com/simonsruggi/StockDock.git
+cd StockDock
 swift build -c release
-# Eseguibile: .build/release/StockBar
+# Eseguibile: .build/release/StockDock
 ```
 
 ### Build come app bundle (Xcode)
 
 ```bash
-xcodebuild -scheme StockBar -configuration Release \
+xcodebuild -scheme StockDock -configuration Release \
   -destination 'platform=macOS' \
   -derivedDataPath .build/xcode build
 ```
@@ -95,6 +95,6 @@ L'app non compare nel Dock (`.accessory` policy): l'icona appare nella menu bar 
 
 - **Nessuna API key richiesta**: Yahoo Finance non richiede autenticazione, ma usa un meccanismo cookie+crumb gestito automaticamente dal `StockService`
 - **Fallback API**: se la v7 batch quote fallisce, viene usata la v8 chart API per ogni simbolo singolarmente
-- **Protobuf**: lo schema `yaticker.proto` nella root genera `yaticker.pb.swift` via `protoc --swift_out`. Rigenerare se cambia lo schema: `protoc --swift_out=StockBar/Services/ yaticker.proto`
+- **Protobuf**: lo schema `yaticker.proto` nella root genera `yaticker.pb.swift` via `protoc --swift_out`. Rigenerare se cambia lo schema: `protoc --swift_out=StockDock/Services/ yaticker.proto`
 - **Requisiti**: Xcode 15+ e macOS 14 Sonoma o successivo
-- **Firma/Entitlements**: `StockBar.entitlements` presente nella root per eventuali accessi di rete
+- **Firma/Entitlements**: `StockDock.entitlements` presente nella root per eventuali accessi di rete

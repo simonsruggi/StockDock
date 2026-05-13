@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct StockBarApp: App {
+struct StockDockApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {

@@ -1,4 +1,4 @@
-# User Stories — StockBar
+# User Stories — StockDock
 
 ## US-01: Menu Bar Display
 **Come** utente, **voglio** vedere un riepilogo del mio portafoglio nella menu bar di macOS **così da** controllare i miei investimenti con un colpo d'occhio.
@@ -65,7 +65,7 @@
 ## US-08: Persistenza Dati
 **Come** utente, **voglio** che i miei dati siano salvati localmente **così da** ritrovarli al riavvio dell'app.
 
-- [x] Dati salvati come JSON in `~/Library/Application Support/StockBar/data.json`
+- [x] Dati salvati come JSON in `~/Library/Application Support/StockDock/data.json`
 - [x] Save debounced (100ms) per non bloccare il main thread
 - [x] Save immediato alla chiusura dell'app
 - [x] Nessun save ridondante durante il caricamento iniziale

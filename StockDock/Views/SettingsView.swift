@@ -1,3 +1,4 @@
+import Sparkle
 import SwiftUI
 
 struct SettingsView: View {
@@ -89,6 +90,17 @@ struct SettingsView: View {
                     Text("Choose what to show in the menu bar")
                         .font(.caption)
                         .foregroundColor(.secondary)
+                }
+                Divider()
+
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Updates")
+                        .font(.headline)
+                    Button("Check for Updates...") {
+                        if let appDelegate = NSApp.delegate as? AppDelegate {
+                            appDelegate.updaterController.checkForUpdates(nil)
+                        }
+                    }
                 }
             }
             .padding(16)

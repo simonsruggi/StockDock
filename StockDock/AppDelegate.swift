@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import Sparkle
 import SwiftUI
 
 extension Notification.Name {
@@ -22,6 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var tickBatchTimer: Timer?
     private var storageServiceObserver: AnyCancellable?
     private var symbolsObserver: AnyCancellable?
+    let updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
 
     /// REST polling: 5 min for exchange rates / fallback only
     private static let restPollingInterval: TimeInterval = 300
@@ -33,7 +35,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
         if let button = statusItem.button {
-            button.image = NSImage(systemSymbolName: "chart.line.uptrend.xyaxis", accessibilityDescription: "StockBar")
+            button.image = NSImage(systemSymbolName: "chart.line.uptrend.xyaxis", accessibilityDescription: "StockDock")
             button.action = #selector(togglePopover)
             button.target = self
         }
@@ -214,7 +216,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if displayMode == "icon" {
             statusItem.button?.attributedTitle = NSAttributedString(string: "")
             statusItem.button?.title = ""
-            statusItem.button?.image = NSImage(systemSymbolName: "chart.line.uptrend.xyaxis", accessibilityDescription: "StockBar")
+            statusItem.button?.image = NSImage(systemSymbolName: "chart.line.uptrend.xyaxis", accessibilityDescription: "StockDock")
             return
         }
 
