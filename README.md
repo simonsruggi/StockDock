@@ -21,6 +21,12 @@ Built with SwiftUI. No account required, no API keys needed — data comes direc
 
 ## Install
 
+### Homebrew
+
+```bash
+brew install simonsruggi/tap/stockdock
+```
+
 ### Download
 
 1. Download the latest `StockDock.zip` from [Releases](https://github.com/simonsruggi/StockDock/releases/latest)
