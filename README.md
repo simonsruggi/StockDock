@@ -18,22 +18,23 @@ Built with SwiftUI. No account required, no API keys needed — data comes direc
 - **Extended Hours** — Pre-market and after-hours prices with PRE/POST badges
 - **Currency Conversion** — Convert stock prices and portfolio values to your preferred currency
 - **Customizable Menu Bar** — Choose what to display: P&L, total value, percentages, best/worst stock, or just an icon
+- **Auto-Updates** — Updates are delivered automatically via Sparkle, no manual downloads needed
 
 ## Install
 
-### Homebrew
+### Homebrew (recommended)
 
 ```bash
 brew install simonsruggi/tap/stockdock
 ```
+
+The app updates itself automatically via Sparkle — no need to run `brew upgrade`.
 
 ### Download
 
 1. Download the latest `StockDock.zip` from [Releases](https://github.com/simonsruggi/StockDock/releases/latest)
 2. Unzip and move `StockDock.app` to `/Applications`
 3. Launch — the app appears in the menu bar (no Dock icon)
-
-Updates are delivered automatically via Sparkle.
 
 ### Build from source
 
@@ -42,39 +43,22 @@ Requires **Xcode 15+** and **macOS 14 Sonoma** or later.
 ```bash
 git clone https://github.com/simonsruggi/StockDock.git
 cd StockDock
-swift build -c release
-```
-
-The binary will be at `.build/release/StockDock`.
-
-To create an app bundle and install:
-
-```bash
 xcodebuild -scheme StockDock -configuration Release -destination 'platform=macOS' -derivedDataPath .build/xcode build
-cp .build/xcode/Build/Products/Release/StockDock /Applications/StockDock.app/Contents/MacOS/StockDock
 ```
 
-### Run
-
-Double-click `StockDock.app` or:
-
-```bash
-open /Applications/StockDock.app
-```
-
-The app runs in the menu bar — look for the chart icon (or your chosen display) in the top-right of your screen. Click it to open the popover.
+The app bundle will be at `.build/xcode/Build/Products/Release/`.
 
 ## Usage
 
 ### Watchlist
 
-Add stocks by clicking **Add stock** at the bottom of the Watchlist tab. Search by symbol, company name, or ISIN (e.g. `AAPL`, `Tesla`, `IE00B4L5Y983`). Search results show live price and currency. Stocks show:
+Add stocks by clicking **Add stock** at the bottom of the Watchlist tab. Search by symbol, company name, or ISIN (e.g. `AAPL`, `Tesla`, `IE00B4L5Y983`). Stocks show:
 
 - Current price with currency symbol
 - Daily change (absolute and percentage)
 - Extended hours price when available (PRE/POST badge)
 
-Right-click a stock to remove it.
+Right-click a stock to remove it or add it to a portfolio.
 
 ### Portfolios
 
@@ -115,19 +99,25 @@ Click the gear icon tab to configure:
 
 Best/Worst are based on daily change % from your watchlist.
 
-## Data
+## Updates
 
-- Prices refresh automatically every 5 seconds
-- All data is stored locally in `~/Library/Application Support/StockDock/data.json` (migrated automatically from StockBar)
+StockDock checks for updates automatically on launch via [Sparkle](https://sparkle-project.org/). You can also check manually from **Settings → Check for Updates**. No action needed — updates install seamlessly in the background.
+
+## Data & Privacy
+
+- Real-time prices via Yahoo Finance WebSocket (~1 update/sec per symbol)
+- REST polling every 5 min as fallback for exchange rates
+- All data is stored locally in `~/Library/Application Support/StockDock/data.json`
 - No data is sent anywhere — the app only talks to Yahoo Finance APIs
-- Exchange rates are fetched live for currency conversions
+- No account required, no API keys needed
 
 ## Tech Stack
 
 - Swift 5.9 / SwiftUI
 - macOS 14+ (Sonoma)
-- Yahoo Finance API (v7 quotes + v8 chart)
-- No dependencies
+- Yahoo Finance WebSocket (real-time) + REST API (fallback)
+- [Sparkle](https://sparkle-project.org/) for auto-updates
+- [swift-protobuf](https://github.com/apple/swift-protobuf) for WebSocket decoding
 
 ## License
 
