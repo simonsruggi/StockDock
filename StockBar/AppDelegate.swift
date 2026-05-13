@@ -21,6 +21,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var pendingTicks: [Yaticker] = []
     private var tickBatchTimer: Timer?
     private var storageServiceObserver: AnyCancellable?
+    private var symbolsObserver: AnyCancellable?
 
     /// REST polling: 5 min for exchange rates / fallback only
     private static let restPollingInterval: TimeInterval = 300
@@ -77,9 +78,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.updateMenuBarTitle()
             }
         }
+
+        symbolsObserver = storageService.$portfolios
+            .combineLatest(storageService.$watchlist)
+            .dropFirst()
+            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
+            .sink { [weak self] _, _ in
+                guard let self, !self.isRefreshing else { return }
+                let symbols = Array(self.collectSymbols())
+                self.webSocketService.updateSymbols(symbols)
+                self.isRefreshing = true
+                Task {
+                    defer { self.isRefreshing = false }
+                    await self.stockService.refreshAll(storageService: self.storageService)
+                    self.updateMenuBarTitle()
+                }
+            }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        storageService.saveNow()
         timer?.invalidate()
         timer = nil
         tickBatchTimer?.invalidate()
@@ -201,20 +219,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         // Compute portfolio stats
-        var totalPnl = 0.0
         var totalValue = 0.0
         var totalCost = 0.0
         for portfolio in storageService.portfolios {
             for holding in portfolio.holdings {
                 if let quote = stockService.quotes[holding.symbol] {
                     let rate = stockService.rate(from: quote.currency)
-                    totalPnl += holding.pnl(currentPrice: quote.displayPrice(extendedHours: storageService.showExtendedHours)) * rate
-                    totalValue += holding.marketValue(currentPrice: quote.displayPrice(extendedHours: storageService.showExtendedHours)) * rate
+                    let displayPrice = quote.displayPrice(extendedHours: storageService.showExtendedHours)
+                    totalValue += holding.marketValue(currentPrice: displayPrice) * rate
                     let costRate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
                     totalCost += (holding.avgPrice * holding.quantity) * costRate
                 }
             }
         }
+        let totalPnl = totalValue - totalCost
         let totalPnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0
 
         // Find best/worst watchlist stock by daily change %

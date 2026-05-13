@@ -52,6 +52,8 @@ StockBar/
 - **Extended hours**: prezzi pre-market e after-hours con rispettivo P&L
 - **Persistenza**: dati salvati in `~/Library/Application Support/StockBar/data.json` (watchlist, portafogli, isinMap, preferenze); nessun dato inviato a server esterni
 - **Menu bar reattiva**: si aggiorna immediatamente ad ogni modifica di portafoglio, impostazioni o chiusura popover (oltre ai tick WebSocket e REST polling)
+- **Save debounced**: le scritture su disco sono debounced a 100ms per non bloccare il main thread; save immediato alla chiusura dell'app; nessun save ridondante al caricamento iniziale
+- **Reactive subscriptions**: un observer Combine su `$portfolios` + `$watchlist` (debounce 500ms) aggiorna automaticamente le subscription WebSocket e triggera `refreshAll` dopo qualsiasi mutazione
 
 ## Come buildare e avviare
 
@@ -86,6 +88,7 @@ L'app non compare nel Dock (`.accessory` policy): l'icona appare nella menu bar 
 - **REST polling (secondario)**: ogni 5 min per exchange rates (correnti e storici). Usato anche come bootstrap iniziale e fallback se il WSS cade.
 - **Cache eviction**: ad ogni refresh REST, vengono rimossi quotes, exchange rates e historical rates non più necessari.
 - **Sleep/Wake**: il WSS si disconnette su system sleep e si riconnette al wake con refresh immediato.
+- **P&L con FX corretto**: il P&L è calcolato come `marketValue × currentRate − costBasis × historicalRate`, considerando il tasso di cambio storico alla data di acquisto per il costo carico.
 - **Auto-reconnect**: backoff esponenziale (2s, 4s, 8s... max 120s) in caso di disconnessione WSS.
 
 ## Note importanti

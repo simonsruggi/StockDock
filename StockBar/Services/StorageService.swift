@@ -5,33 +5,33 @@ class StorageService: ObservableObject {
     static let shared = StorageService()
 
     @Published var watchlist: [String] = [] {
-        didSet { save() }
+        didSet { scheduleSave() }
     }
 
     @Published var portfolios: [Portfolio] = [] {
-        didSet { save() }
+        didSet { scheduleSave() }
     }
 
     @Published var preferredCurrency: String = "EUR" {
-        didSet { save() }
+        didSet { scheduleSave() }
     }
 
     @Published var stockPriceCurrency: String = "" {
-        didSet { save() }
+        didSet { scheduleSave() }
     }
 
     @Published var showExtendedHours: Bool = true {
-        didSet { save() }
+        didSet { scheduleSave() }
     }
 
     /// What to display in the menu bar: "pnl", "totalValue", "icon"
     @Published var menuBarDisplay: String = "pnl" {
-        didSet { save() }
+        didSet { scheduleSave() }
     }
 
     /// Maps symbol → ISIN for watchlist filtering
     @Published var isinMap: [String: String] = [:] {
-        didSet { save() }
+        didSet { scheduleSave() }
     }
 
     func setISIN(_ isin: String, for symbol: String) {
@@ -54,13 +54,17 @@ class StorageService: ObservableObject {
     }
 
     private let fileURL: URL
+    private var isLoading = false
+    private var saveTask: Task<Void, Never>?
 
     private init() {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         let dir = appSupport.appendingPathComponent("StockBar", isDirectory: true)
         try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         fileURL = dir.appendingPathComponent("data.json")
+        isLoading = true
         load()
+        isLoading = false
     }
 
     func addToWatchlist(_ symbol: String) {
@@ -125,7 +129,17 @@ class StorageService: ObservableObject {
         var isinMap: [String: String]?
     }
 
-    private func save() {
+    private func scheduleSave() {
+        guard !isLoading else { return }
+        saveTask?.cancel()
+        saveTask = Task {
+            try? await Task.sleep(nanoseconds: 100_000_000)
+            guard !Task.isCancelled else { return }
+            self.performSave()
+        }
+    }
+
+    private func performSave() {
         let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap)
         do {
             let encoded = try JSONEncoder().encode(data)
@@ -133,6 +147,12 @@ class StorageService: ObservableObject {
         } catch {
             print("Error saving data: \(error)")
         }
+    }
+
+    func saveNow() {
+        saveTask?.cancel()
+        saveTask = nil
+        performSave()
     }
 
     private func load() {

@@ -92,9 +92,6 @@ struct WatchlistView: View {
                     }
                     symbols.forEach { storageService.removeFromWatchlist($0) }
                 }
-                .onMove { source, destination in
-                    storageService.moveWatchlistItem(from: source, to: destination)
-                }
 
             }
             .listStyle(.plain)

@@ -41,28 +41,14 @@ struct SearchView: View {
                         try? await Task.sleep(nanoseconds: 300_000_000)
                         guard !Task.isCancelled else { return }
                         isSearching = true
-                        print("[SearchView] searching for: \(newValue)")
                         let searchResults = await stockService.search(query: newValue)
-                        print("[SearchView] got \(searchResults.count) results")
-                        for r in searchResults {
-                            print("[SearchView] result: \(r.symbol) - \(r.name)")
-                        }
                         guard !Task.isCancelled else { return }
                         results = searchResults
                         isSearching = false
                         // Fetch prices for search results
                         let symbols = searchResults.map(\.symbol)
-                        print("[SearchView] fetching quotes for \(symbols)")
                         if !symbols.isEmpty {
                             await stockService.fetchQuotes(symbols: symbols)
-                            print("[SearchView] after fetch, quotes keys: \(Array(stockService.quotes.keys))")
-                            for s in symbols {
-                                if let q = stockService.quotes[s] {
-                                    print("[SearchView] \(s) -> \(q.price)")
-                                } else {
-                                    print("[SearchView] \(s) -> NO QUOTE")
-                                }
-                            }
                         }
                     }
                 }

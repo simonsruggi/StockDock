@@ -131,11 +131,7 @@ struct PortfolioSection: View {
     }
 
     var totalPnl: Double {
-        portfolio.holdings.reduce(0) { sum, holding in
-            guard let quote = stockService.quotes[holding.symbol] else { return sum }
-            let rate = stockService.rate(from: quote.currency)
-            return sum + holding.pnl(currentPrice: quote.displayPrice(extendedHours: storageService.showExtendedHours)) * rate
-        }
+        totalValue - totalCost
     }
 
     var totalCost: Double {
@@ -305,9 +301,12 @@ struct HoldingRow: View {
                 .frame(maxWidth: .infinity)
 
                 // Col 3: Controvalore + P&L in preferred currency
-                let marketVal = holding.marketValue(currentPrice: quote.displayPrice(extendedHours: storageService.showExtendedHours)) * rate
-                let pnl = holding.pnl(currentPrice: quote.displayPrice(extendedHours: storageService.showExtendedHours)) * rate
-                let pnlPct = holding.pnlPercent(currentPrice: quote.displayPrice(extendedHours: storageService.showExtendedHours))
+                let displayPrice = quote.displayPrice(extendedHours: storageService.showExtendedHours)
+                let marketVal = holding.marketValue(currentPrice: displayPrice) * rate
+                let costRate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
+                let costBasis = holding.avgPrice * holding.quantity * costRate
+                let pnl = marketVal - costBasis
+                let pnlPct = costBasis > 0 ? (pnl / costBasis) * 100 : 0
 
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(String(format: "%.2f%@", marketVal, prefSymbol))
