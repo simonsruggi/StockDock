@@ -7,10 +7,23 @@ extension Notification.Name {
     static let popoverDidClose = Notification.Name("popoverDidClose")
 }
 
+final class UpdaterViewModel: ObservableObject {
+    let updater: SPUUpdater
+
+    init() {
+        let controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+        self.updater = controller.updater
+    }
+
+    func checkForUpdates() {
+        updater.checkForUpdates()
+    }
+}
+
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
-    private var popover: NSPopover!
+    var popover: NSPopover!
     private var stockService = StockService.shared
     private var storageService = StorageService.shared
     private var webSocketService = WebSocketService.shared
@@ -23,7 +36,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var tickBatchTimer: Timer?
     private var storageServiceObserver: AnyCancellable?
     private var symbolsObserver: AnyCancellable?
-    let updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+    let updaterViewModel = UpdaterViewModel()
 
     /// REST polling: 5 min for exchange rates / fallback only
     private static let restPollingInterval: TimeInterval = 300
@@ -43,9 +56,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let contentView = ContentView()
             .environmentObject(stockService)
             .environmentObject(storageService)
+            .environmentObject(updaterViewModel)
 
         popover = NSPopover()
-        popover.contentSize = NSSize(width: 380, height: 520)
+        popover.contentSize = NSSize(width: 380, height: 580)
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(rootView: contentView)
 

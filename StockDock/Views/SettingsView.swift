@@ -4,6 +4,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var storageService: StorageService
     @EnvironmentObject var stockService: StockService
+    @EnvironmentObject var updaterViewModel: UpdaterViewModel
 
     var body: some View {
         ScrollView {
@@ -97,10 +98,14 @@ struct SettingsView: View {
                     Text("Updates")
                         .font(.headline)
                     Button("Check for Updates...") {
-                        if let appDelegate = NSApp.delegate as? AppDelegate {
-                            appDelegate.updaterController.checkForUpdates(nil)
+                        NSApp.setActivationPolicy(.regular)
+                        NSApp.activate(ignoringOtherApps: true)
+                        updaterViewModel.checkForUpdates()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                            NSApp.setActivationPolicy(.accessory)
                         }
                     }
+                    .disabled(!updaterViewModel.updater.canCheckForUpdates)
                 }
             }
             .padding(16)
