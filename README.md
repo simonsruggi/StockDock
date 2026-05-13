@@ -21,6 +21,14 @@ Built with SwiftUI. No account required, no API keys needed — data comes direc
 
 ## Install
 
+### Download
+
+1. Download the latest `StockDock.zip` from [Releases](https://github.com/simonsruggi/StockDock/releases/latest)
+2. Unzip and move `StockDock.app` to `/Applications`
+3. Launch — the app appears in the menu bar (no Dock icon)
+
+Updates are delivered automatically via Sparkle.
+
 ### Build from source
 
 Requires **Xcode 15+** and **macOS 14 Sonoma** or later.
