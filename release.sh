@@ -100,6 +100,8 @@ cp "$PLIST" "$APP_PATH/Contents/Info.plist"
 cp "StockDock/Resources/AppIcon.icns" "$APP_PATH/Contents/Resources/AppIcon.icns"
 cp -R "${PRODUCTS_DIR}/Sparkle.framework" "$APP_PATH/Contents/Frameworks/Sparkle.framework"
 
+install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP_PATH/Contents/MacOS/${APP_NAME}"
+
 info "App bundle assembled: $APP_PATH"
 
 # --- Step 3: Code-sign ---
