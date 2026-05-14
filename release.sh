@@ -13,8 +13,9 @@ APPCAST="appcast.xml"
 PLIST="StockDock/Info.plist"
 GITHUB_REPO="simonsruggi/StockDock"
 HOMEBREW_TAP_CASK="/opt/homebrew/Library/Taps/simonsruggi/homebrew-tap/Casks/stockdock.rb"
-BUILD_DIR=".build/release"
+BUILD_DIR=".build/xcode"
 MIN_SYSTEM_VERSION="14.0"
+PRODUCTS_DIR="${BUILD_DIR}/Build/Products/Release"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -40,7 +41,7 @@ VERSION="$1"
 BUILD_NUMBER="$2"
 TAG="v${VERSION}"
 ZIP_NAME="${APP_NAME}.zip"
-APP_PATH="${BUILD_DIR}/Build/Products/Release/${APP_NAME}.app"
+APP_PATH="${PRODUCTS_DIR}/${APP_NAME}.app"
 
 cd "$(dirname "$0")"
 
@@ -75,7 +76,7 @@ step 1 "Bump version in Info.plist"
 info "CFBundleShortVersionString → ${VERSION}"
 info "CFBundleVersion → ${BUILD_NUMBER}"
 
-# --- Step 2: Build Release ---
+# --- Step 2: Build Release + assemble .app ---
 step 2 "Build Release"
 
 xcodebuild -scheme "$SCHEME" \
@@ -84,8 +85,22 @@ xcodebuild -scheme "$SCHEME" \
     -derivedDataPath "$BUILD_DIR" \
     build 2>&1 | tail -5
 
-[[ -d "$APP_PATH" ]] || fail "Build failed: $APP_PATH not found"
-info "Build succeeded: $APP_PATH"
+BINARY="${PRODUCTS_DIR}/${APP_NAME}"
+[[ -f "$BINARY" ]] || fail "Build failed: $BINARY not found"
+info "Build succeeded: $BINARY"
+
+info "Assembling ${APP_NAME}.app bundle"
+rm -rf "$APP_PATH"
+mkdir -p "$APP_PATH/Contents/MacOS"
+mkdir -p "$APP_PATH/Contents/Resources"
+mkdir -p "$APP_PATH/Contents/Frameworks"
+
+cp "$BINARY" "$APP_PATH/Contents/MacOS/${APP_NAME}"
+cp "$PLIST" "$APP_PATH/Contents/Info.plist"
+cp "StockDock/Resources/AppIcon.icns" "$APP_PATH/Contents/Resources/AppIcon.icns"
+cp -R "${PRODUCTS_DIR}/Sparkle.framework" "$APP_PATH/Contents/Frameworks/Sparkle.framework"
+
+info "App bundle assembled: $APP_PATH"
 
 # --- Step 3: Code-sign ---
 step 3 "Code-sign"
