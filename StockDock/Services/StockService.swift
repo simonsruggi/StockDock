@@ -19,6 +19,8 @@ class StockService: ObservableObject {
         ]
         config.httpCookieAcceptPolicy = .always
         config.httpCookieStorage = .shared
+        config.urlCache = nil
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
         session = URLSession(configuration: config)
     }
 

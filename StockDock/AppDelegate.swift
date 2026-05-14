@@ -53,15 +53,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.target = self
         }
 
-        let contentView = ContentView()
-            .environmentObject(stockService)
-            .environmentObject(storageService)
-            .environmentObject(updaterViewModel)
-
         popover = NSPopover()
         popover.contentSize = NSSize(width: 380, height: 580)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: contentView)
+        popover.delegate = self
 
         refreshTask = Task {
             isRefreshing = true
@@ -152,7 +147,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func flushTicks() {
         guard !pendingTicks.isEmpty else { return }
         let ticks = pendingTicks
-        pendingTicks.removeAll(keepingCapacity: true)
+        pendingTicks.removeAll(keepingCapacity: false)
 
         // Keep only the latest tick per symbol
         var latest: [String: Yaticker] = [:]
@@ -335,6 +330,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if popover.isShown {
             closePopover()
         } else {
+            let contentView = ContentView()
+                .environmentObject(stockService)
+                .environmentObject(storageService)
+                .environmentObject(updaterViewModel)
+            popover.contentViewController = NSHostingController(rootView: contentView)
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             NSApp.activate(ignoringOtherApps: true)
             eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
@@ -345,6 +345,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func closePopover() {
         popover.performClose(nil)
+    }
+}
+
+// MARK: - NSPopoverDelegate
+
+extension AppDelegate: NSPopoverDelegate {
+    func popoverDidClose(_ notification: Notification) {
+        popover.contentViewController = nil
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
             eventMonitor = nil

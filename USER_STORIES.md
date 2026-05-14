@@ -1,94 +1,94 @@
 # User Stories — StockDock
 
 ## US-01: Menu Bar Display
-**Come** utente, **voglio** vedere un riepilogo del mio portafoglio nella menu bar di macOS **così da** controllare i miei investimenti con un colpo d'occhio.
+**As a** user, **I want** to see a summary of my portfolio in the macOS menu bar **so that** I can monitor my investments at a glance.
 
-- [x] La menu bar mostra il P&L nel formato scelto (assoluto, %, entrambi, valore totale, miglior/peggior titolo, solo icona)
-- [x] I valori si aggiornano in tempo reale con i prezzi
-- [x] Colorazione verde (positivo) / rosso (negativo)
-- [x] 8 modalità display: P&L, P&L %, P&L + %, Total Value, Best Stock, Worst Stock, Best & Worst, Icon Only
+- [x] Menu bar shows P&L in the chosen format (absolute, %, both, total value, best/worst stock, icon only)
+- [x] Values update in real time with prices
+- [x] Green (positive) / red (negative) color coding
+- [x] 8 display modes: P&L, P&L %, P&L + %, Total Value, Best Stock, Worst Stock, Best & Worst, Icon Only
 
 ## US-02: Watchlist
-**Come** utente, **voglio** mantenere una watchlist di titoli **così da** monitorare i loro prezzi.
+**As a** user, **I want** to maintain a watchlist of stocks **so that** I can monitor their prices.
 
-- [x] Ricerca titoli per simbolo, nome o ISIN
-- [x] Aggiunta/rimozione titoli dalla watchlist
-- [x] Prezzo corrente, variazione giornaliera %, prezzi extended hours
-- [x] Filtro locale per simbolo, nome o ISIN
-- [x] Auto-ordinamento per performance giornaliera (migliore in cima)
-- [x] Badge PRE (arancione) / POST (viola) per extended hours
+- [x] Search stocks by symbol, name or ISIN
+- [x] Add/remove stocks from the watchlist
+- [x] Current price, daily change %, extended hours prices
+- [x] Local filter by symbol, name or ISIN
+- [x] Auto-sort by daily performance (best on top)
+- [x] PRE (orange) / POST (purple) badges for extended hours
 
-## US-03: Gestione Portafogli
-**Come** utente, **voglio** creare e gestire più portafogli con holding **così da** tracciare le performance dei miei investimenti.
+## US-03: Portfolio Management
+**As a** user, **I want** to create and manage multiple portfolios with holdings **so that** I can track my investment performance.
 
-- [x] Creazione, rinomina, eliminazione portafogli
-- [x] Aggiunta holding con simbolo, quantità, prezzo medio e data acquisto
-- [x] Modifica holding esistenti (quantità, prezzo medio, data acquisto)
-- [x] Eliminazione holding
-- [x] Valore totale portafoglio, P&L e P&L %
-- [x] Per ogni holding: controvalore, P&L e P&L %
-- [x] Filtro portafogli per nome o simbolo
+- [x] Create, rename, delete portfolios
+- [x] Add holdings with symbol, quantity, average price and purchase date
+- [x] Edit existing holdings (quantity, average price, purchase date)
+- [x] Delete holdings
+- [x] Total portfolio value, P&L and P&L %
+- [x] Per holding: market value, P&L and P&L %
+- [x] Filter portfolios by name or symbol
 
-## US-04: Aggiunta rapida da Watchlist a Portfolio
-**Come** utente, **voglio** aggiungere velocemente un titolo dalla watchlist a un portafoglio **così da** non dover riscrivere il simbolo.
+## US-04: Quick Add from Watchlist to Portfolio
+**As a** user, **I want** to quickly add a stock from the watchlist to a portfolio **so that** I don't have to retype the symbol.
 
-- [x] Click destro su titolo watchlist → menu "Add to Portfolio" con lista portafogli
-- [x] Form rapido per quantità, prezzo medio e data acquisto (precompila il prezzo corrente)
+- [x] Right-click on watchlist stock → "Add to Portfolio" menu with portfolio list
+- [x] Quick form for quantity, average price and purchase date (pre-fills current price)
 
-## US-05: Aggiornamenti in Tempo Reale
-**Come** utente, **voglio** che i prezzi si aggiornino in tempo reale **così da** avere sempre dati aggiornati.
+## US-05: Real-Time Updates
+**As a** user, **I want** prices to update in real time **so that** I always have up-to-date data.
 
-- [x] WebSocket Yahoo Finance (~1 tick/sec per simbolo)
-- [x] Riconnessione automatica con backoff esponenziale (2s, 4s, 8s... max 120s)
-- [x] Watchdog: nessun tick per 60s → riconnessione
-- [x] Heartbeat ogni 15s per mantenere la connessione
-- [x] REST polling ogni 5 min come fallback per exchange rates
-- [x] Dopo cambio portafoglio/watchlist, subscription WebSocket aggiornate entro 500ms
-- [x] Tick bufferizzati e flushati 1x/sec per evitare rendering eccessivo
+- [x] Yahoo Finance WebSocket (~1 tick/sec per symbol)
+- [x] Automatic reconnection with exponential backoff (2s, 4s, 8s... max 120s)
+- [x] Watchdog: no ticks for 60s → reconnect
+- [x] Heartbeat every 15s to keep the connection alive
+- [x] REST polling every 5 min as fallback for exchange rates
+- [x] After portfolio/watchlist change, WebSocket subscriptions updated within 500ms
+- [x] Ticks buffered and flushed 1x/sec to avoid excessive rendering
 
-## US-06: Conversione Valuta
-**Come** utente, **voglio** vedere i valori del portafoglio nella mia valuta preferita **così da** avere importi comprensibili.
+## US-06: Currency Conversion
+**As a** user, **I want** to see portfolio values in my preferred currency **so that** amounts are meaningful to me.
 
-- [x] Scelta valuta portafoglio (EUR, USD, GBP, CHF, JPY, CAD, AUD)
-- [x] Scelta valuta display prezzi (originale o convertita)
-- [x] Costo carico calcolato con tasso di cambio storico alla data di acquisto
-- [x] Valori correnti calcolati con tassi di cambio live
-- [x] P&L = valore corrente (tasso attuale) − costo carico (tasso storico)
+- [x] Portfolio currency selection (EUR, USD, GBP, CHF, JPY, CAD, AUD)
+- [x] Stock price display currency (original or converted)
+- [x] Cost basis calculated with historical exchange rate at purchase date
+- [x] Current values calculated with live exchange rates
+- [x] P&L = current value (current rate) − cost basis (historical rate)
 
 ## US-07: Extended Hours
-**Come** utente, **voglio** vedere i prezzi pre-market e after-hours **così da** conoscere l'ultimo prezzo disponibile.
+**As a** user, **I want** to see pre-market and after-hours prices **so that** I know the latest available price.
 
-- [x] Toggle per mostrare/nascondere prezzi extended hours
-- [x] Badge Pre-market (arancione) e Post-market (viola)
-- [x] Valori portafoglio usano prezzi extended hours quando abilitati
+- [x] Toggle to show/hide extended hours prices
+- [x] Pre-market (orange) and Post-market (purple) badges
+- [x] Portfolio values use extended hours prices when enabled
 
-## US-08: Persistenza Dati
-**Come** utente, **voglio** che i miei dati siano salvati localmente **così da** ritrovarli al riavvio dell'app.
+## US-08: Data Persistence
+**As a** user, **I want** my data to be saved locally **so that** I can find it after restarting the app.
 
-- [x] Dati salvati come JSON in `~/Library/Application Support/StockDock/data.json`
-- [x] Save debounced (100ms) per non bloccare il main thread
-- [x] Save immediato alla chiusura dell'app
-- [x] Nessun save ridondante durante il caricamento iniziale
-- [x] Nessun dato inviato a server esterni
+- [x] Data saved as JSON in `~/Library/Application Support/StockDock/data.json`
+- [x] Debounced save (100ms) to avoid blocking the main thread
+- [x] Immediate save on app termination
+- [x] No redundant saves during initial load
+- [x] No data sent to external servers
 
 ## US-09: Sleep/Wake
-**Come** utente, **voglio** che l'app gestisca correttamente sleep e risveglio del Mac **così da** non sprecare risorse.
+**As a** user, **I want** the app to handle Mac sleep and wake correctly **so that** it doesn't waste resources.
 
-- [x] Sleep: disconnette WebSocket, ferma timer
-- [x] Wake: riconnette, refresh completo quote e tassi di cambio
+- [x] Sleep: disconnects WebSocket, stops timers
+- [x] Wake: reconnects, full refresh of quotes and exchange rates
 
-## US-10: Interfaccia Popover
-**Come** utente, **voglio** accedere all'app con un click sull'icona nella menu bar **così da** avere tutto a portata di mano.
+## US-10: Popover Interface
+**As a** user, **I want** to access the app with a click on the menu bar icon **so that** everything is within reach.
 
-- [x] Click apre popover con tre tab: Watchlist, Portfolios, Settings
-- [x] Click esterno chiude il popover
-- [x] Alla chiusura del popover, subscription WebSocket e menu bar aggiornati
-- [x] Nessuna icona nel Dock (`.accessory` policy)
+- [x] Click opens popover with three tabs: Watchlist, Portfolios, Settings
+- [x] Click outside closes the popover
+- [x] On popover close, WebSocket subscriptions and menu bar updated
+- [x] No Dock icon (`.accessory` policy)
 
-## US-11: Impostazioni
-**Come** utente, **voglio** personalizzare il comportamento dell'app **così da** adattarla alle mie esigenze.
+## US-11: Settings
+**As a** user, **I want** to customize the app behavior **so that** I can adapt it to my needs.
 
-- [x] Valuta prezzi stock (originale o convertita)
-- [x] Valuta portafoglio
-- [x] Toggle extended hours
-- [x] Modalità display menu bar (8 opzioni)
+- [x] Stock price currency (original or converted)
+- [x] Portfolio currency
+- [x] Extended hours toggle
+- [x] Menu bar display mode (8 options)

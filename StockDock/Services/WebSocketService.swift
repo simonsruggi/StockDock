@@ -27,6 +27,8 @@ final class WebSocketService: NSObject, ObservableObject {
 
     private lazy var urlSession: URLSession = {
         let config = URLSessionConfiguration.default
+        config.urlCache = nil
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
         return URLSession(configuration: config, delegate: self, delegateQueue: nil)
     }()
 
