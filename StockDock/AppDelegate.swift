@@ -8,15 +8,27 @@ extension Notification.Name {
 }
 
 final class UpdaterViewModel: ObservableObject {
-    let updater: SPUUpdater
+    private let controller: SPUStandardUpdaterController?
+
+    var canCheckForUpdates: Bool {
+        controller?.updater.canCheckForUpdates ?? false
+    }
+
+    var isAvailable: Bool {
+        controller != nil
+    }
 
     init() {
-        let controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
-        self.updater = controller.updater
+        if Bundle.main.infoDictionary?["SUFeedURL"] != nil {
+            let c = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+            self.controller = c
+        } else {
+            self.controller = nil
+        }
     }
 
     func checkForUpdates() {
-        updater.checkForUpdates()
+        controller?.updater.checkForUpdates()
     }
 }
 
@@ -357,6 +369,7 @@ extension AppDelegate: NSPopoverDelegate {
             NSEvent.removeMonitor(monitor)
             eventMonitor = nil
         }
+        NSApp.setActivationPolicy(.accessory)
         NotificationCenter.default.post(name: .popoverDidClose, object: nil)
     }
 }

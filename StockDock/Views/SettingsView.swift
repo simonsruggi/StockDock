@@ -94,18 +94,17 @@ struct SettingsView: View {
                 }
                 Divider()
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Updates")
-                        .font(.headline)
-                    Button("Check for Updates...") {
-                        NSApp.setActivationPolicy(.regular)
-                        NSApp.activate(ignoringOtherApps: true)
-                        updaterViewModel.checkForUpdates()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                            NSApp.setActivationPolicy(.accessory)
+                if updaterViewModel.isAvailable {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Updates")
+                            .font(.headline)
+                        Button("Check for Updates...") {
+                            NSApp.setActivationPolicy(.regular)
+                            NSApp.activate(ignoringOtherApps: true)
+                            updaterViewModel.checkForUpdates()
                         }
+                        .disabled(!updaterViewModel.canCheckForUpdates)
                     }
-                    .disabled(!updaterViewModel.updater.canCheckForUpdates)
                 }
             }
             .padding(16)
