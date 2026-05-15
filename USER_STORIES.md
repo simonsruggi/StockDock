@@ -92,3 +92,15 @@
 - [x] Portfolio currency
 - [x] Extended hours toggle
 - [x] Menu bar display mode (8 options)
+
+## US-12: Portfolio Export / Import
+**As a** user, **I want** to export and import portfolios as JSON files **so that** I can back up my data or transfer it between machines.
+
+- [x] Export all portfolios to a single JSON file via NSSavePanel
+- [x] Export a single portfolio via right-click context menu → "Export"
+- [x] Import portfolios from a JSON file via NSOpenPanel
+- [x] Imported portfolios get new UUIDs to avoid conflicts
+- [x] Duplicate portfolio names are auto-suffixed (e.g. "My Portfolio (2)")
+- [x] Import button available in empty state (no portfolios)
+- [x] Alert shown after import with count of imported portfolios
+- [x] Error alerts for invalid/unreadable files

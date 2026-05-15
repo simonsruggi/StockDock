@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct PortfolioListView: View {
     @EnvironmentObject var stockService: StockService
@@ -6,6 +7,7 @@ struct PortfolioListView: View {
     @State private var showNewPortfolio = false
     @State private var newPortfolioName = ""
     @State private var searchText = ""
+    @State private var importAlert: String?
 
     var filteredPortfolios: [Portfolio] {
         guard !searchText.isEmpty else { return storageService.portfolios }
@@ -17,6 +19,7 @@ struct PortfolioListView: View {
     }
 
     var body: some View {
+        Group {
         if storageService.portfolios.isEmpty && !showNewPortfolio {
             VStack(spacing: 12) {
                 Spacer()
@@ -30,6 +33,14 @@ struct PortfolioListView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
+                Button(action: importPortfolios) {
+                    HStack(spacing: 3) {
+                        Image(systemName: "square.and.arrow.down")
+                        Text("Import")
+                    }
+                    .font(.caption)
+                }
+                .buttonStyle(.borderless)
                 Spacer()
             }
         } else {
@@ -89,15 +100,97 @@ struct PortfolioListView: View {
 
                 Divider()
 
-                Button(action: { showNewPortfolio = true }) {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                        Text("New portfolio")
+                HStack {
+                    Button(action: { showNewPortfolio = true }) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("New portfolio")
+                        }
+                        .font(.caption)
                     }
-                    .font(.caption)
+                    .buttonStyle(.borderless)
+
+                    Spacer()
+
+                    Button(action: importPortfolios) {
+                        HStack(spacing: 3) {
+                            Image(systemName: "square.and.arrow.down")
+                            Text("Import")
+                        }
+                        .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+
+                    Button(action: { exportPortfolios(storageService.portfolios) }) {
+                        HStack(spacing: 3) {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Export All")
+                        }
+                        .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(storageService.portfolios.isEmpty)
                 }
-                .buttonStyle(.borderless)
                 .padding(8)
+            }
+        }
+        }
+        .alert("Import", isPresented: Binding(get: { importAlert != nil }, set: { if !$0 { importAlert = nil } })) {
+            Button("OK") { importAlert = nil }
+        } message: {
+            Text(importAlert ?? "")
+        }
+    }
+
+    private func exportPortfolios(_ portfolios: [Portfolio]) {
+        guard let data = storageService.exportPortfolios(portfolios) else { return }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        let name = portfolios.count == 1 ? portfolios[0].name : "StockDock Portfolios"
+        panel.nameFieldStringValue = "\(name).json"
+        panel.title = "Export Portfolios"
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        panel.begin { response in
+            defer {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    NSApp.setActivationPolicy(.accessory)
+                }
+            }
+            guard response == .OK, let url = panel.url else { return }
+            try? data.write(to: url, options: .atomic)
+        }
+    }
+
+    private func importPortfolios() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        panel.title = "Import Portfolios"
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        panel.begin { response in
+            defer {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    NSApp.setActivationPolicy(.accessory)
+                }
+            }
+            guard response == .OK, let url = panel.url else { return }
+            guard let data = try? Data(contentsOf: url) else {
+                DispatchQueue.main.async { importAlert = "Could not read file." }
+                return
+            }
+            guard let imported = storageService.importPortfolios(from: data) else {
+                DispatchQueue.main.async { importAlert = "Invalid file format." }
+                return
+            }
+            if imported.isEmpty {
+                DispatchQueue.main.async { importAlert = "No portfolios found in file." }
+                return
+            }
+            DispatchQueue.main.async {
+                storageService.mergeImportedPortfolios(imported)
+                importAlert = "Imported \(imported.count) portfolio\(imported.count == 1 ? "" : "s")."
             }
         }
     }
@@ -117,6 +210,25 @@ struct PortfolioSection: View {
     let portfolio: Portfolio
     @State private var isRenaming = false
     @State private var renameText = ""
+
+    private func exportSingle() {
+        guard let data = storageService.exportPortfolios([portfolio]) else { return }
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "\(portfolio.name).json"
+        panel.title = "Export Portfolio"
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        panel.begin { response in
+            defer {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    NSApp.setActivationPolicy(.accessory)
+                }
+            }
+            guard response == .OK, let url = panel.url else { return }
+            try? data.write(to: url, options: .atomic)
+        }
+    }
 
     private var currSymbol: String {
         StorageService.currencySymbol(for: storageService.preferredCurrency)
@@ -230,6 +342,10 @@ struct PortfolioSection: View {
                     } label: {
                         Label("Rename", systemImage: "pencil")
                     }
+                    Button(action: exportSingle) {
+                        Label("Export", systemImage: "square.and.arrow.up")
+                    }
+                    Divider()
                     Button(role: .destructive) {
                         storageService.deletePortfolio(id: portfolio.id)
                     } label: {
