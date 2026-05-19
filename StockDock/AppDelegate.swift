@@ -50,8 +50,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var symbolsObserver: AnyCancellable?
     let updaterViewModel = UpdaterViewModel()
 
-    /// REST polling: 5 min for exchange rates / fallback only
-    private static let restPollingInterval: TimeInterval = 300
+    /// REST polling: quotes + exchange rates as WSS fallback
+    private static let restPollingInterval: TimeInterval = 60
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Hide dock icon
@@ -199,6 +199,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self, !self.isRefreshing else { return }
                 self.isRefreshing = true
                 defer { self.isRefreshing = false }
+                let symbols = Array(StockService.collectSymbols(storageService: self.storageService))
+                await self.stockService.fetchQuotes(symbols: symbols)
                 await self.stockService.refreshExchangeRates(storageService: self.storageService)
                 self.updateMenuBarTitle()
                 self.webSocketService.updateSymbols(Array(self.collectSymbols()))
