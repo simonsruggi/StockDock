@@ -83,6 +83,8 @@ xcodebuild -scheme "$SCHEME" \
     -configuration Release \
     -destination 'platform=macOS' \
     -derivedDataPath "$BUILD_DIR" \
+    ARCHS="arm64 x86_64" \
+    ONLY_ACTIVE_ARCH=NO \
     build 2>&1 | tail -5
 
 BINARY="${PRODUCTS_DIR}/${APP_NAME}"

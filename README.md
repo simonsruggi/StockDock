@@ -114,7 +114,7 @@ StockDock checks for updates automatically on launch via [Sparkle](https://spark
 ## Tech Stack
 
 - Swift 5.9 / SwiftUI
-- macOS 14+ (Sonoma)
+- macOS 14+ (Sonoma) — Universal binary (Apple Silicon + Intel)
 - Yahoo Finance WebSocket (real-time) + REST API (fallback)
 - [Sparkle](https://sparkle-project.org/) for auto-updates
 - [swift-protobuf](https://github.com/apple/swift-protobuf) for WebSocket decoding
