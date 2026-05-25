@@ -6,15 +6,15 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.1.1</title>
-            <pubDate>Tue, 19 May 2026 18:20:56 +0200</pubDate>
-            <sparkle:version>5</sparkle:version>
-            <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+            <title>Version 1.2.0</title>
+            <pubDate>Mon, 25 May 2026 20:48:51 +0200</pubDate>
+            <sparkle:version>6</sparkle:version>
+            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.1.1/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.2.0/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="iU5hP7GROZxDCFEyp2T/+0qGsOsnxJyAba5OlSYyaPbG4/18f/EWQ2D7QAOR+vZ8fojuXS1KiqEyjLqhJKndAg=="
-                       length="2606899"/>
+                       sparkle:edSignature="YrtsbWd5H7iZWN7hkHfuYvTGq/HLcHCZ3WxAYZ3D1J6LG3dhebybPAad9oKumUEk7VOB8146zxBxnzFoTDYMDA=="
+                       length="3930196"/>
         </item>
     </channel>
 </rss>
