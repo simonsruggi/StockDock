@@ -201,7 +201,8 @@ struct QuickAddHoldingView: View {
 
             Button("Add") {
                 guard let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
-                      let price = Double(avgPriceText.replacingOccurrences(of: ",", with: "."))
+                      let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
+                      qty > 0, price > 0
                 else { return }
                 storageService.addHolding(to: portfolioId, symbol: symbol, quantity: qty, avgPrice: price, purchaseDate: purchaseDate)
                 Task { await stockService.refreshAll(storageService: storageService) }

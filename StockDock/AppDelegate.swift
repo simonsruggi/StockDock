@@ -111,7 +111,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 let symbols = Array(self.collectSymbols())
                 self.webSocketService.updateSymbols(symbols)
                 self.isRefreshing = true
-                Task {
+                Task { @MainActor in
                     defer { self.isRefreshing = false }
                     await self.stockService.refreshAll(storageService: self.storageService)
                     self.updateMenuBarTitle()
@@ -348,8 +348,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 .environmentObject(stockService)
                 .environmentObject(storageService)
                 .environmentObject(updaterViewModel)
-            popover.contentViewController = NSHostingController(rootView: contentView)
-            popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            let hostingController = NSHostingController(rootView: contentView)
+            popover.contentViewController = hostingController
+            let rect = NSRect(x: 0, y: 0, width: button.bounds.width, height: 0)
+            popover.show(relativeTo: rect, of: button, preferredEdge: .minY)
             NSApp.activate(ignoringOtherApps: true)
             eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
                 self?.closePopover()

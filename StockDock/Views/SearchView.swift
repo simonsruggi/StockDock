@@ -107,7 +107,7 @@ struct SearchView: View {
 
     private var queryLooksLikeISIN: Bool {
         let q = query.trimmingCharacters(in: .whitespaces)
-        return q.count >= 6 && q.prefix(2).allSatisfy(\.isLetter) && q.dropFirst(2).allSatisfy { $0.isLetter || $0.isNumber }
+        return q.count == 12 && q.prefix(2).allSatisfy(\.isLetter) && q.dropFirst(2).allSatisfy { $0.isLetter || $0.isNumber }
     }
 
     private func addResult(_ result: SearchResult) {

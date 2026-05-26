@@ -58,7 +58,7 @@ class StorageService: ObservableObject {
     private var saveTask: Task<Void, Never>?
 
     private init() {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { fatalError("No Application Support directory") }
         let dir = appSupport.appendingPathComponent("StockDock", isDirectory: true)
         let oldDir = appSupport.appendingPathComponent("StockBar", isDirectory: true)
         if FileManager.default.fileExists(atPath: oldDir.path) && !FileManager.default.fileExists(atPath: dir.path) {
@@ -190,7 +190,7 @@ class StorageService: ObservableObject {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
         } catch {
-            print("Error saving data: \(error)")
+            // Error saving is non-fatal; data will be retried on next change
         }
     }
 
@@ -213,7 +213,7 @@ class StorageService: ObservableObject {
             menuBarDisplay = decoded.menuBarDisplay ?? "pnl"
             isinMap = decoded.isinMap ?? [:]
         } catch {
-            print("Error loading data: \(error)")
+            // First launch or corrupted file — defaults are used
         }
     }
 }

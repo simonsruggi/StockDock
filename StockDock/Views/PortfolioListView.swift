@@ -177,20 +177,20 @@ struct PortfolioListView: View {
             }
             guard response == .OK, let url = panel.url else { return }
             guard let data = try? Data(contentsOf: url) else {
-                DispatchQueue.main.async { importAlert = "Could not read file." }
-                return
-            }
-            guard let imported = storageService.importPortfolios(from: data) else {
-                DispatchQueue.main.async { importAlert = "Invalid file format." }
-                return
-            }
-            if imported.isEmpty {
-                DispatchQueue.main.async { importAlert = "No portfolios found in file." }
+                DispatchQueue.main.async { self.importAlert = "Could not read file." }
                 return
             }
             DispatchQueue.main.async {
-                storageService.mergeImportedPortfolios(imported)
-                importAlert = "Imported \(imported.count) portfolio\(imported.count == 1 ? "" : "s")."
+                guard let imported = self.storageService.importPortfolios(from: data) else {
+                    self.importAlert = "Invalid file format."
+                    return
+                }
+                if imported.isEmpty {
+                    self.importAlert = "No portfolios found in file."
+                    return
+                }
+                self.storageService.mergeImportedPortfolios(imported)
+                self.importAlert = "Imported \(imported.count) portfolio\(imported.count == 1 ? "" : "s")."
             }
         }
     }
@@ -280,7 +280,8 @@ struct PortfolioSection: View {
                         Text(String(format: "%+.2f%@", totalPnl, currSymbol))
                         Text(String(format: "(%.1f%%)", totalPnlPercent))
                     }
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.system(.body, design: .monospaced))
+                    .fontWeight(.semibold)
                     .foregroundColor(totalPnl >= 0 ? .green : .red)
                 }
             }
@@ -296,7 +297,7 @@ struct PortfolioSection: View {
                     Text("Value / P&L")
                         .frame(width: 120, alignment: .trailing)
                 }
-                .font(.system(size: 9, weight: .medium))
+                .font(.system(size: 10, weight: .medium))
                 .foregroundColor(.secondary)
                 .padding(.vertical, 1)
             }
@@ -383,10 +384,10 @@ struct HoldingRow: View {
             // Col 1: Ticker + Qty@Avg
             VStack(alignment: .leading, spacing: 1) {
                 Text(holding.symbol)
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.system(.body, design: .monospaced))
                     .fontWeight(.bold)
                 Text("\(formatQty(holding.quantity))\u{00D7}\(String(format: "%.2f", holding.avgPrice))")
-                    .font(.system(size: 9, design: .monospaced))
+                    .font(.system(size: 10, design: .monospaced))
                     .foregroundColor(.secondary)
             }
             .frame(width: 80, alignment: .leading)
@@ -401,10 +402,11 @@ struct HoldingRow: View {
                 // Col 2: Price + badge
                 HStack(spacing: 3) {
                     Text(String(format: "%.2f %@", quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, priceSymbol))
-                        .font(.system(.caption, design: .monospaced))
+                        .font(.system(.body, design: .monospaced))
+                        .fontWeight(.medium)
                     if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
                         Text(quote.marketStateLabel)
-                            .font(.system(size: 7, weight: .semibold))
+                            .font(.system(size: 9, weight: .semibold))
                             .foregroundColor(.white)
                             .padding(.horizontal, 3)
                             .padding(.vertical, 1)
@@ -426,9 +428,10 @@ struct HoldingRow: View {
 
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(String(format: "%.2f%@", marketVal, prefSymbol))
-                        .font(.system(.caption, design: .monospaced))
+                        .font(.system(.body, design: .monospaced))
+                        .fontWeight(.medium)
                     Text(String(format: "%+.2f%@ (%.1f%%)", pnl, prefSymbol, pnlPct))
-                        .font(.system(size: 9, design: .monospaced))
+                        .font(.system(.caption, design: .monospaced))
                         .foregroundColor(pnl >= 0 ? .green : .red)
                 }
                 .frame(width: 120, alignment: .trailing)
@@ -529,7 +532,7 @@ struct EditHoldingView: View {
             if let quote = stockService.quotes[holding.symbol], quote.currency != storageService.preferredCurrency, let info = costBasisInfo {
                 let stockSym = StorageService.currencySymbol(for: quote.currency)
                 let prefSym = StorageService.currencySymbol(for: storageService.preferredCurrency)
-                let dateStr = dateFormatter.string(from: purchaseDate)
+                let dateStr = Self.dateFormatter.string(from: purchaseDate)
                 Text("Cost basis: \(String(format: "%.2f", info.costInPreferred))\(prefSym) (\(String(format: "%.2f", info.costInStock))\(stockSym) × \(String(format: "%.4f", info.rate)) on \(dateStr))")
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -558,15 +561,16 @@ struct EditHoldingView: View {
         }
     }
 
-    private var dateFormatter: DateFormatter {
+    private static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateStyle = .medium
         return f
-    }
+    }()
 
     private func save() {
         guard let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
-              let price = Double(avgPriceText.replacingOccurrences(of: ",", with: "."))
+              let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
+              qty > 0, price > 0
         else { return }
         storageService.updateHolding(in: portfolioId, holdingId: holding.id, quantity: qty, avgPrice: price, purchaseDate: purchaseDate)
         Task {

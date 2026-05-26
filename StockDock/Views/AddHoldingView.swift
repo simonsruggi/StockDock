@@ -133,7 +133,8 @@ struct AddHoldingView: View {
     private func addHolding() {
         guard let sym = selectedSymbol,
               let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
-              let price = Double(avgPriceText.replacingOccurrences(of: ",", with: "."))
+              let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
+              qty > 0, price > 0
         else { return }
 
         storageService.addHolding(to: portfolioId, symbol: sym, quantity: qty, avgPrice: price, purchaseDate: purchaseDate)

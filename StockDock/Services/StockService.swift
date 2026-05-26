@@ -71,8 +71,9 @@ class StockService: ObservableObject {
         }
 
         // Evict exchange rates no longer needed
-        let neededRateKeys = Set(pairs.map { pair -> String in
+        let neededRateKeys = Set(pairs.compactMap { pair -> String? in
             let parts = pair.split(separator: "|")
+            guard parts.count >= 2 else { return nil }
             return "\(parts[0])\(parts[1])"
         })
         let staleRateKeys = Set(exchangeRates.keys).subtracting(neededRateKeys)
@@ -81,6 +82,7 @@ class StockService: ObservableObject {
         await withTaskGroup(of: Void.self) { group in
             for pair in pairs {
                 let parts = pair.split(separator: "|")
+                guard parts.count >= 2 else { continue }
                 let from = String(parts[0])
                 let to = String(parts[1])
                 group.addTask { [weak self] in
@@ -136,7 +138,6 @@ class StockService: ObservableObject {
         }
 
         // Fallback: fetch each symbol via v8 chart API
-        print("[StockService] v7 failed, falling back to v8 chart API")
         await withTaskGroup(of: Void.self) { group in
             for symbol in symbols {
                 group.addTask { [weak self] in
@@ -162,7 +163,6 @@ class StockService: ObservableObject {
             self.crumb = crumbValue
             return true
         } catch {
-            print("[StockService] fetchCrumb error: \(error)")
             return false
         }
     }
@@ -236,7 +236,6 @@ class StockService: ObservableObject {
 
             return true
         } catch {
-            print("[StockService] v7 quote error: \(error)")
             return false
         }
     }
@@ -338,7 +337,6 @@ class StockService: ObservableObject {
 
             quotes[meta.symbol] = quote
         } catch {
-            print("Error fetching \(symbol): \(error)")
         }
     }
 
@@ -372,7 +370,6 @@ class StockService: ObservableObject {
                 exchangeRates["\(from)\(to)"] = result.meta.regularMarketPrice
             }
         } catch {
-            print("Error fetching exchange rate \(from)\(to): \(error)")
         }
     }
 
@@ -394,7 +391,6 @@ class StockService: ObservableObject {
             guard let rate = validCloses.first ?? validCloses.last else { return }
             historicalRates["\(from)\(to):\(dateTimestamp)"] = rate
         } catch {
-            print("Error fetching historical rate \(from)\(to) for \(dateTimestamp): \(error)")
         }
     }
 
@@ -461,7 +457,6 @@ class StockService: ObservableObject {
             let response = try JSONDecoder().decode(YahooSearchResponse.self, from: data)
             return response.quotes
         } catch {
-            print("Error searching: \(error)")
             return []
         }
     }

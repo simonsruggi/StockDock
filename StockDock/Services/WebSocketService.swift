@@ -96,8 +96,7 @@ final class WebSocketService: NSObject, ObservableObject {
         guard let data = try? JSONSerialization.data(withJSONObject: dict),
               let str = String(data: data, encoding: .utf8) else { return }
         webSocketTask?.send(.string(str)) { [weak self] error in
-            guard let error else { return }
-            print("[WSS] Send error: \(error.localizedDescription)")
+            guard error != nil else { return }
             Task { @MainActor in
                 self?.handleDisconnect()
             }
@@ -112,8 +111,7 @@ final class WebSocketService: NSObject, ObservableObject {
                 case .success(let message):
                     self.handleMessage(message)
                     self.receiveMessage() // keep listening
-                case .failure(let error):
-                    print("[WSS] Receive error: \(error.localizedDescription)")
+                case .failure:
                     self.handleDisconnect()
                 }
             }
@@ -179,7 +177,6 @@ final class WebSocketService: NSObject, ObservableObject {
                 guard let self, self.isConnected else { return }
                 guard let last = self.lastTickTime else { return }
                 if Date().timeIntervalSince(last) > Self.watchdogTimeout {
-                    print("[WSS] Watchdog: no ticks for \(Self.watchdogTimeout)s, reconnecting")
                     self.handleDisconnect()
                 }
             }
@@ -197,7 +194,6 @@ final class WebSocketService: NSObject, ObservableObject {
 
         let delay = min(pow(2.0, Double(reconnectAttempts)) * 2, Self.maxReconnectDelay)
         reconnectAttempts += 1
-        print("[WSS] Reconnecting in \(delay)s (attempt \(reconnectAttempts))")
 
         reconnectTimer?.invalidate()
         reconnectTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
@@ -224,7 +220,6 @@ extension WebSocketService: URLSessionWebSocketDelegate {
 
     nonisolated func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         Task { @MainActor in
-            print("[WSS] Closed: \(closeCode)")
             handleDisconnect()
         }
     }
