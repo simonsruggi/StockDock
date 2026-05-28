@@ -118,11 +118,11 @@ step 2b "Smoke test (launch → 3s → check alive)"
 SMOKE_PID=$!
 sleep 3
 if kill -0 "$SMOKE_PID" 2>/dev/null; then
-    kill "$SMOKE_PID" 2>/dev/null
-    wait "$SMOKE_PID" 2>/dev/null
+    kill "$SMOKE_PID" 2>/dev/null || true
+    wait "$SMOKE_PID" 2>/dev/null || true
     info "App launched and stayed alive for 3s"
 else
-    wait "$SMOKE_PID" 2>/dev/null
+    wait "$SMOKE_PID" 2>/dev/null || true
     fail "App crashed during smoke test — aborting release"
 fi
 
