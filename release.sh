@@ -111,6 +111,21 @@ install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP_PATH/Content
 
 info "App bundle assembled: $APP_PATH"
 
+# --- Step 2b: Smoke test ---
+step 2b "Smoke test (launch → 3s → check alive)"
+
+"$APP_PATH/Contents/MacOS/${APP_NAME}" &
+SMOKE_PID=$!
+sleep 3
+if kill -0 "$SMOKE_PID" 2>/dev/null; then
+    kill "$SMOKE_PID" 2>/dev/null
+    wait "$SMOKE_PID" 2>/dev/null
+    info "App launched and stayed alive for 3s"
+else
+    wait "$SMOKE_PID" 2>/dev/null
+    fail "App crashed during smoke test — aborting release"
+fi
+
 # --- Step 3: Code-sign ---
 step 3 "Code-sign"
 
