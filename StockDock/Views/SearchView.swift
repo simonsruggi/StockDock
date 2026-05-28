@@ -21,7 +21,7 @@ struct SearchView: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Search")
-                    .font(.headline)
+                    .font(.inter(13, weight: .bold, relativeTo: .headline))
                 Spacer()
                 Button("Close") { isPresented = false }
                     .buttonStyle(.borderless)
@@ -71,10 +71,10 @@ struct SearchView: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(result.symbol)
-                                    .font(.system(.body, design: .monospaced))
+                                    .font(.inter(13, relativeTo: .body).monospacedDigit())
                                     .fontWeight(.semibold)
                                 Text(result.name)
-                                    .font(.caption)
+                                    .font(.inter(10, relativeTo: .caption))
                                     .foregroundColor(.secondary)
                                     .lineLimit(1)
                             }
@@ -82,18 +82,25 @@ struct SearchView: View {
 
                             if let quote = stockService.quotes[result.symbol] {
                                 Text("\(quote.price.formatted(.number.precision(.fractionLength(2)))) \(quote.currency)")
-                                    .font(.system(.body, design: .monospaced))
+                                    .font(.inter(13, relativeTo: .body).monospacedDigit())
                                     .foregroundColor(.primary)
                             }
 
+                            Text(result.type.uppercased())
+                                .font(.inter(8, weight: .medium, relativeTo: .caption2))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 4)
+                                .padding(.vertical, 1)
+                                .background(RoundedRectangle(cornerRadius: 2).fill(.secondary))
+
                             Text(result.exchange)
-                                .font(.caption2)
+                                .font(.inter(9, relativeTo: .caption2))
                                 .foregroundColor(.secondary)
 
                             if isAlreadyAdded(result.symbol) {
                                 Image(systemName: "checkmark.circle.fill")
                                     .foregroundColor(.green)
-                                    .font(.caption)
+                                    .font(.inter(10, relativeTo: .caption))
                             }
                         }
                     }

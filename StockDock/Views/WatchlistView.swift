@@ -6,12 +6,31 @@ struct WatchlistView: View {
     @Binding var showSearch: Bool
     @State private var searchText = ""
     @State private var addToPortfolio: (symbol: String, portfolioId: UUID)? = nil
+    @State private var sortColumn: SortColumn = .change
+    @State private var sortAscending: Bool = false
+
+    enum SortColumn {
+        case symbol, price, change
+    }
 
     var sortedSymbols: [String] {
         storageService.watchlist.sorted { a, b in
-            let pctA = stockService.quotes[a]?.changePercent ?? 0
-            let pctB = stockService.quotes[b]?.changePercent ?? 0
-            return pctA > pctB
+            let qa = stockService.quotes[a]
+            let qb = stockService.quotes[b]
+            let result: Bool
+            switch sortColumn {
+            case .symbol:
+                result = a.localizedCompare(b) == .orderedAscending
+            case .price:
+                let pa = qa?.price ?? 0
+                let pb = qb?.price ?? 0
+                result = pa < pb
+            case .change:
+                let ca = qa?.changePercent ?? 0
+                let cb = qb?.changePercent ?? 0
+                result = ca < cb
+            }
+            return sortAscending ? result : !result
         }
     }
 
@@ -30,7 +49,7 @@ struct WatchlistView: View {
             VStack(spacing: 12) {
                 Spacer()
                 Image(systemName: "star")
-                    .font(.system(size: 32))
+                    .font(.inter(32, relativeTo: .largeTitle))
                     .foregroundColor(.secondary)
                 Text("No stocks in watchlist")
                     .foregroundColor(.secondary)
@@ -47,21 +66,36 @@ struct WatchlistView: View {
             HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.secondary)
-                    .font(.caption)
+                    .font(.inter(10, relativeTo: .caption))
                 TextField("Filter watchlist…", text: $searchText)
                     .textFieldStyle(.plain)
-                    .font(.caption)
+                    .font(.inter(10, relativeTo: .caption))
                 if !searchText.isEmpty {
                     Button(action: { searchText = "" }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.secondary)
-                            .font(.caption)
+                            .font(.inter(10, relativeTo: .caption))
                     }
                     .buttonStyle(.borderless)
                 }
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
+
+            Divider()
+
+            HStack(spacing: 0) {
+                sortHeader("Symbol", column: .symbol)
+                    .frame(width: 80, alignment: .leading)
+                sortHeader("Price", column: .price)
+                    .frame(maxWidth: .infinity)
+                sortHeader("Change", column: .change)
+                    .frame(width: 120, alignment: .trailing)
+            }
+            .font(.inter(10, weight: .medium, relativeTo: .caption))
+            .foregroundColor(.secondary)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 4)
 
             Divider()
 
@@ -75,7 +109,7 @@ struct WatchlistView: View {
                     } else {
                         HStack {
                             Text(symbol)
-                                .font(.system(.body, design: .monospaced))
+                                .font(.inter(13, relativeTo: .body).monospacedDigit())
                             Spacer()
                             ProgressView()
                                 .scaleEffect(0.6)
@@ -103,7 +137,7 @@ struct WatchlistView: View {
                     Image(systemName: "plus.circle.fill")
                     Text("Add stock")
                 }
-                .font(.caption)
+                .font(.inter(10, relativeTo: .caption))
             }
             .buttonStyle(.borderless)
             .padding(8)
@@ -125,6 +159,27 @@ struct WatchlistView: View {
                 .frame(width: 300, height: 220)
             }
         }
+    }
+
+    @ViewBuilder
+    private func sortHeader(_ title: String, column: SortColumn) -> some View {
+        Button(action: {
+            if sortColumn == column {
+                sortAscending.toggle()
+            } else {
+                sortColumn = column
+                sortAscending = column == .symbol
+            }
+        }) {
+            HStack(spacing: 2) {
+                Text(title)
+                if sortColumn == column {
+                    Image(systemName: sortAscending ? "chevron.up" : "chevron.down")
+                        .font(.inter(8, relativeTo: .caption2))
+                }
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -171,7 +226,7 @@ struct QuickAddHoldingView: View {
         VStack(spacing: 12) {
             HStack {
                 Text("Add \(symbol)")
-                    .font(.headline)
+                    .font(.inter(13, weight: .bold, relativeTo: .headline))
                 Spacer()
                 Button("Cancel") { onDismiss() }
                     .buttonStyle(.borderless)
@@ -179,19 +234,19 @@ struct QuickAddHoldingView: View {
 
             HStack(spacing: 12) {
                 VStack(alignment: .leading) {
-                    Text("Quantity").font(.caption).foregroundColor(.secondary)
+                    Text("Quantity").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
                     TextField("0", text: $quantityText)
                         .textFieldStyle(.roundedBorder)
                 }
                 VStack(alignment: .leading) {
-                    Text("Avg price").font(.caption).foregroundColor(.secondary)
+                    Text("Avg price").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
                     TextField("0.00", text: $avgPriceText)
                         .textFieldStyle(.roundedBorder)
                 }
             }
 
             VStack(alignment: .leading) {
-                Text("Purchase date").font(.caption).foregroundColor(.secondary)
+                Text("Purchase date").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
                 DatePicker("", selection: $purchaseDate, displayedComponents: .date)
                     .datePickerStyle(.compact)
                     .labelsHidden()
@@ -240,60 +295,64 @@ struct QuoteRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 8) {
-            VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
-                    Text(quote.symbol)
-                        .font(.system(.body, design: .monospaced))
-                        .fontWeight(.semibold)
+        HStack(spacing: 0) {
+            // Col 1: Symbol + name
+            VStack(alignment: .leading, spacing: 1) {
+                Text(quote.symbol)
+                    .font(.inter(13, relativeTo: .body).monospacedDigit())
+                    .fontWeight(.bold)
+                Text(quote.name)
+                    .font(.inter(10, relativeTo: .caption))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            .frame(width: 80, alignment: .leading)
+
+            // Col 2: Price + day range
+            VStack(spacing: 1) {
+                HStack(spacing: 3) {
+                    Text(String(format: "%.2f %@", quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate, currSymbol))
+                        .font(.inter(13, relativeTo: .body).monospacedDigit())
+                        .fontWeight(.medium)
                     if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
                         Text(quote.marketStateLabel)
-                            .font(.system(size: 9, weight: .medium))
+                            .font(.inter(9, weight: .semibold, relativeTo: .caption2))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 4)
+                            .padding(.horizontal, 3)
                             .padding(.vertical, 1)
                             .background(
-                                RoundedRectangle(cornerRadius: 3)
+                                RoundedRectangle(cornerRadius: 2)
                                     .fill(quote.marketState.hasPrefix("PRE") ? .orange : .purple)
                             )
                     }
                 }
-                Text(quote.name)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-            }
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 2) {
-                // Regular market price + change
-                Text(String(format: "%.2f %@", quote.price * priceRate, currSymbol))
-                    .font(.system(.body, design: .monospaced))
-                    .fontWeight(.medium)
-
-                HStack(spacing: 2) {
-                    Image(systemName: quote.isPositive ? "arrow.up.right" : "arrow.down.right")
-                        .font(.system(size: 9))
-                    Text(String(format: "%+.2f (%.1f%%)", quote.change * priceRate, quote.changePercent))
-                        .font(.system(.caption, design: .monospaced))
+                if let high = quote.dayHigh, let low = quote.dayLow {
+                    Text(String(format: "%.2f – %.2f", low * priceRate, high * priceRate))
+                        .font(.inter(10, relativeTo: .caption).monospacedDigit())
+                        .foregroundColor(.secondary)
                 }
-                .foregroundColor(quote.isPositive ? .green : .red)
+            }
+            .frame(maxWidth: .infinity)
 
-                // Extended hours price
+            // Col 3: Change
+            VStack(alignment: .trailing, spacing: 1) {
+                Text(String(format: "%+.2f %@", quote.change * priceRate, currSymbol))
+                    .font(.inter(13, relativeTo: .body).monospacedDigit())
+                    .fontWeight(.medium)
+                    .foregroundColor(quote.isPositive ? .green : .red)
+                Text(String(format: "%.1f%%", quote.changePercent))
+                    .font(.inter(10, relativeTo: .caption).monospacedDigit())
+                    .foregroundColor(quote.isPositive ? .green : .red)
+
                 if storageService.showExtendedHours,
-                   let extPrice = quote.isExtendedHours ? quote.effectivePrice : nil,
                    let extChg = quote.extendedChange,
                    let extPct = quote.extendedChangePercent {
-                    HStack(spacing: 2) {
-                        Text(String(format: "%.2f", extPrice * priceRate))
-                            .fontWeight(.medium)
-                        Text(String(format: "%+.2f (%.1f%%)", extChg * priceRate, extPct))
-                    }
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(extChg >= 0 ? .green.opacity(0.8) : .red.opacity(0.8))
+                    Text(String(format: "%+.2f (%.1f%%)", extChg * priceRate, extPct))
+                        .font(.inter(10, relativeTo: .caption).monospacedDigit())
+                        .foregroundColor(extChg >= 0 ? .green.opacity(0.8) : .red.opacity(0.8))
                 }
             }
+            .frame(width: 120, alignment: .trailing)
         }
         .padding(.vertical, 2)
     }

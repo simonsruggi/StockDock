@@ -24,7 +24,7 @@ struct PortfolioListView: View {
             VStack(spacing: 12) {
                 Spacer()
                 Image(systemName: "briefcase")
-                    .font(.system(size: 32))
+                    .font(.inter(32, relativeTo: .largeTitle))
                     .foregroundColor(.secondary)
                 Text("No portfolios")
                     .foregroundColor(.secondary)
@@ -38,7 +38,7 @@ struct PortfolioListView: View {
                         Image(systemName: "square.and.arrow.down")
                         Text("Import")
                     }
-                    .font(.caption)
+                    .font(.inter(10, relativeTo: .caption))
                 }
                 .buttonStyle(.borderless)
                 Spacer()
@@ -49,15 +49,15 @@ struct PortfolioListView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                     TextField("Filter portfolios…", text: $searchText)
                         .textFieldStyle(.plain)
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                     if !searchText.isEmpty {
                         Button(action: { searchText = "" }) {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(.secondary)
-                                .font(.caption)
+                                .font(.inter(10, relativeTo: .caption))
                         }
                         .buttonStyle(.borderless)
                     }
@@ -66,6 +66,43 @@ struct PortfolioListView: View {
                 .padding(.vertical, 6)
 
                 Divider()
+
+                // Grand total
+                if storageService.portfolios.count > 0 {
+                    let currSym = StorageService.currencySymbol(for: storageService.preferredCurrency)
+                    let grandTotal = grandTotalValue
+                    let grandCost = grandTotalCost
+                    let grandPnl = grandTotal - grandCost
+                    let grandPnlPct = grandCost > 0 ? (grandPnl / grandCost) * 100 : 0
+
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Total value")
+                                .font(.inter(10, relativeTo: .caption))
+                                .foregroundColor(.secondary)
+                            Text(String(format: "%.2f%@", grandTotal, currSym))
+                                .font(.inter(13, relativeTo: .body).monospacedDigit())
+                                .fontWeight(.bold)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text("P&L")
+                                .font(.inter(10, relativeTo: .caption))
+                                .foregroundColor(.secondary)
+                            HStack(spacing: 2) {
+                                Text(String(format: "%+.2f%@", grandPnl, currSym))
+                                Text(String(format: "(%.1f%%)", grandPnlPct))
+                            }
+                            .font(.inter(13, relativeTo: .body).monospacedDigit())
+                            .fontWeight(.bold)
+                            .foregroundColor(grandPnl >= 0 ? .green : .red)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+
+                    Divider()
+                }
 
                 List {
                     if showNewPortfolio {
@@ -106,7 +143,7 @@ struct PortfolioListView: View {
                             Image(systemName: "plus.circle.fill")
                             Text("New portfolio")
                         }
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                     }
                     .buttonStyle(.borderless)
 
@@ -117,7 +154,7 @@ struct PortfolioListView: View {
                             Image(systemName: "square.and.arrow.down")
                             Text("Import")
                         }
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                     }
                     .buttonStyle(.borderless)
 
@@ -126,7 +163,7 @@ struct PortfolioListView: View {
                             Image(systemName: "square.and.arrow.up")
                             Text("Export All")
                         }
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                     }
                     .buttonStyle(.borderless)
                     .disabled(storageService.portfolios.isEmpty)
@@ -142,6 +179,26 @@ struct PortfolioListView: View {
         }
     }
 
+    private var grandTotalValue: Double {
+        storageService.portfolios.reduce(0) { total, portfolio in
+            total + portfolio.holdings.reduce(0) { sum, holding in
+                guard let quote = stockService.quotes[holding.symbol] else { return sum }
+                let rate = stockService.rate(from: quote.currency)
+                return sum + holding.marketValue(currentPrice: quote.displayPrice(extendedHours: storageService.showExtendedHours)) * rate
+            }
+        }
+    }
+
+    private var grandTotalCost: Double {
+        storageService.portfolios.reduce(0) { total, portfolio in
+            total + portfolio.holdings.reduce(0) { sum, holding in
+                guard let quote = stockService.quotes[holding.symbol] else { return sum }
+                let rate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
+                return sum + (holding.avgPrice * holding.quantity) * rate
+            }
+        }
+    }
+
     private func exportPortfolios(_ portfolios: [Portfolio]) {
         guard let data = storageService.exportPortfolios(portfolios) else { return }
         let panel = NSSavePanel()
@@ -153,7 +210,8 @@ struct PortfolioListView: View {
         NSApp.activate(ignoringOtherApps: true)
         panel.begin { response in
             defer {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 500_000_000)
                     NSApp.setActivationPolicy(.accessory)
                 }
             }
@@ -171,16 +229,17 @@ struct PortfolioListView: View {
         NSApp.activate(ignoringOtherApps: true)
         panel.begin { response in
             defer {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 500_000_000)
                     NSApp.setActivationPolicy(.accessory)
                 }
             }
             guard response == .OK, let url = panel.url else { return }
             guard let data = try? Data(contentsOf: url) else {
-                DispatchQueue.main.async { self.importAlert = "Could not read file." }
+                Task { @MainActor in self.importAlert = "Could not read file." }
                 return
             }
-            DispatchQueue.main.async {
+            Task { @MainActor in
                 guard let imported = self.storageService.importPortfolios(from: data) else {
                     self.importAlert = "Invalid file format."
                     return
@@ -221,7 +280,8 @@ struct PortfolioSection: View {
         NSApp.activate(ignoringOtherApps: true)
         panel.begin { response in
             defer {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 500_000_000)
                     NSApp.setActivationPolicy(.accessory)
                 }
             }
@@ -265,22 +325,22 @@ struct PortfolioSection: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Total value")
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     Text(String(format: "%.2f%@", totalValue, currSymbol))
-                        .font(.system(.body, design: .monospaced))
+                        .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.semibold)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("P&L")
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     HStack(spacing: 2) {
                         Text(String(format: "%+.2f%@", totalPnl, currSymbol))
                         Text(String(format: "(%.1f%%)", totalPnlPercent))
                     }
-                    .font(.system(.body, design: .monospaced))
+                    .font(.inter(13, relativeTo: .body).monospacedDigit())
                     .fontWeight(.semibold)
                     .foregroundColor(totalPnl >= 0 ? .green : .red)
                 }
@@ -297,7 +357,7 @@ struct PortfolioSection: View {
                     Text("Value / P&L")
                         .frame(width: 120, alignment: .trailing)
                 }
-                .font(.system(size: 10, weight: .medium))
+                .font(.inter(10, weight: .medium, relativeTo: .caption))
                 .foregroundColor(.secondary)
                 .padding(.vertical, 1)
             }
@@ -313,7 +373,7 @@ struct PortfolioSection: View {
                     Image(systemName: "plus")
                     Text("Add holding")
                 }
-                .font(.caption)
+                .font(.inter(10, relativeTo: .caption))
                 .foregroundColor(.accentColor)
             }
             .buttonStyle(.borderless)
@@ -322,7 +382,7 @@ struct PortfolioSection: View {
                 HStack {
                     TextField("Name", text: $renameText)
                         .textFieldStyle(.roundedBorder)
-                        .font(.headline)
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
                         .onSubmit { commitRename() }
                     Button("OK") { commitRename() }
                         .buttonStyle(.borderedProminent)
@@ -332,7 +392,7 @@ struct PortfolioSection: View {
             } else {
                 HStack {
                     Text(portfolio.name)
-                        .font(.headline)
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
                     Spacer()
                 }
                 .contentShape(Rectangle())
@@ -384,10 +444,10 @@ struct HoldingRow: View {
             // Col 1: Ticker + Qty@Avg
             VStack(alignment: .leading, spacing: 1) {
                 Text(holding.symbol)
-                    .font(.system(.body, design: .monospaced))
+                    .font(.inter(13, relativeTo: .body).monospacedDigit())
                     .fontWeight(.bold)
                 Text("\(formatQty(holding.quantity))\u{00D7}\(String(format: "%.2f", holding.avgPrice))")
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(.inter(10, relativeTo: .caption).monospacedDigit())
                     .foregroundColor(.secondary)
             }
             .frame(width: 80, alignment: .leading)
@@ -402,11 +462,11 @@ struct HoldingRow: View {
                 // Col 2: Price + badge
                 HStack(spacing: 3) {
                     Text(String(format: "%.2f %@", quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, priceSymbol))
-                        .font(.system(.body, design: .monospaced))
+                        .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
                     if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
                         Text(quote.marketStateLabel)
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(.inter(9, weight: .semibold, relativeTo: .caption2))
                             .foregroundColor(.white)
                             .padding(.horizontal, 3)
                             .padding(.vertical, 1)
@@ -428,10 +488,10 @@ struct HoldingRow: View {
 
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(String(format: "%.2f%@", marketVal, prefSymbol))
-                        .font(.system(.body, design: .monospaced))
+                        .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
                     Text(String(format: "%+.2f%@ (%.1f%%)", pnl, prefSymbol, pnlPct))
-                        .font(.system(.caption, design: .monospaced))
+                        .font(.inter(10, relativeTo: .caption).monospacedDigit())
                         .foregroundColor(pnl >= 0 ? .green : .red)
                 }
                 .frame(width: 120, alignment: .trailing)
@@ -493,7 +553,7 @@ struct EditHoldingView: View {
         VStack(spacing: 12) {
             HStack {
                 Text("Edit \(holding.symbol)")
-                    .font(.headline)
+                    .font(.inter(13, weight: .bold, relativeTo: .headline))
                 Spacer()
                 Button("Close") { isPresented = nil }
                     .buttonStyle(.borderless)
@@ -504,14 +564,14 @@ struct EditHoldingView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading) {
                     Text("Quantity")
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     TextField("0", text: $quantityText)
                         .textFieldStyle(.roundedBorder)
                 }
                 VStack(alignment: .leading) {
                     Text("Avg price")
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     TextField("0.00", text: $avgPriceText)
                         .textFieldStyle(.roundedBorder)
@@ -521,7 +581,7 @@ struct EditHoldingView: View {
 
             VStack(alignment: .leading) {
                 Text("Purchase date")
-                    .font(.caption)
+                    .font(.inter(10, relativeTo: .caption))
                     .foregroundColor(.secondary)
                 DatePicker("", selection: $purchaseDate, displayedComponents: .date)
                     .datePickerStyle(.compact)
@@ -534,7 +594,7 @@ struct EditHoldingView: View {
                 let prefSym = StorageService.currencySymbol(for: storageService.preferredCurrency)
                 let dateStr = Self.dateFormatter.string(from: purchaseDate)
                 Text("Cost basis: \(String(format: "%.2f", info.costInPreferred))\(prefSym) (\(String(format: "%.2f", info.costInStock))\(stockSym) × \(String(format: "%.4f", info.rate)) on \(dateStr))")
-                    .font(.caption)
+                    .font(.inter(10, relativeTo: .caption))
                     .foregroundColor(.secondary)
                     .padding(.horizontal)
             }

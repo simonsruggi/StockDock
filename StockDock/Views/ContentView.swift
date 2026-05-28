@@ -65,6 +65,12 @@ struct ContentView: View {
             }
         }
         .frame(width: 380, height: 520)
+        .onAppear {
+            selectedTab = Tab(rawValue: storageService.lastSelectedTab) ?? .watchlist
+        }
+        .onChange(of: selectedTab) { _, newValue in
+            storageService.lastSelectedTab = newValue.rawValue
+        }
         .onReceive(NotificationCenter.default.publisher(for: .popoverDidClose)) { _ in
             showSearch = false
             addHoldingPortfolioId = nil
@@ -77,7 +83,7 @@ struct ContentView: View {
             // Header
             HStack {
                 Text("StockDock")
-                    .font(.headline)
+                    .font(.inter(13, weight: .bold, relativeTo: .headline))
                     .fontWeight(.bold)
 
                 Spacer()
@@ -94,13 +100,14 @@ struct ContentView: View {
                     }
                 }) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 12))
+                        .font(.inter(12, relativeTo: .callout))
                 }
                 .buttonStyle(.borderless)
+                .disabled(stockService.isLoading)
 
                 Button(action: { NSApp.terminate(nil) }) {
                     Image(systemName: "power")
-                        .font(.system(size: 11))
+                        .font(.inter(11, relativeTo: .subheadline))
                 }
                 .buttonStyle(.borderless)
                 .help("Quit StockDock")

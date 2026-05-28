@@ -18,7 +18,8 @@ let package = Package(
             path: "StockDock",
             resources: [
                 .process("Assets.xcassets"),
-                .copy("Resources/AppIcon.icns")
+                .copy("Resources/AppIcon.icns"),
+                .copy("Fonts/InterVariable.ttf")
             ]
         ),
     ]

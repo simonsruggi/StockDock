@@ -34,8 +34,8 @@ final class UpdaterViewModel: ObservableObject {
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
-    private var statusItem: NSStatusItem!
-    var popover: NSPopover!
+    private var statusItem: NSStatusItem?
+    private var popover: NSPopover?
     private var stockService = StockService.shared
     private var storageService = StorageService.shared
     private var webSocketService = WebSocketService.shared
@@ -46,6 +46,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var refreshTask: Task<Void, Never>?
     private var pendingTicks: [Yaticker] = []
     private var tickBatchTimer: Timer?
+    private var tickerTimer: Timer?
     private var storageServiceObserver: AnyCancellable?
     private var symbolsObserver: AnyCancellable?
     let updaterViewModel = UpdaterViewModel()
@@ -54,21 +55,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private static let restPollingInterval: TimeInterval = 60
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        FontRegistration.registerFonts()
+
         // Hide dock icon
         NSApp.setActivationPolicy(.accessory)
 
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
 
-        if let button = statusItem.button {
+        if let button = statusItem?.button {
             button.image = NSImage(systemSymbolName: "chart.line.uptrend.xyaxis", accessibilityDescription: "StockDock")
             button.action = #selector(togglePopover)
             button.target = self
         }
 
-        popover = NSPopover()
-        popover.contentSize = NSSize(width: 380, height: 580)
-        popover.behavior = .transient
-        popover.delegate = self
+        let p = NSPopover()
+        p.contentSize = NSSize(width: 380, height: 520)
+        p.behavior = .transient
+        p.delegate = self
+        popover = p
 
         refreshTask = Task {
             isRefreshing = true
@@ -110,8 +114,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self, !self.isRefreshing else { return }
                 let symbols = Array(self.collectSymbols())
                 self.webSocketService.updateSymbols(symbols)
+                self.refreshTask?.cancel()
                 self.isRefreshing = true
-                Task { @MainActor in
+                self.refreshTask = Task { @MainActor in
                     defer { self.isRefreshing = false }
                     await self.stockService.refreshAll(storageService: self.storageService)
                     self.updateMenuBarTitle()
@@ -125,8 +130,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         timer = nil
         tickBatchTimer?.invalidate()
         tickBatchTimer = nil
+        tickerTimer?.invalidate()
+        tickerTimer = nil
         webSocketService.disconnect()
         NSWorkspace.shared.notificationCenter.removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: - WebSocket
@@ -190,6 +198,25 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
 
+    // MARK: - Ticker Cycling
+
+    private func startTickerTimer() {
+        guard tickerTimer == nil else { return }
+        tickerTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                self.tickerIndex += 1
+                self.updateMenuBarTitle()
+            }
+        }
+    }
+
+    private func stopTickerTimer() {
+        tickerTimer?.invalidate()
+        tickerTimer = nil
+        tickerIndex = 0
+    }
+
     // MARK: - REST Polling (exchange rates + fallback)
 
     private func scheduleRESTPolling() {
@@ -213,9 +240,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func handleSleep() {
         timer?.invalidate()
         timer = nil
+        tickBatchTimer?.invalidate()
+        tickBatchTimer = nil
         refreshTask?.cancel()
         refreshTask = nil
         isRefreshing = false
+        tickerTimer?.invalidate()
+        tickerTimer = nil
+        pendingTicks.removeAll()
         webSocketService.disconnect()
     }
 
@@ -232,14 +264,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         scheduleRESTPolling()
     }
 
+    private var menuBarFontSize: CGFloat {
+        CGFloat(storageService.fontSizeLevel) + 5
+    }
+
     private func updateMenuBarTitle() {
         let displayMode = storageService.menuBarDisplay
 
+        if displayMode == "ticker" {
+            if tickerTimer == nil { startTickerTimer() }
+        } else {
+            stopTickerTimer()
+        }
+
         // Icon only
         if displayMode == "icon" {
-            statusItem.button?.attributedTitle = NSAttributedString(string: "")
-            statusItem.button?.title = ""
-            statusItem.button?.image = NSImage(systemSymbolName: "chart.line.uptrend.xyaxis", accessibilityDescription: "StockDock")
+            statusItem?.button?.attributedTitle = NSAttributedString(string: "")
+            statusItem?.button?.title = ""
+            statusItem?.button?.image = NSImage(systemSymbolName: "chart.line.uptrend.xyaxis", accessibilityDescription: "StockDock")
             return
         }
 
@@ -307,14 +349,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
 
         case "bestWorst":
-            if let best = bestStock, let worst = worstStock {
+            if let best = bestStock, let worst = worstStock, best.symbol != worst.symbol {
                 let bSign = best.changePercent >= 0 ? "+" : ""
                 let wSign = worst.changePercent >= 0 ? "+" : ""
                 title = " ▲\(best.symbol) \(bSign)\(String(format: "%.1f", best.changePercent))%  ▼\(worst.symbol) \(wSign)\(String(format: "%.1f", worst.changePercent))%"
                 color = .labelColor
+            } else if let best = bestStock {
+                let sign = best.changePercent >= 0 ? "+" : ""
+                title = " \(best.symbol) \(sign)\(String(format: "%.1f", best.changePercent))%"
+                color = best.changePercent >= 0 ? .systemGreen : .systemRed
             } else {
                 title = " --"
                 color = .secondaryLabelColor
+            }
+
+        case "portfolioRecap":
+            let sign = totalPnlPct >= 0 ? "+" : ""
+            title = " \(String(format: "%.2f", totalValue))\(currSymbol) \(sign)\(String(format: "%.1f", totalPnlPct))%"
+            color = totalPnl >= 0 ? .systemGreen : .systemRed
+
+        case "ticker":
+            let symbols = storageService.watchlist
+            if symbols.isEmpty {
+                title = " --"
+                color = .secondaryLabelColor
+            } else {
+                let index = tickerIndex % symbols.count
+                let symbol = symbols[index]
+                if let quote = stockService.quotes[symbol] {
+                    let pRate = stockService.priceRate(from: quote.currency)
+                    let priceCurr = storageService.stockPriceCurrency
+                    let sym = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
+                    let sign = quote.changePercent >= 0 ? "+" : ""
+                    title = " \(quote.symbol) \(String(format: "%.2f", quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate))\(sym) \(sign)\(String(format: "%.1f", quote.changePercent))%"
+                    color = quote.changePercent >= 0 ? .systemGreen : .systemRed
+                } else {
+                    title = " \(symbol)"
+                    color = .secondaryLabelColor
+                }
             }
 
         default: // "pnl"
@@ -323,14 +395,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             color = totalPnl >= 0 ? .systemGreen : .systemRed
         }
 
-        statusItem.button?.image = nil
-        statusItem.button?.title = title
+        statusItem?.button?.image = nil
+        statusItem?.button?.title = title
 
         let attrs: [NSAttributedString.Key: Any] = [
             .foregroundColor: color,
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .medium)
+            .font: FontRegistration.monospacedDigitsFont(size: menuBarFontSize, weight: .medium)
         ]
-        statusItem.button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
+        statusItem?.button?.attributedTitle = NSAttributedString(string: title, attributes: attrs)
     }
 
     @objc private func handlePopoverClosed() {
@@ -340,7 +412,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func togglePopover() {
-        guard let button = statusItem.button else { return }
+        guard let button = statusItem?.button, let popover else { return }
         if popover.isShown {
             closePopover()
         } else {
@@ -360,7 +432,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func closePopover() {
-        popover.performClose(nil)
+        popover?.performClose(nil)
     }
 }
 
@@ -368,7 +440,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension AppDelegate: NSPopoverDelegate {
     func popoverDidClose(_ notification: Notification) {
-        popover.contentViewController = nil
+        popover?.contentViewController = nil
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
             eventMonitor = nil

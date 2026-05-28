@@ -10,6 +10,9 @@ struct StockQuote: Identifiable, Codable {
     let marketState: String
 
     // Extended hours
+    let dayHigh: Double?
+    let dayLow: Double?
+
     let preMarketPrice: Double?
     let preMarketChange: Double?
     let preMarketChangePercent: Double?

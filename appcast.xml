@@ -11,10 +11,161 @@
             <sparkle:version>7</sparkle:version>
             <sparkle:shortVersionString>1.2.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>
+                    body { font-family: -apple-system, sans-serif; font-size: 13px; line-height: 1.6; }
+                    h3 { margin: 14px 0 6px 0; font-size: 15px; }
+                    ul { padding-left: 20px; margin: 4px 0; }
+                    li { margin-bottom: 4px; }
+                </style>
+                <h3>Fixed</h3>
+                <ul>
+                    <li>Popover: fixed gap below menu bar by using zero-height rect anchor</li>
+                    <li>Thread safety: import callback and debounce Task now run on @MainActor</li>
+                    <li>Validation: added qty &gt; 0 and price &gt; 0 checks on all holding forms</li>
+                    <li>ISIN: tightened heuristic to exactly 12 characters</li>
+                    <li>Removed all debug print() statements</li>
+                </ul>
+                <h3>Changed</h3>
+                <ul>
+                    <li>Portfolio tab: standardized font sizes to match watchlist tab</li>
+                    <li>Exchange rates: added bounds checks on pair parsing</li>
+                    <li>Performance: DateFormatter is now a static let (avoids re-allocation per render)</li>
+                </ul>
+            ]]></description>
             <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.2.1/StockDock.zip"
                        type="application/octet-stream"
                        sparkle:edSignature="m6zoCzfI4NEqPmF0lSQj0StPwoAsMWOvtBU+p+XDiXuvAE6kJjYTwHemHuJOMkDy+5+udpFdY1KzGd1/H2xJBg=="
                        length="3926134"/>
+        </item>
+        <item>
+            <title>Version 1.2.0</title>
+            <pubDate>Sun, 25 May 2026 20:48:55 +0200</pubDate>
+            <sparkle:version>6</sparkle:version>
+            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>
+                    body { font-family: -apple-system, sans-serif; font-size: 13px; line-height: 1.6; }
+                    h3 { margin: 14px 0 6px 0; font-size: 15px; }
+                    ul { padding-left: 20px; margin: 4px 0; }
+                    li { margin-bottom: 4px; }
+                </style>
+                <h3>New</h3>
+                <ul>
+                    <li>Universal binary (arm64 + x86_64): StockDock now runs natively on Intel Macs</li>
+                </ul>
+            ]]></description>
+        </item>
+        <item>
+            <title>Version 1.1.1</title>
+            <pubDate>Mon, 19 May 2026 18:21:01 +0200</pubDate>
+            <sparkle:version>5</sparkle:version>
+            <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>
+                    body { font-family: -apple-system, sans-serif; font-size: 13px; line-height: 1.6; }
+                    h3 { margin: 14px 0 6px 0; font-size: 15px; }
+                    ul { padding-left: 20px; margin: 4px 0; }
+                    li { margin-bottom: 4px; }
+                </style>
+                <h3>Fixed</h3>
+                <ul>
+                    <li>Real-time balance: REST polling now refreshes quotes every 60s as fallback for non-US stocks that don't receive WebSocket ticks</li>
+                    <li>Sparkle: skip initialization when SUFeedURL is missing, preventing crash in dev mode</li>
+                </ul>
+            ]]></description>
+        </item>
+        <item>
+            <title>Version 1.1.0</title>
+            <pubDate>Thu, 15 May 2026 18:00:12 +0200</pubDate>
+            <sparkle:version>4</sparkle:version>
+            <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>
+                    body { font-family: -apple-system, sans-serif; font-size: 13px; line-height: 1.6; }
+                    h3 { margin: 14px 0 6px 0; font-size: 15px; }
+                    ul { padding-left: 20px; margin: 4px 0; }
+                    li { margin-bottom: 4px; }
+                </style>
+                <h3>New</h3>
+                <ul>
+                    <li>Portfolio export: save all portfolios or a single one to a JSON file</li>
+                    <li>Portfolio import: load portfolios from JSON with automatic UUID regeneration and duplicate name handling</li>
+                </ul>
+            ]]></description>
+        </item>
+        <item>
+            <title>Version 1.0.2</title>
+            <pubDate>Wed, 14 May 2026 20:50:59 +0200</pubDate>
+            <sparkle:version>3</sparkle:version>
+            <sparkle:shortVersionString>1.0.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>
+                    body { font-family: -apple-system, sans-serif; font-size: 13px; line-height: 1.6; }
+                    h3 { margin: 14px 0 6px 0; font-size: 15px; }
+                    ul { padding-left: 20px; margin: 4px 0; }
+                    li { margin-bottom: 4px; }
+                </style>
+                <h3>Fixed</h3>
+                <ul>
+                    <li>Sparkle: added Frameworks rpath so the auto-update framework loads correctly at runtime</li>
+                </ul>
+            ]]></description>
+        </item>
+        <item>
+            <title>Version 1.0.1</title>
+            <pubDate>Wed, 14 May 2026 12:28:19 +0200</pubDate>
+            <sparkle:version>2</sparkle:version>
+            <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>
+                    body { font-family: -apple-system, sans-serif; font-size: 13px; line-height: 1.6; }
+                    h3 { margin: 14px 0 6px 0; font-size: 15px; }
+                    ul { padding-left: 20px; margin: 4px 0; }
+                    li { margin-bottom: 4px; }
+                </style>
+                <h3>Fixed</h3>
+                <ul>
+                    <li>Sparkle: Check for Updates button now works correctly</li>
+                    <li>Memory: reduced footprint by disabling URLSession cache on StockService and WebSocketService</li>
+                    <li>Popover: contentViewController created on open and released on close, preventing memory leaks</li>
+                    <li>Event monitor: fixed cleanup for transient popover auto-close path</li>
+                </ul>
+                <h3>Changed</h3>
+                <ul>
+                    <li>App icon updated from SB to SD branding</li>
+                </ul>
+            ]]></description>
+        </item>
+        <item>
+            <title>Version 1.0</title>
+            <pubDate>Tue, 13 May 2026 15:26:42 +0200</pubDate>
+            <sparkle:version>1</sparkle:version>
+            <sparkle:shortVersionString>1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>
+                    body { font-family: -apple-system, sans-serif; font-size: 13px; line-height: 1.6; }
+                    h3 { margin: 14px 0 6px 0; font-size: 15px; }
+                    ul { padding-left: 20px; margin: 4px 0; }
+                    li { margin-bottom: 4px; }
+                </style>
+                <h3>New</h3>
+                <ul>
+                    <li>Real-time stock prices via Yahoo Finance WebSocket</li>
+                    <li>Multiple portfolios with P&amp;L tracking in your preferred currency</li>
+                    <li>Watchlist with daily performance sorting</li>
+                    <li>Currency conversion with historical exchange rates for accurate cost basis</li>
+                    <li>Extended hours support (pre-market &amp; after-hours prices)</li>
+                    <li>8 customizable menu bar display modes (P&amp;L, Total Value, Best/Worst Stock, Ticker, Icon Only)</li>
+                    <li>Sparkle auto-update built in</li>
+                </ul>
+            ]]></description>
         </item>
     </channel>
 </rss>

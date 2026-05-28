@@ -19,7 +19,7 @@ struct AddHoldingView: View {
         VStack(spacing: 12) {
             HStack {
                 Text("Add holding")
-                    .font(.headline)
+                    .font(.inter(13, weight: .bold, relativeTo: .headline))
                 Spacer()
                 Button("Close") { isPresented = nil }
                     .buttonStyle(.borderless)
@@ -31,7 +31,7 @@ struct AddHoldingView: View {
             if let selected = selectedSymbol {
                 HStack {
                     Text(selected)
-                        .font(.system(.body, design: .monospaced))
+                        .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.semibold)
                     Spacer()
                     Button(action: {
@@ -72,12 +72,15 @@ struct AddHoldingView: View {
                             searchTask?.cancel()
                             selectedSymbol = result.symbol
                             searchResults = []
+                            if let quote = stockService.quotes[result.symbol] {
+                                avgPriceText = String(format: "%.2f", quote.price)
+                            }
                         }) {
                             HStack {
                                 Text(result.symbol)
                                     .fontWeight(.semibold)
                                 Text(result.name)
-                                    .font(.caption)
+                                    .font(.inter(10, relativeTo: .caption))
                                     .foregroundColor(.secondary)
                                     .lineLimit(1)
                             }
@@ -93,14 +96,14 @@ struct AddHoldingView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading) {
                     Text("Quantity")
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     TextField("0", text: $quantityText)
                         .textFieldStyle(.roundedBorder)
                 }
                 VStack(alignment: .leading) {
                     Text("Avg price")
-                        .font(.caption)
+                        .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     TextField("0.00", text: $avgPriceText)
                         .textFieldStyle(.roundedBorder)
@@ -110,7 +113,7 @@ struct AddHoldingView: View {
 
             VStack(alignment: .leading) {
                 Text("Purchase date")
-                    .font(.caption)
+                    .font(.inter(10, relativeTo: .caption))
                     .foregroundColor(.secondary)
                 DatePicker("", selection: $purchaseDate, displayedComponents: .date)
                     .datePickerStyle(.compact)

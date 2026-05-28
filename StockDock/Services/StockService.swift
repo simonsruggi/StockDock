@@ -223,6 +223,8 @@ class StockService: ObservableObject {
                     changePercent: changePercent,
                     currency: q.currency ?? "USD",
                     marketState: marketState,
+                    dayHigh: q.regularMarketDayHigh,
+                    dayLow: q.regularMarketDayLow,
                     preMarketPrice: q.preMarketPrice,
                     preMarketChange: preChg,
                     preMarketChangePercent: prePct,
@@ -327,6 +329,8 @@ class StockService: ObservableObject {
                 changePercent: changePercent,
                 currency: meta.currency ?? "USD",
                 marketState: marketState,
+                dayHigh: nil,
+                dayLow: nil,
                 preMarketPrice: preMarketPrice,
                 preMarketChange: preChg,
                 preMarketChangePercent: prePct,
@@ -388,7 +392,7 @@ class StockService: ObservableObject {
                   !closes.isEmpty
             else { return }
             let validCloses = closes.compactMap { $0 }
-            guard let rate = validCloses.first ?? validCloses.last else { return }
+            guard let rate = validCloses.first else { return }
             historicalRates["\(from)\(to):\(dateTimestamp)"] = rate
         } catch {
         }
@@ -435,6 +439,8 @@ class StockService: ObservableObject {
             changePercent: changePercent,
             currency: ticker.currency.isEmpty ? (existing?.currency ?? "USD") : ticker.currency,
             marketState: marketState,
+            dayHigh: existing?.dayHigh,
+            dayLow: existing?.dayLow,
             preMarketPrice: marketState == "PRE" ? price : existing?.preMarketPrice,
             preMarketChange: marketState == "PRE" ? change : existing?.preMarketChange,
             preMarketChangePercent: marketState == "PRE" ? changePercent : existing?.preMarketChangePercent,
@@ -534,6 +540,8 @@ private struct YahooV7Response: Codable {
         let regularMarketChangePercent: Double?
         let regularMarketPreviousClose: Double?
         let marketState: String?
+        let regularMarketDayHigh: Double?
+        let regularMarketDayLow: Double?
         let preMarketPrice: Double?
         let postMarketPrice: Double?
     }

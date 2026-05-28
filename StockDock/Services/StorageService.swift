@@ -34,9 +34,25 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    @Published var fontSizeLevel: Int = 9 {
+        didSet {
+            FontRegistration.sizeOffset = CGFloat(fontSizeLevel - 9)
+            scheduleSave()
+        }
+    }
+
+    @Published var fontFamily: String = "Inter Variable" {
+        didSet {
+            FontRegistration.familyName = fontFamily
+            scheduleSave()
+        }
+    }
+
     func setISIN(_ isin: String, for symbol: String) {
         isinMap[symbol] = isin
     }
+
+    var lastSelectedTab: String = "Watchlist"
 
     static let supportedCurrencies = ["EUR", "USD", "GBP", "CHF", "JPY", "CAD", "AUD"]
 
@@ -58,7 +74,11 @@ class StorageService: ObservableObject {
     private var saveTask: Task<Void, Never>?
 
     private init() {
-        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { fatalError("No Application Support directory") }
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            let fallback = FileManager.default.temporaryDirectory
+            self.fileURL = fallback.appendingPathComponent("StockDock_data.json")
+            return
+        }
         let dir = appSupport.appendingPathComponent("StockDock", isDirectory: true)
         let oldDir = appSupport.appendingPathComponent("StockBar", isDirectory: true)
         if FileManager.default.fileExists(atPath: oldDir.path) && !FileManager.default.fileExists(atPath: dir.path) {
@@ -121,6 +141,16 @@ class StorageService: ObservableObject {
         portfolios[pIndex].holdings[hIndex].purchaseDate = purchaseDate
     }
 
+    func resetToDefaults() {
+        preferredCurrency = "EUR"
+        stockPriceCurrency = ""
+        showExtendedHours = true
+        menuBarDisplay = "pnl"
+        fontSizeLevel = 9
+        fontFamily = "Inter Variable"
+        lastSelectedTab = "Watchlist"
+    }
+
     // MARK: - Export / Import
 
     struct PortfolioExport: Codable {
@@ -172,6 +202,8 @@ class StorageService: ObservableObject {
         var showExtendedHours: Bool?
         var menuBarDisplay: String?
         var isinMap: [String: String]?
+        var fontSizeLevel: Int?
+        var fontFamily: String?
     }
 
     private func scheduleSave() {
@@ -185,7 +217,7 @@ class StorageService: ObservableObject {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -212,6 +244,10 @@ class StorageService: ObservableObject {
             showExtendedHours = decoded.showExtendedHours ?? true
             menuBarDisplay = decoded.menuBarDisplay ?? "pnl"
             isinMap = decoded.isinMap ?? [:]
+            fontSizeLevel = decoded.fontSizeLevel ?? 9
+            fontFamily = decoded.fontFamily ?? "Inter Variable"
+            FontRegistration.familyName = fontFamily
+            FontRegistration.sizeOffset = CGFloat(fontSizeLevel - 9)
         } catch {
             // First launch or corrupted file — defaults are used
         }
