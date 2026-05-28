@@ -21,8 +21,8 @@
                 <h3>New</h3>
                 <ul>
                     <li>Inter font: bundled Inter Variable as default app font</li>
-                    <li>Font customization: pick from 15 font families and adjust size (7–13) in Settings</li>
-                    <li>3-column watchlist: Symbol, Price (with day range), and Change — click headers to sort</li>
+                    <li>Font customization: pick from 15 font families and adjust size (7-13) in Settings</li>
+                    <li>3-column watchlist: Symbol, Price (with day range), and Change - click headers to sort</li>
                     <li>Grand total: combined value and P&amp;L across all portfolios shown at the top</li>
                     <li>Ticker mode: menu bar cycles through watchlist stocks every 5 seconds</li>
                     <li>Portfolio recap mode: menu bar shows total portfolio value + P&amp;L %</li>
@@ -36,12 +36,12 @@
                     <li>Replaced fatalError crash with fallback when Application Support is unavailable</li>
                     <li>Converted force-unwrapped properties to safe Optionals</li>
                     <li>Fixed tick batch timer not invalidated on system sleep</li>
-                    <li>Fixed popover height mismatch (580 → 520)</li>
+                    <li>Fixed popover height mismatch</li>
                     <li>Avg price now pre-filled when adding a holding</li>
                     <li>Absolute change in watchlist now colored green/red</li>
-                    <li>Fixed Best &amp; Worst display with single watchlist stock</li>
+                    <li>Fixed Best and Worst display with single watchlist stock</li>
                     <li>Fixed isRefreshing race condition</li>
-                    <li>Thread safety: panel callbacks now use Task { @MainActor in } instead of DispatchQueue</li>
+                    <li>Thread safety: panel callbacks now use Task instead of DispatchQueue</li>
                     <li>Added NotificationCenter observer cleanup on app terminate</li>
                 </ul>
             ]]></description>
@@ -49,112 +49,6 @@
                        type="application/octet-stream"
                        sparkle:edSignature="rb6q5Qgw4GyrSGCHEIhfIj60jfKSQendLDL9N2NYAIbIlK1bFnz7kjm3kJsns1lzdI5mERwnaJ1co1SUI0AtBA=="
                        length="4763728"/>
-        </item>
-        <item>
-            <title>Version 1.2.1</title>
-            <sparkle:version>7</sparkle:version>
-            <sparkle:shortVersionString>1.2.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <style>body{font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6}h3{margin:14px 0 6px 0;font-size:15px}ul{padding-left:20px;margin:4px 0}li{margin-bottom:4px}</style>
-                <h3>Fixed</h3>
-                <ul>
-                    <li>Popover: fixed gap below menu bar</li>
-                    <li>Thread safety: import callback and debounce Task now run on @MainActor</li>
-                    <li>Validation: added qty &gt; 0 and price &gt; 0 checks on all holding forms</li>
-                    <li>Removed all debug print() statements</li>
-                </ul>
-                <h3>Changed</h3>
-                <ul>
-                    <li>Portfolio tab: standardized font sizes to match watchlist tab</li>
-                </ul>
-            ]]></description>
-        </item>
-        <item>
-            <title>Version 1.2.0</title>
-            <sparkle:version>6</sparkle:version>
-            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <style>body{font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6}h3{margin:14px 0 6px 0;font-size:15px}ul{padding-left:20px;margin:4px 0}li{margin-bottom:4px}</style>
-                <h3>New</h3>
-                <ul><li>Universal binary (arm64 + x86_64): now runs natively on Intel Macs</li></ul>
-            ]]></description>
-        </item>
-        <item>
-            <title>Version 1.1.1</title>
-            <sparkle:version>5</sparkle:version>
-            <sparkle:shortVersionString>1.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <style>body{font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6}h3{margin:14px 0 6px 0;font-size:15px}ul{padding-left:20px;margin:4px 0}li{margin-bottom:4px}</style>
-                <h3>Fixed</h3>
-                <ul>
-                    <li>Real-time balance: REST polling now refreshes quotes every 60s as fallback</li>
-                    <li>Sparkle: skip initialization when SUFeedURL is missing, preventing crash in dev mode</li>
-                </ul>
-            ]]></description>
-        </item>
-        <item>
-            <title>Version 1.1.0</title>
-            <sparkle:version>4</sparkle:version>
-            <sparkle:shortVersionString>1.1.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <style>body{font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6}h3{margin:14px 0 6px 0;font-size:15px}ul{padding-left:20px;margin:4px 0}li{margin-bottom:4px}</style>
-                <h3>New</h3>
-                <ul>
-                    <li>Portfolio export: save all portfolios or a single one to a JSON file</li>
-                    <li>Portfolio import: load portfolios from JSON with UUID regeneration and duplicate name handling</li>
-                </ul>
-            ]]></description>
-        </item>
-        <item>
-            <title>Version 1.0.2</title>
-            <sparkle:version>3</sparkle:version>
-            <sparkle:shortVersionString>1.0.2</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <style>body{font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6}h3{margin:14px 0 6px 0;font-size:15px}ul{padding-left:20px;margin:4px 0}li{margin-bottom:4px}</style>
-                <h3>Fixed</h3>
-                <ul><li>Sparkle: added Frameworks rpath so auto-update framework loads correctly</li></ul>
-            ]]></description>
-        </item>
-        <item>
-            <title>Version 1.0.1</title>
-            <sparkle:version>2</sparkle:version>
-            <sparkle:shortVersionString>1.0.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <style>body{font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6}h3{margin:14px 0 6px 0;font-size:15px}ul{padding-left:20px;margin:4px 0}li{margin-bottom:4px}</style>
-                <h3>Fixed</h3>
-                <ul>
-                    <li>Sparkle: Check for Updates button now works correctly</li>
-                    <li>Memory: reduced footprint by disabling URLSession cache</li>
-                    <li>Popover: contentViewController released on close, preventing memory leaks</li>
-                </ul>
-                <h3>Changed</h3>
-                <ul><li>App icon updated from SB to SD branding</li></ul>
-            ]]></description>
-        </item>
-        <item>
-            <title>Version 1.0</title>
-            <sparkle:version>1</sparkle:version>
-            <sparkle:shortVersionString>1.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <description><![CDATA[
-                <style>body{font-family:-apple-system,sans-serif;font-size:13px;line-height:1.6}h3{margin:14px 0 6px 0;font-size:15px}ul{padding-left:20px;margin:4px 0}li{margin-bottom:4px}</style>
-                <h3>New</h3>
-                <ul>
-                    <li>Real-time stock prices via Yahoo Finance WebSocket</li>
-                    <li>Multiple portfolios with P&amp;L tracking in your preferred currency</li>
-                    <li>Watchlist with daily performance sorting</li>
-                    <li>Currency conversion with historical exchange rates</li>
-                    <li>Extended hours support (pre-market &amp; after-hours)</li>
-                    <li>8 customizable menu bar display modes</li>
-                    <li>Sparkle auto-update built in</li>
-                </ul>
-            ]]></description>
         </item>
     </channel>
 </rss>
