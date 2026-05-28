@@ -81,14 +81,14 @@ struct ContentView: View {
                     Text("StockDock")
                         .font(.inter(13, weight: .bold, relativeTo: .headline))
                         .fontWeight(.bold)
-                    #if DEBUG
-                    Text("DEV")
-                        .font(.inter(8, weight: .bold, relativeTo: .caption2))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 1)
-                        .background(RoundedRectangle(cornerRadius: 3).fill(.orange))
-                    #endif
+                    if Bundle.main.infoDictionary?["SUFeedURL"] == nil {
+                        Text("DEV")
+                            .font(.inter(8, weight: .bold, relativeTo: .caption2))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 1)
+                            .background(RoundedRectangle(cornerRadius: 3).fill(.orange))
+                    }
                 }
 
                 Spacer()

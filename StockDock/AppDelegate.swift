@@ -7,8 +7,18 @@ extension Notification.Name {
     static let popoverDidClose = Notification.Name("popoverDidClose")
 }
 
+final class SparkleDelegate: NSObject, SPUUpdaterDelegate {
+    func updater(_ updater: SPUUpdater, didFinishLoading appcast: SUAppcast) {
+        NSLog("[Sparkle] Appcast loaded OK, %d items", appcast.items.count)
+    }
+    func updater(_ updater: SPUUpdater, didAbortWithError error: Error) {
+        NSLog("[Sparkle] Aborted: %@", error.localizedDescription)
+    }
+}
+
 final class UpdaterViewModel: ObservableObject {
     private let controller: SPUStandardUpdaterController?
+    private let sparkleDelegate = SparkleDelegate()
 
     var canCheckForUpdates: Bool {
         controller?.updater.canCheckForUpdates ?? false
@@ -20,7 +30,7 @@ final class UpdaterViewModel: ObservableObject {
 
     init() {
         if Bundle.main.infoDictionary?["SUFeedURL"] != nil {
-            let c = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+            let c = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: sparkleDelegate, userDriverDelegate: nil)
             self.controller = c
         } else {
             self.controller = nil
@@ -445,7 +455,10 @@ extension AppDelegate: NSPopoverDelegate {
             NSEvent.removeMonitor(monitor)
             eventMonitor = nil
         }
-        NSApp.setActivationPolicy(.accessory)
+        let hasOtherWindows = NSApp.windows.contains { $0.isVisible && $0.className != "_NSPopoverWindow" }
+        if !hasOtherWindows {
+            NSApp.setActivationPolicy(.accessory)
+        }
         NotificationCenter.default.post(name: .popoverDidClose, object: nil)
     }
 }

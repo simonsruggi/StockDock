@@ -8,6 +8,40 @@
             <sparkle:version>8</sparkle:version>
             <sparkle:shortVersionString>1.3.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <description><![CDATA[
+                <style>
+                    body { font-family: -apple-system, sans-serif; font-size: 13px; line-height: 1.6; }
+                    h3 { margin: 14px 0 6px 0; font-size: 15px; }
+                    ul { padding-left: 20px; margin: 4px 0; }
+                    li { margin-bottom: 4px; }
+                </style>
+                <h3>New</h3>
+                <ul>
+                    <li>Inter font: bundled Inter Variable as default app font</li>
+                    <li>Font customization: pick from 15 font families and adjust size (7-13) in Settings</li>
+                    <li>3-column watchlist: Symbol, Price (with day range), and Change - click headers to sort</li>
+                    <li>Grand total: combined value and P&amp;L across all portfolios shown at the top</li>
+                    <li>Ticker mode: menu bar cycles through watchlist stocks every 5 seconds</li>
+                    <li>Portfolio recap mode: menu bar shows total portfolio value + P&amp;L %</li>
+                    <li>Search results now show asset type badge (EQUITY, ETF, MUTUALFUND, etc.)</li>
+                    <li>Reset to Default Settings with confirmation (preserves watchlist &amp; portfolios)</li>
+                    <li>Tab persistence: reopening the popover restores the last viewed tab</li>
+                    <li>Release notes in Sparkle update dialog</li>
+                </ul>
+                <h3>Fixed</h3>
+                <ul>
+                    <li>Replaced fatalError crash with fallback when Application Support is unavailable</li>
+                    <li>Converted force-unwrapped properties to safe Optionals</li>
+                    <li>Fixed tick batch timer not invalidated on system sleep</li>
+                    <li>Fixed popover height mismatch</li>
+                    <li>Avg price now pre-filled when adding a holding</li>
+                    <li>Absolute change in watchlist now colored green/red</li>
+                    <li>Fixed Best and Worst display with single watchlist stock</li>
+                    <li>Fixed isRefreshing race condition</li>
+                    <li>Thread safety: panel callbacks now use Task instead of DispatchQueue</li>
+                    <li>Added NotificationCenter observer cleanup on app terminate</li>
+                </ul>
+            ]]></description>
             <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.3.0/StockDock.zip"
                        type="application/octet-stream"
                        sparkle:edSignature="rb6q5Qgw4GyrSGCHEIhfIj60jfKSQendLDL9N2NYAIbIlK1bFnz7kjm3kJsns1lzdI5mERwnaJ1co1SUI0AtBA=="
