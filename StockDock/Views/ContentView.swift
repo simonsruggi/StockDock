@@ -71,20 +71,25 @@ struct ContentView: View {
         .onChange(of: selectedTab) { _, newValue in
             storageService.lastSelectedTab = newValue.rawValue
         }
-        .onReceive(NotificationCenter.default.publisher(for: .popoverDidClose)) { _ in
-            showSearch = false
-            addHoldingPortfolioId = nil
-            editHolding = nil
-        }
     }
 
     private var mainContent: some View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                Text("StockDock")
-                    .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    .fontWeight(.bold)
+                HStack(spacing: 4) {
+                    Text("StockDock")
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                        .fontWeight(.bold)
+                    #if DEBUG
+                    Text("DEV")
+                        .font(.inter(8, weight: .bold, relativeTo: .caption2))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1)
+                        .background(RoundedRectangle(cornerRadius: 3).fill(.orange))
+                    #endif
+                }
 
                 Spacer()
 

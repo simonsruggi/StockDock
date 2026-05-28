@@ -416,12 +416,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if popover.isShown {
             closePopover()
         } else {
-            let contentView = ContentView()
-                .environmentObject(stockService)
-                .environmentObject(storageService)
-                .environmentObject(updaterViewModel)
-            let hostingController = NSHostingController(rootView: contentView)
-            popover.contentViewController = hostingController
+            if popover.contentViewController == nil {
+                let contentView = ContentView()
+                    .environmentObject(stockService)
+                    .environmentObject(storageService)
+                    .environmentObject(updaterViewModel)
+                popover.contentViewController = NSHostingController(rootView: contentView)
+            }
             let rect = NSRect(x: 0, y: 0, width: button.bounds.width, height: 0)
             popover.show(relativeTo: rect, of: button, preferredEdge: .minY)
             NSApp.activate(ignoringOtherApps: true)
@@ -440,7 +441,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
 extension AppDelegate: NSPopoverDelegate {
     func popoverDidClose(_ notification: Notification) {
-        popover?.contentViewController = nil
         if let monitor = eventMonitor {
             NSEvent.removeMonitor(monitor)
             eventMonitor = nil

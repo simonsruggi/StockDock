@@ -79,7 +79,12 @@ class StorageService: ObservableObject {
             self.fileURL = fallback.appendingPathComponent("StockDock_data.json")
             return
         }
-        let dir = appSupport.appendingPathComponent("StockDock", isDirectory: true)
+        #if DEBUG
+        let dirName = "StockDock-Dev"
+        #else
+        let dirName = "StockDock"
+        #endif
+        let dir = appSupport.appendingPathComponent(dirName, isDirectory: true)
         let oldDir = appSupport.appendingPathComponent("StockBar", isDirectory: true)
         if FileManager.default.fileExists(atPath: oldDir.path) && !FileManager.default.fileExists(atPath: dir.path) {
             try? FileManager.default.moveItem(at: oldDir, to: dir)
