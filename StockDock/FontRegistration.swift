@@ -24,8 +24,18 @@ enum FontRegistration {
     ]
 
     static func registerFonts() {
-        guard let url = Bundle.module.url(forResource: "InterVariable", withExtension: "ttf") else { return }
-        CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+        let candidates = [
+            Bundle.main.resourceURL,
+            Bundle.main.url(forResource: "StockDock_StockDock", withExtension: "bundle").flatMap { Bundle(url: $0) }?.resourceURL,
+        ]
+        for base in candidates.compactMap({ $0 }) {
+            let url = base.appendingPathComponent("InterVariable.ttf")
+            if FileManager.default.fileExists(atPath: url.path) {
+                CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+                return
+            }
+        }
+        familyName = "Helvetica Neue"
     }
 
     static func monospacedDigitsFont(size: CGFloat, weight: NSFont.Weight = .regular) -> NSFont {

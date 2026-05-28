@@ -102,6 +102,11 @@ cp "$PLIST" "$APP_PATH/Contents/Info.plist"
 cp "StockDock/Resources/AppIcon.icns" "$APP_PATH/Contents/Resources/AppIcon.icns"
 cp -R "${PRODUCTS_DIR}/Sparkle.framework" "$APP_PATH/Contents/Frameworks/Sparkle.framework"
 
+# Copy SPM resource bundles (fonts, assets)
+for bundle in "${PRODUCTS_DIR}"/*.bundle; do
+    [[ -d "$bundle" ]] && cp -R "$bundle" "$APP_PATH/Contents/Resources/"
+done
+
 install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP_PATH/Contents/MacOS/${APP_NAME}"
 
 info "App bundle assembled: $APP_PATH"
