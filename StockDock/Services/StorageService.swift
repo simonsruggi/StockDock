@@ -24,6 +24,20 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    // MARK: - Watchlist row display toggles
+    @Published var showCompanyName: Bool = true {
+        didSet { scheduleSave() }
+    }
+    @Published var showDayRange: Bool = true {
+        didSet { scheduleSave() }
+    }
+    @Published var show52WeekBar: Bool = true {
+        didSet { scheduleSave() }
+    }
+    @Published var showAbsoluteChange: Bool = true {
+        didSet { scheduleSave() }
+    }
+
     /// What to display in the menu bar: "pnl", "totalValue", "icon"
     @Published var menuBarDisplay: String = "pnl" {
         didSet { scheduleSave() }
@@ -31,6 +45,11 @@ class StorageService: ObservableObject {
 
     /// Maps symbol → ISIN for watchlist filtering
     @Published var isinMap: [String: String] = [:] {
+        didSet { scheduleSave() }
+    }
+
+    /// One-shot price alerts.
+    @Published var alerts: [PriceAlert] = [] {
         didSet { scheduleSave() }
     }
 
@@ -50,6 +69,33 @@ class StorageService: ObservableObject {
 
     func setISIN(_ isin: String, for symbol: String) {
         isinMap[symbol] = isin
+    }
+
+    // MARK: - Alerts
+
+    func addAlert(_ alert: PriceAlert) {
+        alerts.append(alert)
+    }
+
+    func removeAlert(id: UUID) {
+        alerts.removeAll { $0.id == id }
+    }
+
+    func setAlertEnabled(id: UUID, enabled: Bool) {
+        guard let i = alerts.firstIndex(where: { $0.id == id }) else { return }
+        alerts[i].isEnabled = enabled
+        if enabled { alerts[i].lastTriggeredAt = nil }
+    }
+
+    /// Marks an alert as fired: records the time and disables it (one-shot).
+    func markAlertTriggered(id: UUID, at date: Date = Date()) {
+        guard let i = alerts.firstIndex(where: { $0.id == id }) else { return }
+        alerts[i].isEnabled = false
+        alerts[i].lastTriggeredAt = date
+    }
+
+    func alerts(for symbol: String) -> [PriceAlert] {
+        alerts.filter { $0.symbol == symbol }
     }
 
     var lastSelectedTab: String = "Watchlist"
@@ -146,6 +192,10 @@ class StorageService: ObservableObject {
         preferredCurrency = "EUR"
         stockPriceCurrency = ""
         showExtendedHours = true
+        showCompanyName = true
+        showDayRange = true
+        show52WeekBar = true
+        showAbsoluteChange = true
         menuBarDisplay = "pnl"
         fontSizeLevel = 9
         fontFamily = "Inter Variable"
@@ -205,6 +255,11 @@ class StorageService: ObservableObject {
         var isinMap: [String: String]?
         var fontSizeLevel: Int?
         var fontFamily: String?
+        var alerts: [PriceAlert]?
+        var showCompanyName: Bool?
+        var showDayRange: Bool?
+        var show52WeekBar: Bool?
+        var showAbsoluteChange: Bool?
     }
 
     private func scheduleSave() {
@@ -218,7 +273,7 @@ class StorageService: ObservableObject {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -245,6 +300,11 @@ class StorageService: ObservableObject {
             showExtendedHours = decoded.showExtendedHours ?? true
             menuBarDisplay = decoded.menuBarDisplay ?? "pnl"
             isinMap = decoded.isinMap ?? [:]
+            alerts = decoded.alerts ?? []
+            showCompanyName = decoded.showCompanyName ?? true
+            showDayRange = decoded.showDayRange ?? true
+            show52WeekBar = decoded.show52WeekBar ?? true
+            showAbsoluteChange = decoded.showAbsoluteChange ?? true
             fontSizeLevel = decoded.fontSizeLevel ?? 9
             fontFamily = decoded.fontFamily ?? "Inter Variable"
             FontRegistration.familyName = fontFamily

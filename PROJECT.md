@@ -25,19 +25,23 @@ StockDock/
 │   ├── StockDockApp.swift       # Entry point (@main), collega AppDelegate
 │   ├── AppDelegate.swift       # NSStatusItem, popover, timer aggiornamento 5s
 │   ├── Models/
-│   │   └── StockQuote.swift    # Modelli: StockQuote, Portfolio, Holding, SearchResult
+│   │   ├── StockQuote.swift    # Modelli: StockQuote (con 52w range), Portfolio, Holding, SearchResult
+│   │   └── PriceAlert.swift    # PriceAlert, AlertCondition, AlertEvaluator (logica pura testabile)
 │   ├── Services/
 │   │   ├── StockService.swift      # Fetch quotazioni e tassi di cambio da Yahoo Finance REST
 │   │   ├── WebSocketService.swift  # Streaming real-time via WSS + protobuf + auto-reconnect
+│   │   ├── NotificationManager.swift # Notifiche locali (UN) + AlertMonitor (valuta e fa scattare gli alert)
 │   │   ├── yaticker.pb.swift       # Codice Swift generato da yaticker.proto
 │   │   └── StorageService.swift    # Persistenza locale (JSON in Application Support)
 │   ├── Views/
 │   │   ├── ContentView.swift   # Contenitore con tab (Watchlist / Portfolios / Settings)
-│   │   ├── WatchlistView.swift # Lista ticker con prezzi e variazione giornaliera
+│   │   ├── WatchlistView.swift # Lista ticker con prezzi, variazione giornaliera e 52w range bar
+│   │   ├── RangeBar.swift      # Barra 52 settimane con marker di posizione
 │   │   ├── PortfolioListView.swift # Portafogli con P&L per holding
 │   │   ├── AddHoldingView.swift# Form aggiunta/modifica holding
+│   │   ├── AlertEditView.swift # Sheet creazione price alert
 │   │   ├── SearchView.swift    # Ricerca ticker per simbolo o nome
-│   │   └── SettingsView.swift  # Valuta, extended hours, modalità menu bar
+│   │   └── SettingsView.swift  # Valuta, extended hours, menu bar, gestione price alert
 │   ├── Assets.xcassets
 │   └── Resources/AppIcon.icns
 └── screenshots/                # Screenshot per README
@@ -49,8 +53,12 @@ StockDock/
 - **Watchlist**: aggiunta titoli per simbolo, nome o ISIN con ricerca live; prezzi in valuta originale o convertiti; badge PRE/POST per extended hours; filtro locale per nome, simbolo o ISIN
 - **Portafogli multipli**: prezzo medio di carico, data acquisto per tasso di cambio storico, P&L per holding e totale
 - **Conversione valuta**: supporta EUR, USD, GBP, CHF, JPY, CAD, AUD; tassi di cambio live e storici
+- **52-week range**: barra nella watchlist che mostra dove sta il prezzo tra minimo e massimo annuale; dati dalle stesse chiamate quote (v7 + fallback v8), preservati tra i tick WSS
+- **Price alert (one-shot)**: 6 condizioni (prezzo sopra/sotto soglia, variazione % giornaliera su/giù, vicino a max/min 52w); creazione da menu contestuale watchlist, gestione in Settings (riarmo, elimina, badge "triggered"); notifica locale macOS via `UNUserNotificationCenter`; valutati ad ogni aggiornamento prezzo (tick WSS, REST, avvio, wake); scattano una volta poi si disattivano
+- **Watchlist Display personalizzabile**: toggle in Settings per mostrare/nascondere nome società, range giornaliero, barra 52w e variazione assoluta in ogni riga; default tutti ON, persistiti in `data.json`
 - **Extended hours**: prezzi pre-market e after-hours con rispettivo P&L
-- **Persistenza**: dati salvati in `~/Library/Application Support/StockDock/data.json` (watchlist, portafogli, isinMap, preferenze); nessun dato inviato a server esterni
+- **Persistenza**: dati salvati in `~/Library/Application Support/StockDock/data.json` (watchlist, portafogli, isinMap, alert, preferenze); nessun dato inviato a server esterni
+- **Test**: target `StockDockTests` (`Tests/`) con unit test della logica pura — `AlertEvaluator` (tutte le condizioni + casi limite) e `fiftyTwoWeekPosition`. Esegui con `swift test`
 - **Export/Import portafogli**: export singolo o di tutti i portafogli in JSON via NSSavePanel; import via NSOpenPanel con dedup nomi e UUID rigenerati
 - **Menu bar reattiva**: si aggiorna immediatamente ad ogni modifica di portafoglio, impostazioni o chiusura popover (oltre ai tick WebSocket e REST polling)
 - **Save debounced**: le scritture su disco sono debounced a 100ms per non bloccare il main thread; save immediato alla chiusura dell'app; nessun save ridondante al caricamento iniziale
@@ -99,3 +107,4 @@ L'app non compare nel Dock (`.accessory` policy): l'icona appare nella menu bar 
 - **Protobuf**: lo schema `yaticker.proto` nella root genera `yaticker.pb.swift` via `protoc --swift_out`. Rigenerare se cambia lo schema: `protoc --swift_out=StockDock/Services/ yaticker.proto`
 - **Requisiti**: Xcode 15+ e macOS 14 Sonoma o successivo
 - **Firma/Entitlements**: `StockDock.entitlements` presente nella root per eventuali accessi di rete
+- **Release / What's New**: `./release.sh <versione> <build>` builda, firma, notarizza, aggiorna `appcast.xml`, crea la GitHub release e aggiorna il cask Homebrew. Le note "What's New" mostrate da Sparkle vanno scritte in `release-notes/<versione>.html` (HTML), che lo script inietta nel `<description>` dell'appcast

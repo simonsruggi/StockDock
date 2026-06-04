@@ -22,5 +22,10 @@ let package = Package(
                 .copy("Fonts/InterVariable.ttf")
             ]
         ),
+        .testTarget(
+            name: "StockDockTests",
+            dependencies: ["StockDock"],
+            path: "Tests"
+        ),
     ]
 )

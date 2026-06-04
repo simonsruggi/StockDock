@@ -104,3 +104,37 @@
 - [x] Import button available in empty state (no portfolios)
 - [x] Alert shown after import with count of imported portfolios
 - [x] Error alerts for invalid/unreadable files
+
+## US-13: 52-Week Range
+**As a** user, **I want** to see where a stock's price sits within its 52-week range **so that** I can gauge at a glance whether it's near its yearly high or low.
+
+- [x] 52-week high/low fetched from the same Yahoo quote calls (v7 + v8 fallback)
+- [x] Range bar in the watchlist row with a marker showing the current position
+- [x] 52-week low/high labels next to the bar (in the display currency)
+- [x] `fiftyTwoWeekPosition` computed property (0…1), clamped, nil when range is missing/degenerate
+- [x] 52-week data preserved across WebSocket ticks (WSS feed omits it)
+
+## US-14: Price Alerts
+**As a** user, **I want** to be notified when a stock reaches a condition I set **so that** I don't have to keep watching the prices.
+
+- [x] Six conditions: price rises above / drops below, daily change up / down by %, near 52-week high / low
+- [x] One-shot: an alert fires once, then disables itself (no spam)
+- [x] Create via right-click on a watchlist stock → "Set Price Alert…"
+- [x] Manage in Settings → Price Alerts: re-arm toggle, description, delete, "triggered" badge
+- [x] Local macOS notification (title + condition + current price) via UNUserNotificationCenter
+- [x] Evaluated on every quote update (WebSocket flush, REST poll, launch, wake)
+- [x] Uses effective price so extended-hours moves can trigger alerts
+- [x] Alerts persisted in `data.json`
+- [x] Notification layer is a safe no-op in dev runs without an app bundle
+
+## US-15: Customizable Watchlist Display
+**As a** user, **I want** to choose which details appear in each watchlist row **so that** I can keep the list as compact or detailed as I like.
+
+- [x] Settings → Watchlist Display section with toggles
+- [x] Toggle company name (second line under the symbol)
+- [x] Toggle day range (low – high)
+- [x] Toggle 52-week range bar
+- [x] Toggle absolute change value (the % is always shown)
+- [x] All default to ON (unchanged look on first run)
+- [x] Changes apply instantly and are persisted in `data.json`
+- [x] Reset to Defaults restores all toggles to ON

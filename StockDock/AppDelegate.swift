@@ -59,6 +59,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var tickerTimer: Timer?
     private var storageServiceObserver: AnyCancellable?
     private var symbolsObserver: AnyCancellable?
+    private lazy var alertMonitor = AlertMonitor(storage: storageService)
     let updaterViewModel = UpdaterViewModel()
 
     /// REST polling: quotes + exchange rates as WSS fallback
@@ -66,6 +67,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         FontRegistration.registerFonts()
+
+        // Ask for notification permission (no-op in dev without a bundle)
+        NotificationManager.shared.requestAuthorization()
 
         // Hide dock icon
         NSApp.setActivationPolicy(.accessory)
@@ -90,6 +94,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             await stockService.refreshAll(storageService: storageService)
             guard !Task.isCancelled else { return }
             updateMenuBarTitle()
+            alertMonitor.check(quotes: stockService.quotes)
             startWebSocket()
         }
 
@@ -130,6 +135,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     defer { self.isRefreshing = false }
                     await self.stockService.refreshAll(storageService: self.storageService)
                     self.updateMenuBarTitle()
+                    self.alertMonitor.check(quotes: self.stockService.quotes)
                 }
             }
     }
@@ -194,6 +200,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         if changed {
             updateMenuBarTitle()
+            alertMonitor.check(quotes: stockService.quotes)
         }
     }
 
@@ -240,6 +247,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 await self.stockService.fetchQuotes(symbols: symbols)
                 await self.stockService.refreshExchangeRates(storageService: self.storageService)
                 self.updateMenuBarTitle()
+                self.alertMonitor.check(quotes: self.stockService.quotes)
                 self.webSocketService.updateSymbols(Array(self.collectSymbols()))
             }
         }

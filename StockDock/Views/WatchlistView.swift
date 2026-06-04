@@ -6,6 +6,7 @@ struct WatchlistView: View {
     @Binding var showSearch: Bool
     @State private var searchText = ""
     @State private var addToPortfolio: (symbol: String, portfolioId: UUID)? = nil
+    @State private var alertSymbol: String? = nil
     @State private var sortColumn: SortColumn = .change
     @State private var sortAscending: Bool = false
 
@@ -158,6 +159,15 @@ struct WatchlistView: View {
                 .environmentObject(storageService)
                 .frame(width: 300, height: 220)
             }
+            .sheet(item: Binding<AlertSheetItem?>(
+                get: { alertSymbol.map { AlertSheetItem(symbol: $0) } },
+                set: { alertSymbol = $0?.symbol }
+            )) { item in
+                AlertEditView(symbol: item.symbol) { alertSymbol = nil }
+                    .environmentObject(stockService)
+                    .environmentObject(storageService)
+                    .frame(width: 300, height: 260)
+            }
         }
     }
 
@@ -196,6 +206,12 @@ struct WatchlistView: View {
             }
             Divider()
         }
+        Button {
+            alertSymbol = symbol
+        } label: {
+            Label("Set Price Alert…", systemImage: "bell")
+        }
+        Divider()
         Button(role: .destructive) {
             storageService.removeFromWatchlist(symbol)
         } label: {
@@ -208,6 +224,11 @@ private struct AddToPortfolioItem: Identifiable {
     let symbol: String
     let portfolioId: UUID
     var id: String { "\(symbol)-\(portfolioId)" }
+}
+
+private struct AlertSheetItem: Identifiable {
+    let symbol: String
+    var id: String { symbol }
 }
 
 struct QuickAddHoldingView: View {
@@ -301,10 +322,12 @@ struct QuoteRow: View {
                 Text(quote.symbol)
                     .font(.inter(13, relativeTo: .body).monospacedDigit())
                     .fontWeight(.bold)
-                Text(quote.name)
-                    .font(.inter(10, relativeTo: .caption))
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
+                if storageService.showCompanyName {
+                    Text(quote.name)
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
             }
             .frame(width: 80, alignment: .leading)
 
@@ -326,20 +349,37 @@ struct QuoteRow: View {
                             )
                     }
                 }
-                if let high = quote.dayHigh, let low = quote.dayLow {
+                if storageService.showDayRange, let high = quote.dayHigh, let low = quote.dayLow {
                     Text(String(format: "%.2f – %.2f", low * priceRate, high * priceRate))
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
                         .foregroundColor(.secondary)
+                }
+                if storageService.show52WeekBar,
+                   let pos = quote.fiftyTwoWeekPosition,
+                   let low = quote.fiftyTwoWeekLow, let high = quote.fiftyTwoWeekHigh {
+                    HStack(spacing: 4) {
+                        Text(String(format: "%.0f", low * priceRate))
+                            .font(.inter(8, relativeTo: .caption2).monospacedDigit())
+                            .foregroundColor(.secondary)
+                        RangeBar(position: pos)
+                            .frame(width: 56)
+                        Text(String(format: "%.0f", high * priceRate))
+                            .font(.inter(8, relativeTo: .caption2).monospacedDigit())
+                            .foregroundColor(.secondary)
+                    }
+                    .help("52-week range")
                 }
             }
             .frame(maxWidth: .infinity)
 
             // Col 3: Change
             VStack(alignment: .trailing, spacing: 1) {
-                Text(String(format: "%+.2f %@", quote.change * priceRate, currSymbol))
-                    .font(.inter(13, relativeTo: .body).monospacedDigit())
-                    .fontWeight(.medium)
-                    .foregroundColor(quote.isPositive ? .green : .red)
+                if storageService.showAbsoluteChange {
+                    Text(String(format: "%+.2f %@", quote.change * priceRate, currSymbol))
+                        .font(.inter(13, relativeTo: .body).monospacedDigit())
+                        .fontWeight(.medium)
+                        .foregroundColor(quote.isPositive ? .green : .red)
+                }
                 Text(String(format: "%.1f%%", quote.changePercent))
                     .font(.inter(10, relativeTo: .caption).monospacedDigit())
                     .foregroundColor(quote.isPositive ? .green : .red)

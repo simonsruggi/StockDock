@@ -225,6 +225,8 @@ class StockService: ObservableObject {
                     marketState: marketState,
                     dayHigh: q.regularMarketDayHigh,
                     dayLow: q.regularMarketDayLow,
+                    fiftyTwoWeekHigh: q.fiftyTwoWeekHigh,
+                    fiftyTwoWeekLow: q.fiftyTwoWeekLow,
                     preMarketPrice: q.preMarketPrice,
                     preMarketChange: preChg,
                     preMarketChangePercent: prePct,
@@ -331,6 +333,8 @@ class StockService: ObservableObject {
                 marketState: marketState,
                 dayHigh: nil,
                 dayLow: nil,
+                fiftyTwoWeekHigh: meta.fiftyTwoWeekHigh,
+                fiftyTwoWeekLow: meta.fiftyTwoWeekLow,
                 preMarketPrice: preMarketPrice,
                 preMarketChange: preChg,
                 preMarketChangePercent: prePct,
@@ -441,6 +445,8 @@ class StockService: ObservableObject {
             marketState: marketState,
             dayHigh: existing?.dayHigh,
             dayLow: existing?.dayLow,
+            fiftyTwoWeekHigh: existing?.fiftyTwoWeekHigh,
+            fiftyTwoWeekLow: existing?.fiftyTwoWeekLow,
             preMarketPrice: marketState == "PRE" ? price : existing?.preMarketPrice,
             preMarketChange: marketState == "PRE" ? change : existing?.preMarketChange,
             preMarketChangePercent: marketState == "PRE" ? changePercent : existing?.preMarketChangePercent,
@@ -498,6 +504,8 @@ private struct YahooChartResponse: Codable {
         let regularMarketPrice: Double
         let regularMarketTime: Int?
         let chartPreviousClose: Double?
+        let fiftyTwoWeekHigh: Double?
+        let fiftyTwoWeekLow: Double?
         let longName: String?
         let shortName: String?
         let currentTradingPeriod: TradingPeriods?
@@ -542,6 +550,8 @@ private struct YahooV7Response: Codable {
         let marketState: String?
         let regularMarketDayHigh: Double?
         let regularMarketDayLow: Double?
+        let fiftyTwoWeekHigh: Double?
+        let fiftyTwoWeekLow: Double?
         let preMarketPrice: Double?
         let postMarketPrice: Double?
     }

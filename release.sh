@@ -183,6 +183,18 @@ step 8 "Update appcast.xml"
 PUBDATE=$(date -R)
 DOWNLOAD_URL="https://github.com/${GITHUB_REPO}/releases/download/${TAG}/${ZIP_NAME}"
 
+# Release notes ("What's New") shown by Sparkle — read from release-notes/<version>.html
+NOTES_FILE="release-notes/${VERSION}.html"
+if [[ -f "$NOTES_FILE" ]]; then
+    DESCRIPTION_BLOCK="<description><![CDATA[
+$(cat "$NOTES_FILE")
+            ]]></description>"
+    info "Release notes loaded from $NOTES_FILE"
+else
+    DESCRIPTION_BLOCK="<description>Version ${VERSION}</description>"
+    warn "No release notes at $NOTES_FILE — using a placeholder description"
+fi
+
 cat > "$APPCAST" <<APPCAST_EOF
 <?xml version="1.0" standalone="yes"?>
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" xmlns:dc="http://purl.org/dc/elements/1.1/" version="2.0">
@@ -197,6 +209,7 @@ cat > "$APPCAST" <<APPCAST_EOF
             <sparkle:version>${BUILD_NUMBER}</sparkle:version>
             <sparkle:shortVersionString>${VERSION}</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>${MIN_SYSTEM_VERSION}</sparkle:minimumSystemVersion>
+            ${DESCRIPTION_BLOCK}
             <enclosure url="${DOWNLOAD_URL}"
                        type="application/octet-stream"
                        sparkle:edSignature="${ED_SIGNATURE}"
@@ -211,7 +224,7 @@ info "appcast.xml updated"
 # --- Step 9: GitHub Release ---
 step 9 "GitHub Release + push"
 
-git add "$PLIST" "$APPCAST"
+git add "$PLIST" "$APPCAST" "$NOTES_FILE" 2>/dev/null || git add "$PLIST" "$APPCAST"
 git commit -m "Release v${VERSION} (build ${BUILD_NUMBER})"
 git push
 

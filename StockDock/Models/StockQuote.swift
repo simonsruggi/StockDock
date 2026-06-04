@@ -13,6 +13,10 @@ struct StockQuote: Identifiable, Codable {
     let dayHigh: Double?
     let dayLow: Double?
 
+    // 52-week range
+    let fiftyTwoWeekHigh: Double?
+    let fiftyTwoWeekLow: Double?
+
     let preMarketPrice: Double?
     let preMarketChange: Double?
     let preMarketChangePercent: Double?
@@ -23,6 +27,14 @@ struct StockQuote: Identifiable, Codable {
     var id: String { symbol }
 
     var isPositive: Bool { change >= 0 }
+
+    /// Position of the current price within the 52-week range, 0 (low) … 1 (high).
+    /// nil when range data is missing or degenerate (high == low).
+    var fiftyTwoWeekPosition: Double? {
+        guard let high = fiftyTwoWeekHigh, let low = fiftyTwoWeekLow, high > low else { return nil }
+        let pos = (price - low) / (high - low)
+        return min(max(pos, 0), 1)
+    }
 
     /// Returns the most relevant current price based on market state
     var effectivePrice: Double {

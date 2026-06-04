@@ -74,6 +74,25 @@ struct SettingsView: View {
 
                 Divider()
 
+                // MARK: - Watchlist Display
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Watchlist Display")
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    Toggle("Company name", isOn: $storageService.showCompanyName)
+                        .toggleStyle(.switch)
+                    Toggle("Day range (low – high)", isOn: $storageService.showDayRange)
+                        .toggleStyle(.switch)
+                    Toggle("52-week range bar", isOn: $storageService.show52WeekBar)
+                        .toggleStyle(.switch)
+                    Toggle("Absolute change value", isOn: $storageService.showAbsoluteChange)
+                        .toggleStyle(.switch)
+                    Text("Choose which details appear in each watchlist row")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                }
+
+                Divider()
+
                 // MARK: - Menu Bar Display
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Menu Bar Display")
@@ -95,6 +114,23 @@ struct SettingsView: View {
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                 }
+                Divider()
+
+                // MARK: - Price Alerts
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Price Alerts")
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    if storageService.alerts.isEmpty {
+                        Text("No alerts. Right-click a stock in the watchlist to add one.")
+                            .font(.inter(10, relativeTo: .caption))
+                            .foregroundColor(.secondary)
+                    } else {
+                        ForEach(storageService.alerts) { alert in
+                            AlertRow(alert: alert)
+                        }
+                    }
+                }
+
                 Divider()
 
                 // MARK: - Font
@@ -170,4 +206,52 @@ struct SettingsView: View {
         }
     }
 
+}
+
+/// A single alert row in Settings: enable/re-arm toggle, description and delete.
+private struct AlertRow: View {
+    @EnvironmentObject var storageService: StorageService
+    let alert: PriceAlert
+
+    private var currencySymbol: String {
+        StorageService.currencySymbol(for: StockService.shared.quotes[alert.symbol]?.currency
+            ?? storageService.preferredCurrency)
+    }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: alert.condition.systemImage)
+                .font(.inter(10, relativeTo: .caption))
+                .foregroundColor(alert.isEnabled ? .accentColor : .secondary)
+                .frame(width: 14)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(alert.symbol)
+                    .font(.inter(12, weight: .semibold, relativeTo: .body))
+                Text(AlertEvaluator.describe(alert, currencySymbol: currencySymbol))
+                    .font(.inter(9, relativeTo: .caption2))
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            if !alert.isEnabled {
+                Text("triggered")
+                    .font(.inter(8, weight: .semibold, relativeTo: .caption2))
+                    .foregroundColor(.orange)
+            }
+            Toggle("", isOn: Binding(
+                get: { alert.isEnabled },
+                set: { storageService.setAlertEnabled(id: alert.id, enabled: $0) }
+            ))
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .labelsHidden()
+            .help(alert.isEnabled ? "Enabled" : "Re-arm alert")
+            Button(action: { storageService.removeAlert(id: alert.id) }) {
+                Image(systemName: "trash")
+                    .font(.inter(10, relativeTo: .caption))
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.borderless)
+        }
+        .padding(.vertical, 2)
+    }
 }
