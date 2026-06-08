@@ -45,7 +45,7 @@ StockDock/
 │   │   ├── AlertEditView.swift # Sheet creazione price alert
 │   │   ├── PortfolioNotificationsView.swift # Popover gestione notifiche per-portfolio
 │   │   ├── SearchView.swift    # Ricerca ticker per simbolo o nome
-│   │   └── SettingsView.swift  # Valuta, extended hours, menu bar, price alert, webhook Discord/Slack
+│   │   └── SettingsView.swift  # Valuta, extended hours, menu bar, sezione Notifications (webhook + price alert + notifiche portfolio)
 │   ├── Assets.xcassets
 │   └── Resources/AppIcon.icns
 └── screenshots/                # Screenshot per README

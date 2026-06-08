@@ -116,44 +116,32 @@ struct SettingsView: View {
                 }
                 Divider()
 
-                // MARK: - Price Alerts
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Price Alerts")
+                // MARK: - Notifications
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Notifications")
                         .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    if storageService.alerts.isEmpty {
-                        Text("No alerts. Right-click a stock in the watchlist to add one.")
-                            .font(.inter(10, relativeTo: .caption))
+
+                    // Channels (Discord / Slack webhook)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Channels")
+                            .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
                             .foregroundColor(.secondary)
-                    } else {
-                        ForEach(storageService.alerts) { alert in
-                            AlertRow(alert: alert)
+                        Toggle("Mirror notifications to a Discord/Slack webhook", isOn: $storageService.discordEnabled)
+                            .toggleStyle(.switch)
+                        TextField("https://discord.com/api/webhooks/… or hooks.slack.com/…", text: $storageService.discordWebhookURL)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.inter(10, relativeTo: .caption))
+                            .disabled(!storageService.discordEnabled)
+                        let trimmed = storageService.discordWebhookURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if storageService.discordEnabled && !trimmed.isEmpty && !WebhookNotifier.isValid(trimmed) {
+                            Text("Not a valid Discord or Slack webhook URL (must be https).")
+                                .font(.inter(10, relativeTo: .caption))
+                                .foregroundColor(.red)
+                        } else {
+                            Text("Price alerts and portfolio notifications are also sent here.")
+                                .font(.inter(10, relativeTo: .caption))
+                                .foregroundColor(.secondary)
                         }
-                    }
-                }
-
-                Divider()
-
-                // MARK: - Discord / Slack webhook
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Discord / Slack")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    Toggle("Mirror notifications to a webhook", isOn: $storageService.discordEnabled)
-                        .toggleStyle(.switch)
-                    TextField("https://discord.com/api/webhooks/… or hooks.slack.com/…", text: $storageService.discordWebhookURL)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.inter(10, relativeTo: .caption))
-                        .disabled(!storageService.discordEnabled)
-                    let trimmed = storageService.discordWebhookURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if storageService.discordEnabled && !trimmed.isEmpty && !WebhookNotifier.isValid(trimmed) {
-                        Text("Not a valid Discord or Slack webhook URL (must be https).")
-                            .font(.inter(10, relativeTo: .caption))
-                            .foregroundColor(.red)
-                    } else {
-                        Text("Price alerts and portfolio notifications are also sent here.")
-                            .font(.inter(10, relativeTo: .caption))
-                            .foregroundColor(.secondary)
-                    }
-                    HStack {
                         Button("Send test") {
                             NotificationManager.shared.send(
                                 title: "StockDock test",
@@ -162,6 +150,45 @@ struct SettingsView: View {
                         }
                         .controlSize(.small)
                         .disabled(!storageService.discordEnabled || !WebhookNotifier.isValid(trimmed))
+                    }
+
+                    // Price alerts
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Price alerts")
+                            .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
+                            .foregroundColor(.secondary)
+                        if storageService.alerts.isEmpty {
+                            Text("No alerts. Right-click a stock in the watchlist to add one.")
+                                .font(.inter(10, relativeTo: .caption))
+                                .foregroundColor(.secondary)
+                        } else {
+                            ForEach(storageService.alerts) { alert in
+                                AlertRow(alert: alert)
+                            }
+                        }
+                    }
+
+                    // Portfolio notifications
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Portfolio notifications")
+                            .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
+                            .foregroundColor(.secondary)
+                        let withNotifs = storageService.portfolios.filter {
+                            !storageService.notifications(for: $0.id).isEmpty
+                        }
+                        if withNotifs.isEmpty {
+                            Text("None. Right-click a portfolio → “Notifications…” to add one.")
+                                .font(.inter(10, relativeTo: .caption))
+                                .foregroundColor(.secondary)
+                        } else {
+                            ForEach(withNotifs) { portfolio in
+                                Text(portfolio.name)
+                                    .font(.inter(10, weight: .medium, relativeTo: .caption))
+                                ForEach(storageService.notifications(for: portfolio.id)) { n in
+                                    PortfolioNotifRow(portfolioId: portfolio.id, notification: n)
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -280,6 +307,62 @@ private struct AlertRow: View {
             .labelsHidden()
             .help(alert.isEnabled ? "Enabled" : "Re-arm alert")
             Button(action: { storageService.removeAlert(id: alert.id) }) {
+                Image(systemName: "trash")
+                    .font(.inter(10, relativeTo: .caption))
+                    .foregroundColor(.secondary)
+            }
+            .buttonStyle(.borderless)
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+/// A single portfolio-notification row in Settings: enable toggle, description and delete.
+private struct PortfolioNotifRow: View {
+    @EnvironmentObject var storageService: StorageService
+    let portfolioId: UUID
+    let notification: PortfolioNotification
+
+    private var currencySymbol: String {
+        StorageService.currencySymbol(for: storageService.preferredCurrency)
+    }
+
+    private var description: String {
+        let n = notification
+        switch n.mode {
+        case .dailyPercent:
+            return "Every ±\(String(format: "%g", n.threshold))% move today"
+        case .dailyAbsolute:
+            return "Every ±\(String(format: "%g", n.threshold))\(currencySymbol) move today"
+        case .milestone:
+            return "Every \(String(format: "%g", n.threshold))\(currencySymbol) crossed"
+        case .dailySummary:
+            return "Daily after \(String(format: "%.0f", n.threshold)):00"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: notification.mode.systemImage)
+                .font(.inter(10, relativeTo: .caption))
+                .foregroundColor(notification.isEnabled ? .accentColor : .secondary)
+                .frame(width: 14)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(notification.mode.label)
+                    .font(.inter(12, weight: .semibold, relativeTo: .body))
+                Text(description)
+                    .font(.inter(9, relativeTo: .caption2))
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            Toggle("", isOn: Binding(
+                get: { notification.isEnabled },
+                set: { storageService.setPortfolioNotificationEnabled(id: notification.id, in: portfolioId, enabled: $0) }
+            ))
+            .toggleStyle(.switch)
+            .controlSize(.mini)
+            .labelsHidden()
+            Button(action: { storageService.removePortfolioNotification(id: notification.id, from: portfolioId) }) {
                 Image(systemName: "trash")
                     .font(.inter(10, relativeTo: .caption))
                     .foregroundColor(.secondary)

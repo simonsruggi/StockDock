@@ -142,7 +142,7 @@
 ## US-16: Discord / Slack Webhook Notifications
 **As a** user, **I want** my notifications mirrored to a Discord or Slack channel **so that** I get them on my phone too, not only on the Mac.
 
-- [x] Settings → Discord / Slack: enable toggle + webhook URL field + "Send test" button
+- [x] Settings → Notifications → Channels: enable toggle + webhook URL field + "Send test" button
 - [x] Auto-detects Discord (rich embed, colored green/red/neutral) vs Slack (text) from the URL host
 - [x] Only https URLs on known webhook hosts accepted (validated, SSRF-safe)
 - [x] All notifications route through `NotificationManager.send` → both macOS and webhook
@@ -154,6 +154,7 @@
 **As a** user, **I want** per-portfolio notifications (e.g. "up €820 today") **so that** I'm told when a whole portfolio moves, not just single stocks.
 
 - [x] Configured per portfolio via right-click on the portfolio header → "Notifications…"
+- [x] Also listed and manageable (toggle / delete) under Settings → Notifications → Portfolio notifications, grouped by portfolio
 - [x] Four modes: daily move ≥ %, daily move ≥ amount, daily summary, value milestone
 - [x] Defaults: ±1% / ±250 (preferred currency) / milestone every 10,000 / summary after 22:00
 - [x] Daily % / amount use step hysteresis (re-fire only on the next step), reset each calendar day
