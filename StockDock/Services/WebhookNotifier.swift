@@ -12,6 +12,10 @@ enum WebhookNotifier {
         static let neutral = 0x3498DB
     }
 
+    /// Display name and avatar used for the webhook message (overrides the channel default).
+    private static let botName = "StockDock"
+    private static let avatarURL = "https://raw.githubusercontent.com/simonsruggi/StockDock/main/StockDock/Assets.xcassets/AppIcon.appiconset/icon_256.png"
+
     /// Returns true if the string is a usable Discord/Slack webhook URL.
     static func isValid(_ urlString: String) -> Bool {
         guard let url = URL(string: urlString),
@@ -32,9 +36,17 @@ enum WebhookNotifier {
 
         let payload: [String: Any]
         if isSlack(urlString) {
-            payload = ["text": "*\(title)*\n\(body)"]
+            payload = [
+                "username": botName,
+                "icon_url": avatarURL,
+                "text": "*\(title)*\n\(body)"
+            ]
         } else {
-            payload = ["embeds": [["title": title, "description": body, "color": color]]]
+            payload = [
+                "username": botName,
+                "avatar_url": avatarURL,
+                "embeds": [["title": title, "description": body, "color": color]]
+            ]
         }
 
         guard let httpBody = try? JSONSerialization.data(withJSONObject: payload) else { return }
