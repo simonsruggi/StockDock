@@ -148,6 +148,14 @@ class StorageService: ObservableObject {
 
     static let supportedCurrencies = ["EUR", "USD", "GBP", "CHF", "JPY", "CAD", "AUD"]
 
+    /// Formats an amount with the currency symbol *before* the figure, e.g.
+    /// "€1234.56", "+€820.00", "-€540.00". The sign (when shown) precedes the symbol.
+    static func formatAmount(_ value: Double, symbol: String, decimals: Int = 2, signed: Bool = false) -> String {
+        let sign = signed ? (value >= 0 ? "+" : "-") : (value < 0 ? "-" : "")
+        let magnitude = String(format: "%.\(decimals)f", abs(value))
+        return "\(sign)\(symbol)\(magnitude)"
+    }
+
     static func currencySymbol(for code: String) -> String {
         switch code {
         case "EUR": return "€"

@@ -334,7 +334,7 @@ struct QuoteRow: View {
             // Col 2: Price + day range
             VStack(spacing: 1) {
                 HStack(spacing: 3) {
-                    Text(String(format: "%.2f %@", quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate, currSymbol))
+                    Text("\(currSymbol)\(String(format: "%.2f", quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate))")
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
                     if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
@@ -375,7 +375,7 @@ struct QuoteRow: View {
             // Col 3: Change
             VStack(alignment: .trailing, spacing: 1) {
                 if storageService.showAbsoluteChange {
-                    Text(String(format: "%+.2f %@", quote.change * priceRate, currSymbol))
+                    Text(StorageService.formatAmount(quote.change * priceRate, symbol: currSymbol, signed: true))
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
                         .foregroundColor(quote.isPositive ? .green : .red)

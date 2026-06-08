@@ -337,7 +337,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         switch displayMode {
         case "totalValue":
-            title = " \(String(format: "%.2f", totalValue))\(currSymbol)"
+            title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol))"
             color = totalPnl >= 0 ? .systemGreen : .systemRed
 
         case "pnlPercent":
@@ -346,9 +346,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             color = totalPnlPct >= 0 ? .systemGreen : .systemRed
 
         case "pnlFull":
-            let sign = totalPnl >= 0 ? "+" : ""
             let pctSign = totalPnlPct >= 0 ? "+" : ""
-            title = " \(sign)\(String(format: "%.2f", totalPnl))\(currSymbol) (\(pctSign)\(String(format: "%.1f", totalPnlPct))%)"
+            title = " \(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true)) (\(pctSign)\(String(format: "%.1f", totalPnlPct))%)"
             color = totalPnl >= 0 ? .systemGreen : .systemRed
 
         case "bestStock":
@@ -388,7 +387,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         case "portfolioRecap":
             let sign = totalPnlPct >= 0 ? "+" : ""
-            title = " \(String(format: "%.2f", totalValue))\(currSymbol) \(sign)\(String(format: "%.1f", totalPnlPct))%"
+            title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol)) \(sign)\(String(format: "%.1f", totalPnlPct))%"
             color = totalPnl >= 0 ? .systemGreen : .systemRed
 
         case "ticker":
@@ -404,7 +403,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let priceCurr = storageService.stockPriceCurrency
                     let sym = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
                     let sign = quote.changePercent >= 0 ? "+" : ""
-                    title = " \(quote.symbol) \(String(format: "%.2f", quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate))\(sym) \(sign)\(String(format: "%.1f", quote.changePercent))%"
+                    title = " \(quote.symbol) \(sym)\(String(format: "%.2f", quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate)) \(sign)\(String(format: "%.1f", quote.changePercent))%"
                     color = quote.changePercent >= 0 ? .systemGreen : .systemRed
                 } else {
                     title = " \(symbol)"
@@ -413,8 +412,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
 
         default: // "pnl"
-            let sign = totalPnl >= 0 ? "+" : ""
-            title = " P&L \(sign)\(String(format: "%.2f", totalPnl))\(currSymbol)"
+            title = " P&L \(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true))"
             color = totalPnl >= 0 ? .systemGreen : .systemRed
         }
 

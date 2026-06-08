@@ -123,7 +123,7 @@ enum AlertEvaluator {
     static func describe(_ alert: PriceAlert, currencySymbol: String) -> String {
         switch alert.condition.thresholdKind {
         case .price:
-            return "\(alert.condition.label) \(String(format: "%.2f", alert.threshold)) \(currencySymbol)"
+            return "\(alert.condition.label) \(currencySymbol)\(String(format: "%.2f", alert.threshold))"
         case .percent:
             switch alert.condition {
             case .near52WeekHigh, .near52WeekLow:

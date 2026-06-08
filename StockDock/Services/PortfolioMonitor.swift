@@ -66,8 +66,8 @@ final class PortfolioMonitor {
 
         let up = step > 0
         let pctStr = String(format: "%+.2f%%", metrics.dayChangePercent)
-        let absStr = String(format: "%+.2f%@", metrics.dayChange, currSym)
-        let body = "Today: \(absStr) (\(pctStr)) — value \(String(format: "%.2f%@", metrics.totalValue, currSym))"
+        let absStr = StorageService.formatAmount(metrics.dayChange, symbol: currSym, signed: true)
+        let body = "Today: \(absStr) (\(pctStr)) — value \(StorageService.formatAmount(metrics.totalValue, symbol: currSym))"
         notifier.send(
             title: "\(portfolio.name) \(up ? "📈" : "📉") \(isPercent ? pctStr : absStr) today",
             body: body,
@@ -86,8 +86,8 @@ final class PortfolioMonitor {
         }
         let up = milestone > last
         notifier.send(
-            title: "\(portfolio.name) \(up ? "🎯" : "⚠️") \(String(format: "%.0f%@", milestone, currSym))",
-            body: "Total value \(up ? "crossed above" : "dropped below") \(String(format: "%.0f%@", milestone, currSym)) — now \(String(format: "%.2f%@", metrics.totalValue, currSym))",
+            title: "\(portfolio.name) \(up ? "🎯" : "⚠️") \(StorageService.formatAmount(milestone, symbol: currSym, decimals: 0))",
+            body: "Total value \(up ? "crossed above" : "dropped below") \(StorageService.formatAmount(milestone, symbol: currSym, decimals: 0)) — now \(StorageService.formatAmount(metrics.totalValue, symbol: currSym))",
             identifier: "pf-\(n.id.uuidString)-ms-\(Int(milestone))",
             sentiment: up ? .positive : .negative
         )
@@ -98,7 +98,7 @@ final class PortfolioMonitor {
         let afterClose = Double(hour) >= n.threshold
         guard PortfolioAlertEvaluator.shouldFireSummary(today: today, lastDay: n.lastDay, isAfterClose: afterClose) else { return }
         let up = metrics.dayChange >= 0
-        var body = "Value \(String(format: "%.2f%@", metrics.totalValue, currSym)) — today \(String(format: "%+.2f%@ (%+.2f%%)", metrics.dayChange, currSym, metrics.dayChangePercent))"
+        var body = "Value \(StorageService.formatAmount(metrics.totalValue, symbol: currSym)) — today \(StorageService.formatAmount(metrics.dayChange, symbol: currSym, signed: true)) (\(String(format: "%+.2f%%", metrics.dayChangePercent)))"
         if !metrics.topMoverSymbol.isEmpty {
             body += "\nTop mover: \(metrics.topMoverSymbol) \(String(format: "%+.2f%%", metrics.topMoverPercent))"
         }

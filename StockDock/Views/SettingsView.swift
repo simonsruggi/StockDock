@@ -333,9 +333,9 @@ private struct PortfolioNotifRow: View {
         case .dailyPercent:
             return "Every ±\(String(format: "%g", n.threshold))% move today"
         case .dailyAbsolute:
-            return "Every ±\(String(format: "%g", n.threshold))\(currencySymbol) move today"
+            return "Every ±\(currencySymbol)\(String(format: "%g", n.threshold)) move today"
         case .milestone:
-            return "Every \(String(format: "%g", n.threshold))\(currencySymbol) crossed"
+            return "Every \(currencySymbol)\(String(format: "%g", n.threshold)) crossed"
         case .dailySummary:
             return "Daily after \(String(format: "%.0f", n.threshold)):00"
         }

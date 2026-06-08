@@ -80,7 +80,7 @@ struct PortfolioListView: View {
                             Text("Total value")
                                 .font(.inter(10, relativeTo: .caption))
                                 .foregroundColor(.secondary)
-                            Text(String(format: "%.2f%@", grandTotal, currSym))
+                            Text(StorageService.formatAmount(grandTotal, symbol: currSym))
                                 .font(.inter(13, relativeTo: .body).monospacedDigit())
                                 .fontWeight(.bold)
                         }
@@ -90,7 +90,7 @@ struct PortfolioListView: View {
                                 .font(.inter(10, relativeTo: .caption))
                                 .foregroundColor(.secondary)
                             HStack(spacing: 2) {
-                                Text(String(format: "%+.2f%@", grandPnl, currSym))
+                                Text(StorageService.formatAmount(grandPnl, symbol: currSym, signed: true))
                                 Text(String(format: "(%.1f%%)", grandPnlPct))
                             }
                             .font(.inter(13, relativeTo: .body).monospacedDigit())
@@ -328,7 +328,7 @@ struct PortfolioSection: View {
                     Text("Total value")
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
-                    Text(String(format: "%.2f%@", totalValue, currSymbol))
+                    Text(StorageService.formatAmount(totalValue, symbol: currSymbol))
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.semibold)
                 }
@@ -338,7 +338,7 @@ struct PortfolioSection: View {
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     HStack(spacing: 2) {
-                        Text(String(format: "%+.2f%@", totalPnl, currSymbol))
+                        Text(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true))
                         Text(String(format: "(%.1f%%)", totalPnlPercent))
                     }
                     .font(.inter(13, relativeTo: .body).monospacedDigit())
@@ -476,7 +476,7 @@ struct HoldingRow: View {
 
                 // Col 2: Price + badge
                 HStack(spacing: 3) {
-                    Text(String(format: "%.2f %@", quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, priceSymbol))
+                    Text("\(priceSymbol)\(String(format: "%.2f", quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate))")
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
                     if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
@@ -502,10 +502,10 @@ struct HoldingRow: View {
                 let pnlPct = costBasis > 0 ? (pnl / costBasis) * 100 : 0
 
                 VStack(alignment: .trailing, spacing: 1) {
-                    Text(String(format: "%.2f%@", marketVal, prefSymbol))
+                    Text(StorageService.formatAmount(marketVal, symbol: prefSymbol))
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
-                    Text(String(format: "%+.2f%@ (%.1f%%)", pnl, prefSymbol, pnlPct))
+                    Text("\(StorageService.formatAmount(pnl, symbol: prefSymbol, signed: true)) (\(String(format: "%.1f%%", pnlPct)))")
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
                         .foregroundColor(pnl >= 0 ? .green : .red)
                 }
@@ -608,7 +608,7 @@ struct EditHoldingView: View {
                 let stockSym = StorageService.currencySymbol(for: quote.currency)
                 let prefSym = StorageService.currencySymbol(for: storageService.preferredCurrency)
                 let dateStr = Self.dateFormatter.string(from: purchaseDate)
-                Text("Cost basis: \(String(format: "%.2f", info.costInPreferred))\(prefSym) (\(String(format: "%.2f", info.costInStock))\(stockSym) × \(String(format: "%.4f", info.rate)) on \(dateStr))")
+                Text("Cost basis: \(prefSym)\(String(format: "%.2f", info.costInPreferred)) (\(stockSym)\(String(format: "%.2f", info.costInStock)) × \(String(format: "%.4f", info.rate)) on \(dateStr))")
                     .font(.inter(10, relativeTo: .caption))
                     .foregroundColor(.secondary)
                     .padding(.horizontal)

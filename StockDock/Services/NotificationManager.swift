@@ -84,7 +84,7 @@ final class AlertMonitor {
             guard AlertEvaluator.shouldFire(alert, quote: quote) else { continue }
 
             let currency = StorageService.currencySymbol(for: quote.currency)
-            let priceStr = String(format: "%.2f %@", quote.effectivePrice, currency)
+            let priceStr = "\(currency)\(String(format: "%.2f", quote.effectivePrice))"
             let sentiment: NotificationManager.Sentiment
             switch alert.condition {
             case .priceAbove, .dailyChangeUp, .near52WeekHigh: sentiment = .positive
