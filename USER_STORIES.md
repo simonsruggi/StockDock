@@ -138,3 +138,29 @@
 - [x] All default to ON (unchanged look on first run)
 - [x] Changes apply instantly and are persisted in `data.json`
 - [x] Reset to Defaults restores all toggles to ON
+
+## US-16: Discord / Slack Webhook Notifications
+**As a** user, **I want** my notifications mirrored to a Discord or Slack channel **so that** I get them on my phone too, not only on the Mac.
+
+- [x] Settings → Discord / Slack: enable toggle + webhook URL field + "Send test" button
+- [x] Auto-detects Discord (rich embed, colored green/red/neutral) vs Slack (text) from the URL host
+- [x] Only https URLs on known webhook hosts accepted (validated, SSRF-safe)
+- [x] All notifications route through `NotificationManager.send` → both macOS and webhook
+- [x] Price alerts inherit colored embeds (up = green, down = red)
+- [x] Works in dev runs (webhook fires even when the macOS notification is a no-op)
+- [x] Webhook config persisted in `data.json`
+
+## US-17: Portfolio Notifications
+**As a** user, **I want** per-portfolio notifications (e.g. "up €820 today") **so that** I'm told when a whole portfolio moves, not just single stocks.
+
+- [x] Configured per portfolio via right-click on the portfolio header → "Notifications…"
+- [x] Four modes: daily move ≥ %, daily move ≥ amount, daily summary, value milestone
+- [x] Defaults: ±1% / ±250 (preferred currency) / milestone every 10,000 / summary after 22:00
+- [x] Daily % / amount use step hysteresis (re-fire only on the next step), reset each calendar day
+- [x] Milestone primes silently on first observation (no spurious "reached X" on setup), fires on new level up/down
+- [x] Daily summary fires once per day after the configured hour: value + today's P&L + top mover
+- [x] Day change computed from the regular-session per-share change × quantity × FX rate (preferred currency)
+- [x] Evaluated on every quote update (WebSocket flush, REST poll, launch, wake)
+- [x] Anti-spam state (`lastStep`/`lastDay`) and rules persisted in `data.json`, keyed by portfolio id
+- [x] Notifications removed automatically when the portfolio is deleted
+- [x] Pure firing logic unit-tested in `PortfolioAlertEvaluatorTests` (crossingStep, milestoneCrossed, shouldFireSummary)

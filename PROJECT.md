@@ -26,11 +26,14 @@ StockDock/
 │   ├── AppDelegate.swift       # NSStatusItem, popover, timer aggiornamento 5s
 │   ├── Models/
 │   │   ├── StockQuote.swift    # Modelli: StockQuote (con 52w range), Portfolio, Holding, SearchResult
-│   │   └── PriceAlert.swift    # PriceAlert, AlertCondition, AlertEvaluator (logica pura testabile)
+│   │   ├── PriceAlert.swift    # PriceAlert, AlertCondition, AlertEvaluator (logica pura testabile)
+│   │   └── PortfolioNotification.swift # PortfolioNotification(Mode) + PortfolioAlertEvaluator (logica pura testabile)
 │   ├── Services/
 │   │   ├── StockService.swift      # Fetch quotazioni e tassi di cambio da Yahoo Finance REST
 │   │   ├── WebSocketService.swift  # Streaming real-time via WSS + protobuf + auto-reconnect
-│   │   ├── NotificationManager.swift # Notifiche locali (UN) + AlertMonitor (valuta e fa scattare gli alert)
+│   │   ├── NotificationManager.swift # Notifiche locali (UN) + inoltro webhook + AlertMonitor
+│   │   ├── PortfolioMonitor.swift  # Valuta le notifiche per-portfolio e le fa scattare
+│   │   ├── WebhookNotifier.swift   # POST a webhook Discord/Slack (auto-detect, https + host whitelist)
 │   │   ├── yaticker.pb.swift       # Codice Swift generato da yaticker.proto
 │   │   └── StorageService.swift    # Persistenza locale (JSON in Application Support)
 │   ├── Views/
@@ -40,8 +43,9 @@ StockDock/
 │   │   ├── PortfolioListView.swift # Portafogli con P&L per holding
 │   │   ├── AddHoldingView.swift# Form aggiunta/modifica holding
 │   │   ├── AlertEditView.swift # Sheet creazione price alert
+│   │   ├── PortfolioNotificationsView.swift # Popover gestione notifiche per-portfolio
 │   │   ├── SearchView.swift    # Ricerca ticker per simbolo o nome
-│   │   └── SettingsView.swift  # Valuta, extended hours, menu bar, gestione price alert
+│   │   └── SettingsView.swift  # Valuta, extended hours, menu bar, price alert, webhook Discord/Slack
 │   ├── Assets.xcassets
 │   └── Resources/AppIcon.icns
 └── screenshots/                # Screenshot per README
@@ -56,9 +60,11 @@ StockDock/
 - **52-week range**: barra nella watchlist che mostra dove sta il prezzo tra minimo e massimo annuale; dati dalle stesse chiamate quote (v7 + fallback v8), preservati tra i tick WSS
 - **Price alert (one-shot)**: 6 condizioni (prezzo sopra/sotto soglia, variazione % giornaliera su/giù, vicino a max/min 52w); creazione da menu contestuale watchlist, gestione in Settings (riarmo, elimina, badge "triggered"); notifica locale macOS via `UNUserNotificationCenter`; valutati ad ogni aggiornamento prezzo (tick WSS, REST, avvio, wake); scattano una volta poi si disattivano
 - **Watchlist Display personalizzabile**: toggle in Settings per mostrare/nascondere nome società, range giornaliero, barra 52w e variazione assoluta in ogni riga; default tutti ON, persistiti in `data.json`
+- **Notifiche Discord/Slack**: in Settings, toggle + URL webhook + "Send test"; tutte le notifiche (price alert e portfolio) vengono inoltrate al webhook oltre alla notifica macOS; auto-detect Discord (embed colorato verde/rosso) vs Slack (testo); solo https su host noti (SSRF-safe); funziona anche in dev
+- **Notifiche per-portfolio**: tasto destro sull'header del portafoglio → "Notifications…"; 4 modalità (variazione giornaliera ≥ %, ≥ importo, riepilogo giornaliero, milestone di valore); default ±1% / ±250 / milestone ogni 10.000 / riepilogo dopo le 22:00; anti-spam a step con hysteresis (re-fire solo allo step successivo, reset giornaliero), milestone "primed" silenziosamente al primo giro; variazione del giorno = `change` per-azione × quantità × cambio nella valuta preferita; valutate ad ogni aggiornamento prezzo; stato e regole persistiti in `data.json` per id portafoglio
 - **Extended hours**: prezzi pre-market e after-hours con rispettivo P&L
-- **Persistenza**: dati salvati in `~/Library/Application Support/StockDock/data.json` (watchlist, portafogli, isinMap, alert, preferenze); nessun dato inviato a server esterni
-- **Test**: target `StockDockTests` (`Tests/`) con unit test della logica pura — `AlertEvaluator` (tutte le condizioni + casi limite) e `fiftyTwoWeekPosition`. Esegui con `swift test`
+- **Persistenza**: dati salvati in `~/Library/Application Support/StockDock/data.json` (watchlist, portafogli, isinMap, alert, notifiche portfolio, webhook, preferenze); nessun dato inviato a server esterni
+- **Test**: target `StockDockTests` (`Tests/`) con unit test della logica pura — `AlertEvaluator` (tutte le condizioni + casi limite), `PortfolioAlertEvaluator` (crossingStep/milestone/summary) e `fiftyTwoWeekPosition`. Esegui con `swift test`
 - **Export/Import portafogli**: export singolo o di tutti i portafogli in JSON via NSSavePanel; import via NSOpenPanel con dedup nomi e UUID rigenerati
 - **Menu bar reattiva**: si aggiorna immediatamente ad ogni modifica di portafoglio, impostazioni o chiusura popover (oltre ai tick WebSocket e REST polling)
 - **Save debounced**: le scritture su disco sono debounced a 100ms per non bloccare il main thread; save immediato alla chiusura dell'app; nessun save ridondante al caricamento iniziale

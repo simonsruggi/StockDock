@@ -133,6 +133,40 @@ struct SettingsView: View {
 
                 Divider()
 
+                // MARK: - Discord / Slack webhook
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Discord / Slack")
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    Toggle("Mirror notifications to a webhook", isOn: $storageService.discordEnabled)
+                        .toggleStyle(.switch)
+                    TextField("https://discord.com/api/webhooks/… or hooks.slack.com/…", text: $storageService.discordWebhookURL)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.inter(10, relativeTo: .caption))
+                        .disabled(!storageService.discordEnabled)
+                    let trimmed = storageService.discordWebhookURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if storageService.discordEnabled && !trimmed.isEmpty && !WebhookNotifier.isValid(trimmed) {
+                        Text("Not a valid Discord or Slack webhook URL (must be https).")
+                            .font(.inter(10, relativeTo: .caption))
+                            .foregroundColor(.red)
+                    } else {
+                        Text("Price alerts and portfolio notifications are also sent here.")
+                            .font(.inter(10, relativeTo: .caption))
+                            .foregroundColor(.secondary)
+                    }
+                    HStack {
+                        Button("Send test") {
+                            NotificationManager.shared.send(
+                                title: "StockDock test",
+                                body: "Webhook is working ✅",
+                                sentiment: .positive)
+                        }
+                        .controlSize(.small)
+                        .disabled(!storageService.discordEnabled || !WebhookNotifier.isValid(trimmed))
+                    }
+                }
+
+                Divider()
+
                 // MARK: - Font
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Font")

@@ -60,6 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var storageServiceObserver: AnyCancellable?
     private var symbolsObserver: AnyCancellable?
     private lazy var alertMonitor = AlertMonitor(storage: storageService)
+    private lazy var portfolioMonitor = PortfolioMonitor(storage: storageService, stockService: stockService)
     let updaterViewModel = UpdaterViewModel()
 
     /// REST polling: quotes + exchange rates as WSS fallback
@@ -95,6 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             guard !Task.isCancelled else { return }
             updateMenuBarTitle()
             alertMonitor.check(quotes: stockService.quotes)
+            portfolioMonitor.check()
             startWebSocket()
         }
 
@@ -136,6 +138,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     await self.stockService.refreshAll(storageService: self.storageService)
                     self.updateMenuBarTitle()
                     self.alertMonitor.check(quotes: self.stockService.quotes)
+                    self.portfolioMonitor.check()
                 }
             }
     }
@@ -201,6 +204,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if changed {
             updateMenuBarTitle()
             alertMonitor.check(quotes: stockService.quotes)
+            portfolioMonitor.check()
         }
     }
 
@@ -248,6 +252,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 await self.stockService.refreshExchangeRates(storageService: self.storageService)
                 self.updateMenuBarTitle()
                 self.alertMonitor.check(quotes: self.stockService.quotes)
+                self.portfolioMonitor.check()
                 self.webSocketService.updateSymbols(Array(self.collectSymbols()))
             }
         }

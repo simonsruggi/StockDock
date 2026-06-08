@@ -53,6 +53,19 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    /// Recurring portfolio notifications, keyed by portfolio id (uuidString).
+    @Published var portfolioNotifications: [String: [PortfolioNotification]] = [:] {
+        didSet { scheduleSave() }
+    }
+
+    /// Discord/Slack incoming webhook for mirroring notifications.
+    @Published var discordWebhookURL: String = "" {
+        didSet { scheduleSave() }
+    }
+    @Published var discordEnabled: Bool = false {
+        didSet { scheduleSave() }
+    }
+
     @Published var fontSizeLevel: Int = 9 {
         didSet {
             FontRegistration.sizeOffset = CGFloat(fontSizeLevel - 9)
@@ -96,6 +109,39 @@ class StorageService: ObservableObject {
 
     func alerts(for symbol: String) -> [PriceAlert] {
         alerts.filter { $0.symbol == symbol }
+    }
+
+    // MARK: - Portfolio notifications
+
+    func notifications(for portfolioId: UUID) -> [PortfolioNotification] {
+        portfolioNotifications[portfolioId.uuidString] ?? []
+    }
+
+    func addPortfolioNotification(_ notification: PortfolioNotification, to portfolioId: UUID) {
+        portfolioNotifications[portfolioId.uuidString, default: []].append(notification)
+    }
+
+    func removePortfolioNotification(id: UUID, from portfolioId: UUID) {
+        portfolioNotifications[portfolioId.uuidString]?.removeAll { $0.id == id }
+        if portfolioNotifications[portfolioId.uuidString]?.isEmpty == true {
+            portfolioNotifications[portfolioId.uuidString] = nil
+        }
+    }
+
+    func setPortfolioNotificationEnabled(id: UUID, in portfolioId: UUID, enabled: Bool) {
+        guard let i = portfolioNotifications[portfolioId.uuidString]?.firstIndex(where: { $0.id == id }) else { return }
+        portfolioNotifications[portfolioId.uuidString]?[i].isEnabled = enabled
+        if enabled {
+            portfolioNotifications[portfolioId.uuidString]?[i].lastStep = nil
+            portfolioNotifications[portfolioId.uuidString]?[i].lastDay = nil
+        }
+    }
+
+    /// Persists the anti-spam state after a notification fires (or primes silently).
+    func updatePortfolioNotificationState(id: UUID, in portfolioId: UUID, lastStep: Double?, lastDay: String?) {
+        guard let i = portfolioNotifications[portfolioId.uuidString]?.firstIndex(where: { $0.id == id }) else { return }
+        portfolioNotifications[portfolioId.uuidString]?[i].lastStep = lastStep
+        portfolioNotifications[portfolioId.uuidString]?[i].lastDay = lastDay
     }
 
     var lastSelectedTab: String = "Watchlist"
@@ -161,11 +207,14 @@ class StorageService: ObservableObject {
     }
 
     func deletePortfolio(at offsets: IndexSet) {
+        let removedIds = offsets.map { portfolios[$0].id.uuidString }
         portfolios.remove(atOffsets: offsets)
+        removedIds.forEach { portfolioNotifications[$0] = nil }
     }
 
     func deletePortfolio(id: UUID) {
         portfolios.removeAll { $0.id == id }
+        portfolioNotifications[id.uuidString] = nil
     }
 
     func addHolding(to portfolioId: UUID, symbol: String, quantity: Double, avgPrice: Double, purchaseDate: Date? = nil) {
@@ -260,6 +309,9 @@ class StorageService: ObservableObject {
         var showDayRange: Bool?
         var show52WeekBar: Bool?
         var showAbsoluteChange: Bool?
+        var portfolioNotifications: [String: [PortfolioNotification]]?
+        var discordWebhookURL: String?
+        var discordEnabled: Bool?
     }
 
     private func scheduleSave() {
@@ -273,7 +325,7 @@ class StorageService: ObservableObject {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -301,6 +353,9 @@ class StorageService: ObservableObject {
             menuBarDisplay = decoded.menuBarDisplay ?? "pnl"
             isinMap = decoded.isinMap ?? [:]
             alerts = decoded.alerts ?? []
+            portfolioNotifications = decoded.portfolioNotifications ?? [:]
+            discordWebhookURL = decoded.discordWebhookURL ?? ""
+            discordEnabled = decoded.discordEnabled ?? false
             showCompanyName = decoded.showCompanyName ?? true
             showDayRange = decoded.showDayRange ?? true
             show52WeekBar = decoded.show52WeekBar ?? true

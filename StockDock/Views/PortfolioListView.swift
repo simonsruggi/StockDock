@@ -269,6 +269,7 @@ struct PortfolioSection: View {
     let portfolio: Portfolio
     @State private var isRenaming = false
     @State private var renameText = ""
+    @State private var showNotifications = false
 
     private func exportSingle() {
         guard let data = storageService.exportPortfolios([portfolio]) else { return }
@@ -403,6 +404,11 @@ struct PortfolioSection: View {
                     } label: {
                         Label("Rename", systemImage: "pencil")
                     }
+                    Button {
+                        showNotifications = true
+                    } label: {
+                        Label("Notifications…", systemImage: "bell")
+                    }
                     Button(action: exportSingle) {
                         Label("Export", systemImage: "square.and.arrow.up")
                     }
@@ -412,6 +418,15 @@ struct PortfolioSection: View {
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
+                }
+                .popover(isPresented: $showNotifications, arrowEdge: .trailing) {
+                    PortfolioNotificationsView(
+                        portfolioId: portfolio.id,
+                        portfolioName: portfolio.name,
+                        onDismiss: { showNotifications = false }
+                    )
+                    .environmentObject(storageService)
+                    .frame(width: 340)
                 }
             }
         }
