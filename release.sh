@@ -228,9 +228,24 @@ git add "$PLIST" "$APPCAST" "$NOTES_FILE" 2>/dev/null || git add "$PLIST" "$APPC
 git commit -m "Release v${VERSION} (build ${BUILD_NUMBER})"
 git push
 
+# Build the GitHub release body from the same HTML notes (converted to Markdown),
+# so the release page shows the human-readable changelog — not just the auto link.
+GH_NOTES_FILE="$(mktemp)"
+if [[ -f "$NOTES_FILE" ]]; then
+    perl -0pe 's{<style.*?</style>}{}gs; s{<h3>(.*?)</h3>}{\n## $1\n}gs; s{<li>(.*?)</li>}{- $1\n}gs; s{</?ul>}{}gs; s{<b>(.*?)</b>}{**$1**}gs; s{<[^>]+>}{}gs; s{&amp;}{&}g; s{&lt;}{<}g; s{&gt;}{>}g; s{^[ \t]+}{}mg' "$NOTES_FILE" | cat -s > "$GH_NOTES_FILE"
+else
+    echo "Version ${VERSION}" > "$GH_NOTES_FILE"
+fi
+# Append a Full Changelog link against the previous (currently-latest) release.
+PREV_TAG="$(gh release view --json tagName -q .tagName 2>/dev/null || true)"
+if [[ -n "$PREV_TAG" ]]; then
+    printf '\n\n**Full Changelog**: https://github.com/%s/compare/%s...%s\n' "$GITHUB_REPO" "$PREV_TAG" "$TAG" >> "$GH_NOTES_FILE"
+fi
+
 gh release create "$TAG" "$ZIP_NAME" \
     --title "${APP_NAME} v${VERSION}" \
-    --generate-notes
+    --notes-file "$GH_NOTES_FILE"
+rm -f "$GH_NOTES_FILE"
 
 info "GitHub release $TAG created"
 
