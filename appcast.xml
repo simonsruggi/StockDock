@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.4.0</title>
-            <pubDate>Thu, 04 Jun 2026 17:55:32 +0200</pubDate>
-            <sparkle:version>10</sparkle:version>
-            <sparkle:shortVersionString>1.4.0</sparkle:shortVersionString>
+            <title>Version 1.5.0</title>
+            <pubDate>Mon, 08 Jun 2026 02:21:07 +0200</pubDate>
+            <sparkle:version>11</sparkle:version>
+            <sparkle:shortVersionString>1.5.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -20,16 +20,19 @@
 </style>
 <h3>New</h3>
 <ul>
-    <li><b>Price alerts</b> — get a notification when a stock rises above or drops below a price, moves more than a set % in a day, or comes near its 52-week high or low. Right-click a stock in the watchlist to set one. Alerts fire once, then disable themselves so you're never spammed.</li>
-    <li><b>52-week range bar</b> — each watchlist row now shows where the price sits between its yearly low and high at a glance.</li>
-    <li><b>Manage alerts in Settings</b> — re-arm, review or delete your alerts from the new Price Alerts section.</li>
-    <li><b>Customizable watchlist</b> — new Watchlist Display settings let you show or hide the company name, day range, 52-week bar and absolute change in each row.</li>
+    <li><b>Portfolio notifications</b> — get notified when a whole portfolio moves, not just single stocks. Right-click a portfolio → “Notifications…” and pick a mode: daily move over a % or amount, a value milestone, or a once-a-day summary with today's P&amp;L and top mover.</li>
+    <li><b>Discord &amp; Slack</b> — mirror every notification to a Discord or Slack channel so you get them on your phone too. Set your webhook in Settings → Notifications and hit “Send test”. Messages arrive as <b>StockDock</b> with the app icon, colored green/red by direction.</li>
+    <li><b>Unified Notifications settings</b> — webhook channels, price alerts and portfolio notifications are now all in one place, with toggles and delete for each.</li>
+</ul>
+<h3>Improved</h3>
+<ul>
+    <li>Currency symbol now appears <b>before</b> the amount everywhere (e.g. €42,300.00, +€820.00).</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.4.0/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.5.0/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="FprS7AMiqCY+uMhwgBkF2vkWzoMHWyMrEPFQcMNKVXhThfga0cIuC9q6sx/W7py+c/hEyYQ725mII8ITHW08CQ=="
-                       length="6303044"/>
+                       sparkle:edSignature="S48W2pcwEoQeqYxFF8OBYv5YlwtFbWz6Hjs25cqTZbscIQYnK+yEi+pRDkz52i32XsThLaK8abCu+vdG/eaAAQ=="
+                       length="6493835"/>
         </item>
     </channel>
 </rss>
