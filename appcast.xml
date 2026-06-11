@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.5.0</title>
-            <pubDate>Mon, 08 Jun 2026 02:21:07 +0200</pubDate>
-            <sparkle:version>11</sparkle:version>
-            <sparkle:shortVersionString>1.5.0</sparkle:shortVersionString>
+            <title>Version 1.5.1</title>
+            <pubDate>Thu, 11 Jun 2026 10:34:25 +0200</pubDate>
+            <sparkle:version>12</sparkle:version>
+            <sparkle:shortVersionString>1.5.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -18,21 +18,15 @@
     ul { padding-left: 20px; margin: 4px 0; }
     li { margin-bottom: 4px; }
 </style>
-<h3>New</h3>
-<ul>
-    <li><b>Portfolio notifications</b> — get notified when a whole portfolio moves, not just single stocks. Right-click a portfolio → “Notifications…” and pick a mode: daily move over a % or amount, a value milestone, or a once-a-day summary with today's P&amp;L and top mover.</li>
-    <li><b>Discord &amp; Slack</b> — mirror every notification to a Discord or Slack channel so you get them on your phone too. Set your webhook in Settings → Notifications and hit “Send test”. Messages arrive as <b>StockDock</b> with the app icon, colored green/red by direction.</li>
-    <li><b>Unified Notifications settings</b> — webhook channels, price alerts and portfolio notifications are now all in one place, with toggles and delete for each.</li>
-</ul>
 <h3>Improved</h3>
 <ul>
-    <li>Currency symbol now appears <b>before</b> the amount everywhere (e.g. €42,300.00, +€820.00).</li>
+    <li><b>Portfolio notifications now show what moved</b> — daily move alerts and the daily summary list your holdings with their change % and value (biggest movers first), instead of just a single top mover. At a glance you can see which stocks drove the change. Works in the macOS notification and in your Discord/Slack mirror.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.5.0/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.5.1/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="S48W2pcwEoQeqYxFF8OBYv5YlwtFbWz6Hjs25cqTZbscIQYnK+yEi+pRDkz52i32XsThLaK8abCu+vdG/eaAAQ=="
-                       length="6493835"/>
+                       sparkle:edSignature="Ko6335pJud4yDbINklbgUvzGbs8/wkyR52MtDhiHF/FtdJvElZnsIp32g1pk7zu92WHTwnoNRh8Npt8m4Tl0Dw=="
+                       length="6505837"/>
         </item>
     </channel>
 </rss>
