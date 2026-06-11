@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.5.1</title>
-            <pubDate>Thu, 11 Jun 2026 10:34:25 +0200</pubDate>
-            <sparkle:version>12</sparkle:version>
-            <sparkle:shortVersionString>1.5.1</sparkle:shortVersionString>
+            <title>Version 1.5.2</title>
+            <pubDate>Fri, 12 Jun 2026 00:25:29 +0200</pubDate>
+            <sparkle:version>13</sparkle:version>
+            <sparkle:shortVersionString>1.5.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -18,15 +18,19 @@
     ul { padding-left: 20px; margin: 4px 0; }
     li { margin-bottom: 4px; }
 </style>
+<h3>Fixed</h3>
+<ul>
+    <li><b>No more notification spam</b> — portfolio notifications (daily move and value milestones) now fire only on genuinely new highs or lows. When your portfolio hovers around a threshold or bounces back and forth, you'll no longer get a flood of repeat alerts. You still get one ping for each new step up or down.</li>
+</ul>
 <h3>Improved</h3>
 <ul>
-    <li><b>Portfolio notifications now show what moved</b> — daily move alerts and the daily summary list your holdings with their change % and value (biggest movers first), instead of just a single top mover. At a glance you can see which stocks drove the change. Works in the macOS notification and in your Discord/Slack mirror.</li>
+    <li><b>Version shown in the header</b> — the popover header now always shows the app version next to the StockDock title.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.5.1/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.5.2/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="Ko6335pJud4yDbINklbgUvzGbs8/wkyR52MtDhiHF/FtdJvElZnsIp32g1pk7zu92WHTwnoNRh8Npt8m4Tl0Dw=="
-                       length="6505837"/>
+                       sparkle:edSignature="SIOdqVb2VPdptVdDMGrdsaIwYqW1Go1VkCdahHdh8C/Xc4mE2S+KX/1WkVlc8byUsq6jf7qUGBdckiazfmvADw=="
+                       length="6513825"/>
         </item>
     </channel>
 </rss>
