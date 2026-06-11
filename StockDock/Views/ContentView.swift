@@ -73,6 +73,12 @@ struct ContentView: View {
         }
     }
 
+    /// Marketing version (CFBundleShortVersionString) prefixed with "v", e.g. "v1.5.1".
+    private var appVersion: String {
+        let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
+        return "v\(v)"
+    }
+
     private var mainContent: some View {
         VStack(spacing: 0) {
             // Header
@@ -88,6 +94,10 @@ struct ContentView: View {
                             .padding(.horizontal, 4)
                             .padding(.vertical, 1)
                             .background(RoundedRectangle(cornerRadius: 3).fill(.orange))
+                    } else {
+                        Text(appVersion)
+                            .font(.inter(10, weight: .medium, relativeTo: .caption2))
+                            .foregroundColor(.secondary)
                     }
                 }
 
