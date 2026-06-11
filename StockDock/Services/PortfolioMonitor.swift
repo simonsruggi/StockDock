@@ -20,11 +20,18 @@ final class PortfolioMonitor {
         var totalValue = 0.0
         var dayChange = 0.0          // today's gain/loss (absolute)
         var prevValue = 0.0          // total value at yesterday's close
-        var topMoverSymbol = ""
-        var topMoverPercent = 0.0
+        var holdings: [HoldingLine] = []  // per-symbol breakdown, sorted by day impact
         var hasData = false
 
         var dayChangePercent: Double { prevValue > 0 ? (dayChange / prevValue) * 100 : 0 }
+    }
+
+    /// One line of the per-holding breakdown shown in notification bodies.
+    private struct HoldingLine {
+        let symbol: String
+        let changePercent: Double    // today's % change for the symbol
+        let value: Double            // holding market value, in preferred currency
+        let dayContribution: Double  // today's gain/loss this symbol added, in preferred currency
     }
 
     func check(now: Date = Date()) {
@@ -67,7 +74,9 @@ final class PortfolioMonitor {
         let up = step > 0
         let pctStr = String(format: "%+.2f%%", metrics.dayChangePercent)
         let absStr = StorageService.formatAmount(metrics.dayChange, symbol: currSym, signed: true)
-        let body = "Today: \(absStr) (\(pctStr)) — value \(StorageService.formatAmount(metrics.totalValue, symbol: currSym))"
+        var body = "Today: \(absStr) (\(pctStr)) — value \(StorageService.formatAmount(metrics.totalValue, symbol: currSym))"
+        let lines = breakdownLines(metrics: metrics, currSym: currSym)
+        if !lines.isEmpty { body += "\n\n" + lines.joined(separator: "\n") }
         notifier.send(
             title: "\(portfolio.name) \(up ? "📈" : "📉") \(isPercent ? pctStr : absStr) today",
             body: body,
@@ -99,9 +108,8 @@ final class PortfolioMonitor {
         guard PortfolioAlertEvaluator.shouldFireSummary(today: today, lastDay: n.lastDay, isAfterClose: afterClose) else { return }
         let up = metrics.dayChange >= 0
         var body = "Value \(StorageService.formatAmount(metrics.totalValue, symbol: currSym)) — today \(StorageService.formatAmount(metrics.dayChange, symbol: currSym, signed: true)) (\(String(format: "%+.2f%%", metrics.dayChangePercent)))"
-        if !metrics.topMoverSymbol.isEmpty {
-            body += "\nTop mover: \(metrics.topMoverSymbol) \(String(format: "%+.2f%%", metrics.topMoverPercent))"
-        }
+        let lines = breakdownLines(metrics: metrics, currSym: currSym)
+        if !lines.isEmpty { body += "\n\n" + lines.joined(separator: "\n") }
         notifier.send(
             title: "\(portfolio.name) — daily summary",
             body: body,
@@ -115,22 +123,48 @@ final class PortfolioMonitor {
 
     private func computeMetrics(_ portfolio: Portfolio) -> Metrics {
         var m = Metrics()
+        // Aggregate by symbol so a portfolio holding the same stock in multiple lots
+        // shows a single combined line.
+        var acc: [String: (changePercent: Double, value: Double, contribution: Double)] = [:]
         for holding in portfolio.holdings {
             guard let quote = stockService.quotes[holding.symbol] else { continue }
             m.hasData = true
             let rate = stockService.rate(from: quote.currency)
             let displayPrice = quote.displayPrice(extendedHours: storage.showExtendedHours)
-            m.totalValue += holding.marketValue(currentPrice: displayPrice) * rate
+            let value = holding.marketValue(currentPrice: displayPrice) * rate
             // Today's change uses the regular-session change per share.
-            m.dayChange += holding.quantity * quote.change * rate
+            let contribution = holding.quantity * quote.change * rate
             let prevClose = quote.price - quote.change
+            m.totalValue += value
+            m.dayChange += contribution
             m.prevValue += holding.quantity * prevClose * rate
-            if abs(quote.changePercent) > abs(m.topMoverPercent) {
-                m.topMoverPercent = quote.changePercent
-                m.topMoverSymbol = quote.symbol
-            }
+            var entry = acc[quote.symbol] ?? (quote.changePercent, 0, 0)
+            entry.changePercent = quote.changePercent
+            entry.value += value
+            entry.contribution += contribution
+            acc[quote.symbol] = entry
         }
+        m.holdings = acc
+            .map { HoldingLine(symbol: $0.key, changePercent: $0.value.changePercent,
+                               value: $0.value.value, dayContribution: $0.value.contribution) }
+            .sorted { abs($0.dayContribution) > abs($1.dayContribution) }
         return m
+    }
+
+    /// Builds the per-holding breakdown lines (symbol · today's % · value), biggest
+    /// daily movers first. Capped so notification bodies stay readable.
+    private func breakdownLines(metrics: Metrics, currSym: String, limit: Int = 12) -> [String] {
+        guard !metrics.holdings.isEmpty else { return [] }
+        var lines = metrics.holdings.prefix(limit).map { h -> String in
+            let arrow = h.changePercent >= 0 ? "▲" : "▼"
+            let pct = String(format: "%+.2f%%", h.changePercent)
+            let val = StorageService.formatAmount(h.value, symbol: currSym)
+            return "\(arrow) \(h.symbol)  \(pct)  ·  \(val)"
+        }
+        if metrics.holdings.count > limit {
+            lines.append("…and \(metrics.holdings.count - limit) more")
+        }
+        return lines
     }
 
     private static let dayFormatter: DateFormatter = {
