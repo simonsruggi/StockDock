@@ -132,15 +132,18 @@ class StorageService: ObservableObject {
         guard let i = portfolioNotifications[portfolioId.uuidString]?.firstIndex(where: { $0.id == id }) else { return }
         portfolioNotifications[portfolioId.uuidString]?[i].isEnabled = enabled
         if enabled {
-            portfolioNotifications[portfolioId.uuidString]?[i].lastStep = nil
+            portfolioNotifications[portfolioId.uuidString]?[i].lastStepUp = nil
+            portfolioNotifications[portfolioId.uuidString]?[i].lastStepDown = nil
             portfolioNotifications[portfolioId.uuidString]?[i].lastDay = nil
         }
     }
 
-    /// Persists the anti-spam state after a notification fires (or primes silently).
-    func updatePortfolioNotificationState(id: UUID, in portfolioId: UUID, lastStep: Double?, lastDay: String?) {
+    /// Persists the anti-spam high-water state after a notification fires (or primes silently).
+    func updatePortfolioNotificationState(id: UUID, in portfolioId: UUID,
+                                          lastStepUp: Double?, lastStepDown: Double?, lastDay: String?) {
         guard let i = portfolioNotifications[portfolioId.uuidString]?.firstIndex(where: { $0.id == id }) else { return }
-        portfolioNotifications[portfolioId.uuidString]?[i].lastStep = lastStep
+        portfolioNotifications[portfolioId.uuidString]?[i].lastStepUp = lastStepUp
+        portfolioNotifications[portfolioId.uuidString]?[i].lastStepDown = lastStepDown
         portfolioNotifications[portfolioId.uuidString]?[i].lastDay = lastDay
     }
 

@@ -11,6 +11,14 @@ final class NotificationManager {
     /// True only when running as a bundled, identifiable app where notifications work.
     private let isAvailable: Bool
 
+    /// Last delivery time per notification identifier — backs the burst de-duplicator so a
+    /// logic regression can never spam the *same* event at WebSocket tick rate.
+    private var lastSent: [String: Date] = [:]
+
+    /// Minimum gap before the exact same identifier may fire again. Distinct events use distinct
+    /// identifiers, so this only ever swallows rapid duplicates — never a genuinely new alert.
+    private static let dedupWindow: TimeInterval = 120
+
     private init() {
         isAvailable = Bundle.main.bundleIdentifier != nil
     }
@@ -22,8 +30,21 @@ final class NotificationManager {
         }
     }
 
+    /// Pure burst de-duplication: deliver when the identifier has never fired, or last fired
+    /// at least `window` ago. Keeps the spam guard testable without a live notification center.
+    nonisolated static func shouldDeliver(identifier: String, now: Date, lastSent: Date?, window: TimeInterval) -> Bool {
+        guard let lastSent else { return true }
+        return now.timeIntervalSince(lastSent) >= window
+    }
+
     /// - Parameter sentiment: drives the Discord embed color (positive/negative/neutral).
     func send(title: String, body: String, identifier: String = UUID().uuidString, sentiment: Sentiment = .neutral) {
+        let now = Date()
+        guard Self.shouldDeliver(identifier: identifier, now: now, lastSent: lastSent[identifier], window: Self.dedupWindow) else {
+            return
+        }
+        lastSent[identifier] = now
+
         // Forward to the configured webhook regardless of bundle state (works in dev too).
         forwardToWebhook(title: title, body: body, sentiment: sentiment)
 

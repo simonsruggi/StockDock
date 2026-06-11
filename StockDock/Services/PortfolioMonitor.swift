@@ -67,9 +67,11 @@ final class PortfolioMonitor {
 
     private func evaluateDailyStep(_ n: PortfolioNotification, portfolio: Portfolio, today: String,
                                    value: Double, metrics: Metrics, currSym: String, isPercent: Bool) {
-        // Steps reset each calendar day.
-        let scopedLast = (n.lastDay == today) ? n.lastStep : nil
-        guard let step = PortfolioAlertEvaluator.crossingStep(value: value, threshold: n.threshold, lastStep: scopedLast) else { return }
+        // High-water marks reset each calendar day.
+        let scopedUp = (n.lastDay == today) ? n.lastStepUp : nil
+        let scopedDown = (n.lastDay == today) ? n.lastStepDown : nil
+        guard let step = PortfolioAlertEvaluator.crossingStep(value: value, threshold: n.threshold,
+                                                              lastUp: scopedUp, lastDown: scopedDown) else { return }
 
         let up = step > 0
         let pctStr = String(format: "%+.2f%%", metrics.dayChangePercent)
@@ -83,24 +85,34 @@ final class PortfolioMonitor {
             identifier: "pf-\(n.id.uuidString)-\(today)-\(Int(step))",
             sentiment: up ? .positive : .negative
         )
-        storage.updatePortfolioNotificationState(id: n.id, in: portfolio.id, lastStep: step, lastDay: today)
+        // Advance only the side that just fired; carry the other side's high-water within the day.
+        let newUp = up ? step : scopedUp
+        let newDown = up ? scopedDown : step
+        storage.updatePortfolioNotificationState(id: n.id, in: portfolio.id,
+                                                 lastStepUp: newUp, lastStepDown: newDown, lastDay: today)
     }
 
     private func evaluateMilestone(_ n: PortfolioNotification, portfolio: Portfolio, metrics: Metrics, currSym: String) {
-        guard let milestone = PortfolioAlertEvaluator.milestoneCrossed(totalValue: metrics.totalValue, step: n.threshold, lastMilestone: n.lastStep) else { return }
-        // First observation primes the state silently — avoids a spurious "reached X" on setup.
-        guard let last = n.lastStep else {
-            storage.updatePortfolioNotificationState(id: n.id, in: portfolio.id, lastStep: milestone, lastDay: n.lastDay)
+        guard let milestone = PortfolioAlertEvaluator.milestoneCrossed(totalValue: metrics.totalValue, step: n.threshold,
+                                                                       highest: n.lastStepUp, lowest: n.lastStepDown) else { return }
+        // First observation primes both bounds silently — avoids a spurious "reached X" on setup.
+        guard n.lastStepUp != nil || n.lastStepDown != nil else {
+            storage.updatePortfolioNotificationState(id: n.id, in: portfolio.id,
+                                                     lastStepUp: milestone, lastStepDown: milestone, lastDay: n.lastDay)
             return
         }
-        let up = milestone > last
+        let up = milestone > (n.lastStepUp ?? milestone)
         notifier.send(
             title: "\(portfolio.name) \(up ? "🎯" : "⚠️") \(StorageService.formatAmount(milestone, symbol: currSym, decimals: 0))",
             body: "Total value \(up ? "crossed above" : "dropped below") \(StorageService.formatAmount(milestone, symbol: currSym, decimals: 0)) — now \(StorageService.formatAmount(metrics.totalValue, symbol: currSym))",
             identifier: "pf-\(n.id.uuidString)-ms-\(Int(milestone))",
             sentiment: up ? .positive : .negative
         )
-        storage.updatePortfolioNotificationState(id: n.id, in: portfolio.id, lastStep: milestone, lastDay: n.lastDay)
+        // Widen the bounds: push the high up or the low down.
+        let newHigh = max(milestone, n.lastStepUp ?? milestone)
+        let newLow = min(milestone, n.lastStepDown ?? milestone)
+        storage.updatePortfolioNotificationState(id: n.id, in: portfolio.id,
+                                                 lastStepUp: newHigh, lastStepDown: newLow, lastDay: n.lastDay)
     }
 
     private func evaluateSummary(_ n: PortfolioNotification, portfolio: Portfolio, today: String, hour: Int, metrics: Metrics, currSym: String) {
@@ -116,7 +128,8 @@ final class PortfolioMonitor {
             identifier: "pf-\(n.id.uuidString)-sum-\(today)",
             sentiment: up ? .positive : .negative
         )
-        storage.updatePortfolioNotificationState(id: n.id, in: portfolio.id, lastStep: n.lastStep, lastDay: today)
+        storage.updatePortfolioNotificationState(id: n.id, in: portfolio.id,
+                                                 lastStepUp: n.lastStepUp, lastStepDown: n.lastStepDown, lastDay: today)
     }
 
     // MARK: - Metrics

@@ -87,6 +87,11 @@ struct ContentView: View {
                     Text("StockDock")
                         .font(.inter(13, weight: .bold, relativeTo: .headline))
                         .fontWeight(.bold)
+                    Text(appVersion)
+                        .font(.inter(10, weight: .medium, relativeTo: .caption2))
+                        .foregroundColor(.secondary)
+                    // Dev builds ship without a Sparkle feed URL — flag them so a dev
+                    // window is never mistaken for the released app.
                     if Bundle.main.infoDictionary?["SUFeedURL"] == nil {
                         Text("DEV")
                             .font(.inter(8, weight: .bold, relativeTo: .caption2))
@@ -94,10 +99,6 @@ struct ContentView: View {
                             .padding(.horizontal, 4)
                             .padding(.vertical, 1)
                             .background(RoundedRectangle(cornerRadius: 3).fill(.orange))
-                    } else {
-                        Text(appVersion)
-                            .font(.inter(10, weight: .medium, relativeTo: .caption2))
-                            .foregroundColor(.secondary)
                     }
                 }
 

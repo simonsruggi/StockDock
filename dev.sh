@@ -6,6 +6,10 @@ cd "$(dirname "$0")"
 APP=".build/StockDock-Dev.app"
 PLIST="StockDock/Info.plist"
 
+# Reuse the real marketing/build version so the dev header reads e.g. "StockDock v1.5.2 DEV".
+DEV_VERSION="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$PLIST")"
+DEV_BUILD="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")"
+
 echo "Building..."
 xcodebuild -scheme StockDock -configuration Release \
     -destination 'platform=macOS' \
@@ -45,9 +49,9 @@ cat > "$APP/Contents/Info.plist" << EOF
     <key>CFBundleName</key>
     <string>StockDock Dev</string>
     <key>CFBundleShortVersionString</key>
-    <string>DEV</string>
+    <string>${DEV_VERSION}</string>
     <key>CFBundleVersion</key>
-    <string>0</string>
+    <string>${DEV_BUILD}</string>
     <key>LSUIElement</key>
     <true/>
     <key>NSAppTransportSecurity</key>

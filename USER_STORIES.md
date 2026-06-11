@@ -157,11 +157,12 @@
 - [x] Also listed and manageable (toggle / delete) under Settings → Notifications → Portfolio notifications, grouped by portfolio
 - [x] Four modes: daily move ≥ %, daily move ≥ amount, daily summary, value milestone
 - [x] Defaults: ±1% / ±250 (preferred currency) / milestone every 10,000 / summary after 22:00
-- [x] Daily % / amount use step hysteresis (re-fire only on the next step), reset each calendar day
-- [x] Milestone primes silently on first observation (no spurious "reached X" on setup), fires on new level up/down
+- [x] Daily % / amount fire only on genuinely NEW extremes via per-direction high-water marks (`lastStepUp`/`lastStepDown`): going up notifies each new step, but retracing, hovering at a boundary, or oscillating across zero stays silent; reset each calendar day
+- [x] Milestone primes silently on first observation (no spurious "reached X" on setup), then fires only on a new high or new low — bouncing around a milestone boundary does not re-notify
 - [x] Daily summary fires once per day after the configured hour: value + today's P&L + top mover
 - [x] Day change computed from the regular-session per-share change × quantity × FX rate (preferred currency)
 - [x] Evaluated on every quote update (WebSocket flush, REST poll, launch, wake)
-- [x] Anti-spam state (`lastStep`/`lastDay`) and rules persisted in `data.json`, keyed by portfolio id
+- [x] Burst de-dup backstop in `NotificationManager.send`: the exact same identifier cannot re-fire within 120s, so no notification type can spam at tick rate even on a logic regression
+- [x] Anti-spam state (`lastStepUp`/`lastStepDown`/`lastDay`) and rules persisted in `data.json`, keyed by portfolio id
 - [x] Notifications removed automatically when the portfolio is deleted
 - [x] Pure firing logic unit-tested in `PortfolioAlertEvaluatorTests` (crossingStep, milestoneCrossed, shouldFireSummary)
