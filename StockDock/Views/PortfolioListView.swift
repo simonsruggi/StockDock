@@ -461,7 +461,7 @@ struct HoldingRow: View {
                 Text(holding.symbol)
                     .font(.inter(13, relativeTo: .body).monospacedDigit())
                     .fontWeight(.bold)
-                Text("\(formatQty(holding.quantity))\u{00D7}\(String(format: "%.2f", holding.avgPrice))")
+                Text("\(formatQty(holding.quantity))\u{00D7}\(StorageService.formatNumber(holding.avgPrice, decimals: 2))")
                     .font(.inter(10, relativeTo: .caption).monospacedDigit())
                     .foregroundColor(.secondary)
             }
@@ -476,7 +476,7 @@ struct HoldingRow: View {
 
                 // Col 2: Price + badge
                 HStack(spacing: 3) {
-                    Text("\(priceSymbol)\(String(format: "%.2f", quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate))")
+                    Text("\(priceSymbol)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2))")
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
                     if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {

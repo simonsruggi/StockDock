@@ -59,7 +59,7 @@ struct AlertEditView: View {
             }
 
             if let q = quote {
-                Text("Current price: \(currencySymbol)\(String(format: "%.2f", q.effectivePrice))")
+                Text("Current price: \(currencySymbol)\(StorageService.formatNumber(q.effectivePrice, decimals: 2))")
                     .font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
             }
 

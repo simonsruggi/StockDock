@@ -334,7 +334,7 @@ struct QuoteRow: View {
             // Col 2: Price + day range
             VStack(spacing: 1) {
                 HStack(spacing: 3) {
-                    Text("\(currSymbol)\(String(format: "%.2f", quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate))")
+                    Text("\(currSymbol)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate, decimals: 2))")
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
                     if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
@@ -350,7 +350,7 @@ struct QuoteRow: View {
                     }
                 }
                 if storageService.showDayRange, let high = quote.dayHigh, let low = quote.dayLow {
-                    Text(String(format: "%.2f – %.2f", low * priceRate, high * priceRate))
+                    Text("\(StorageService.formatNumber(low * priceRate, decimals: 2)) – \(StorageService.formatNumber(high * priceRate, decimals: 2))")
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
                         .foregroundColor(.secondary)
                 }
@@ -358,12 +358,12 @@ struct QuoteRow: View {
                    let pos = quote.fiftyTwoWeekPosition,
                    let low = quote.fiftyTwoWeekLow, let high = quote.fiftyTwoWeekHigh {
                     HStack(spacing: 4) {
-                        Text(String(format: "%.0f", low * priceRate))
+                        Text(StorageService.formatNumber(low * priceRate, decimals: 0))
                             .font(.inter(8, relativeTo: .caption2).monospacedDigit())
                             .foregroundColor(.secondary)
                         RangeBar(position: pos)
                             .frame(width: 56)
-                        Text(String(format: "%.0f", high * priceRate))
+                        Text(StorageService.formatNumber(high * priceRate, decimals: 0))
                             .font(.inter(8, relativeTo: .caption2).monospacedDigit())
                             .foregroundColor(.secondary)
                     }

@@ -151,11 +151,43 @@ class StorageService: ObservableObject {
 
     static let supportedCurrencies = ["EUR", "USD", "GBP", "CHF", "JPY", "CAD", "AUD"]
 
+    /// Formats a plain number with a thousands grouping separator and locale-aware
+    /// decimal separator, e.g. "1,234.56" (en) / "1.234,56" (it). Falls back to a
+    /// non-grouped representation if the formatter ever fails.
+    nonisolated static func formatNumber(_ value: Double, decimals: Int, locale: Locale = .autoupdatingCurrent) -> String {
+        // Grouping is inserted manually (every 3 digits from the right) so every value
+        // > 1,000 is separated regardless of the locale's CLDR rule (e.g. it/es only group
+        // from 10,000 by default), and without needing macOS 15's `minimumGroupingDigits`.
+        let formatter = NumberFormatter()
+        formatter.locale = locale
+        formatter.numberStyle = .decimal
+        let groupSep = formatter.groupingSeparator ?? ","
+        let decSep = formatter.decimalSeparator ?? "."
+
+        // %f always emits "." as the decimal separator, independent of locale.
+        let rounded = String(format: "%.\(decimals)f", abs(value))
+        let parts = rounded.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
+        let intDigits = String(parts[0])
+        let fracDigits = parts.count > 1 ? String(parts[1]) : ""
+
+        var grouped = ""
+        var count = 0
+        for ch in intDigits.reversed() {
+            if count > 0 && count % 3 == 0 { grouped.append(contentsOf: groupSep.reversed()) }
+            grouped.append(ch)
+            count += 1
+        }
+        var result = String(grouped.reversed())
+        if decimals > 0 { result += decSep + fracDigits }
+        return (value < 0 ? "-" : "") + result
+    }
+
     /// Formats an amount with the currency symbol *before* the figure, e.g.
-    /// "€1234.56", "+€820.00", "-€540.00". The sign (when shown) precedes the symbol.
-    static func formatAmount(_ value: Double, symbol: String, decimals: Int = 2, signed: Bool = false) -> String {
+    /// "€1,234.56", "+€820.00", "-€540.00". The sign (when shown) precedes the symbol.
+    nonisolated static func formatAmount(_ value: Double, symbol: String, decimals: Int = 2, signed: Bool = false,
+                             locale: Locale = .autoupdatingCurrent) -> String {
         let sign = signed ? (value >= 0 ? "+" : "-") : (value < 0 ? "-" : "")
-        let magnitude = String(format: "%.\(decimals)f", abs(value))
+        let magnitude = formatNumber(abs(value), decimals: decimals, locale: locale)
         return "\(sign)\(symbol)\(magnitude)"
     }
 

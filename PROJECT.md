@@ -35,7 +35,7 @@ StockDock/
 │   │   ├── PortfolioMonitor.swift  # Valuta le notifiche per-portfolio e le fa scattare
 │   │   ├── WebhookNotifier.swift   # POST a webhook Discord/Slack (auto-detect, https + host whitelist)
 │   │   ├── yaticker.pb.swift       # Codice Swift generato da yaticker.proto
-│   │   └── StorageService.swift    # Persistenza locale (JSON in Application Support)
+│   │   └── StorageService.swift    # Persistenza locale (JSON) + formatNumber/formatAmount (separatore migliaia locale-aware)
 │   ├── Views/
 │   │   ├── ContentView.swift   # Contenitore con tab (Watchlist / Portfolios / Settings)
 │   │   ├── WatchlistView.swift # Lista ticker con prezzi, variazione giornaliera e 52w range bar

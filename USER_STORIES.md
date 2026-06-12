@@ -7,6 +7,7 @@
 - [x] Values update in real time with prices
 - [x] Green (positive) / red (negative) color coding
 - [x] 8 display modes: P&L, P&L %, P&L + %, Total Value, Best Stock, Worst Stock, Best & Worst, Icon Only
+- [x] Numbers > 1,000 use a locale-aware thousands separator (menu bar, watchlist, portfolio, alerts, notifications)
 
 ## US-02: Watchlist
 **As a** user, **I want** to maintain a watchlist of stocks **so that** I can monitor their prices.

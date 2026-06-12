@@ -403,7 +403,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let priceCurr = storageService.stockPriceCurrency
                     let sym = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
                     let sign = quote.changePercent >= 0 ? "+" : ""
-                    title = " \(quote.symbol) \(sym)\(String(format: "%.2f", quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate)) \(sign)\(String(format: "%.1f", quote.changePercent))%"
+                    title = " \(quote.symbol) \(sym)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2)) \(sign)\(String(format: "%.1f", quote.changePercent))%"
                     color = quote.changePercent >= 0 ? .systemGreen : .systemRed
                 } else {
                     title = " \(symbol)"
