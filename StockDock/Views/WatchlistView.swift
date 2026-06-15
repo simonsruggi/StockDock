@@ -380,14 +380,14 @@ struct QuoteRow: View {
                         .fontWeight(.medium)
                         .foregroundColor(quote.isPositive ? .green : .red)
                 }
-                Text(String(format: "%.1f%%", quote.changePercent))
+                Text(String(format: "%.\(storageService.percentDecimals)f%%", quote.changePercent))
                     .font(.inter(10, relativeTo: .caption).monospacedDigit())
                     .foregroundColor(quote.isPositive ? .green : .red)
 
                 if storageService.showExtendedHours,
                    let extChg = quote.extendedChange,
                    let extPct = quote.extendedChangePercent {
-                    Text(String(format: "%+.2f (%.1f%%)", extChg * priceRate, extPct))
+                    Text(String(format: "%+.2f (%.\(storageService.percentDecimals)f%%)", extChg * priceRate, extPct))
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
                         .foregroundColor(extChg >= 0 ? .green.opacity(0.8) : .red.opacity(0.8))
                 }

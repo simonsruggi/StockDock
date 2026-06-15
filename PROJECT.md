@@ -53,7 +53,10 @@ StockDock/
 
 ## Funzionalità chiave
 
-- **Menu bar configurabile**: P&L assoluto, P&L %, P&L + %, valore totale portafoglio, miglior/peggior titolo watchlist, solo icona
+- **Menu bar configurabile**: P&L assoluto, P&L %, P&L + %, valore totale portafoglio, miglior/peggior titolo watchlist, riepilogo portafoglio, **Ticker (scorre la watchlist)**, **Ticker + Portfolio (scorre watchlist + 1 slide riepilogo portafoglio)**, solo icona
+- **Colori menu bar personalizzabili**: in Settings → "Menu Bar Colors", color picker per i colori di rialzo/ribasso (default = verde/rosso di sistema finché non si toccano) + toggle "Use system text color" che usa il colore testo di sistema (sempre leggibile su qualsiasi sfondo; la direzione resta data da `+/−` e `▲▼`). Persistiti come hex in `data.json`; helper `ColorHex.swift` (bridge hex↔`NSColor`/`Color`)
+- **Percentuali a 2 decimali**: toggle in Settings (default off per tenere la barra compatta) che porta tutte le % da 1 a 2 decimali (menu bar, watchlist, portafogli)
+- **Localizzazione (6 lingue)**: selettore in Settings → "Language" (English default) con Inglese, Tedesco, Francese, Spagnolo, Italiano, Portoghese. Stringhe in `Resources/<lang>.lproj/Localizable.strings`; override in-app del locale via `\.environment(\.locale, …)` reattivo su `ContentView` (NON via system locale). `release.sh` copia i `.lproj` in `Contents/Resources` (Bundle.main) così SwiftUI li risolve; `Package.swift` ha `defaultLocalization: "en"`. ⚠️ In `swift run` (dev) le risorse SPM finiscono in `Bundle.module`, quindi la traduzione si vede **solo** nell'app bundlata
 - **Watchlist**: aggiunta titoli per simbolo, nome o ISIN con ricerca live; prezzi in valuta originale o convertiti; badge PRE/POST per extended hours; filtro locale per nome, simbolo o ISIN
 - **Portafogli multipli**: prezzo medio di carico, data acquisto per tasso di cambio storico, P&L per holding e totale
 - **Conversione valuta**: supporta EUR, USD, GBP, CHF, JPY, CAD, AUD; tassi di cambio live e storici

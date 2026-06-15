@@ -294,7 +294,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func updateMenuBarTitle() {
         let displayMode = storageService.menuBarDisplay
 
-        if displayMode == "ticker" {
+        if displayMode == "ticker" || displayMode == "tickerPortfolio" {
             if tickerTimer == nil { startTickerTimer() }
         } else {
             stopTickerTimer()
@@ -335,26 +335,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let title: String
         let color: NSColor
 
+        // Issue #7.1: customizable gain/loss colors. "Use system color" overrides both
+        // with the always-readable label color (direction stays in the +/- and ▲▼).
+        let upColor: NSColor = storageService.menuBarUseSystemColor ? .labelColor : storageService.gainColor
+        let downColor: NSColor = storageService.menuBarUseSystemColor ? .labelColor : storageService.lossColor
+
         switch displayMode {
         case "totalValue":
             title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol))"
-            color = totalPnl >= 0 ? .systemGreen : .systemRed
+            color = totalPnl >= 0 ? upColor : downColor
 
         case "pnlPercent":
             let sign = totalPnlPct >= 0 ? "+" : ""
-            title = " P&L \(sign)\(String(format: "%.1f", totalPnlPct))%"
-            color = totalPnlPct >= 0 ? .systemGreen : .systemRed
+            title = " P&L \(sign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%"
+            color = totalPnlPct >= 0 ? upColor : downColor
 
         case "pnlFull":
             let pctSign = totalPnlPct >= 0 ? "+" : ""
-            title = " \(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true)) (\(pctSign)\(String(format: "%.1f", totalPnlPct))%)"
-            color = totalPnl >= 0 ? .systemGreen : .systemRed
+            title = " \(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true)) (\(pctSign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%)"
+            color = totalPnl >= 0 ? upColor : downColor
 
         case "bestStock":
             if let best = bestStock {
                 let sign = best.changePercent >= 0 ? "+" : ""
-                title = " \(best.symbol) \(sign)\(String(format: "%.1f", best.changePercent))%"
-                color = best.changePercent >= 0 ? .systemGreen : .systemRed
+                title = " \(best.symbol) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", best.changePercent))%"
+                color = best.changePercent >= 0 ? upColor : downColor
             } else {
                 title = " --"
                 color = .secondaryLabelColor
@@ -363,8 +368,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         case "worstStock":
             if let worst = worstStock {
                 let sign = worst.changePercent >= 0 ? "+" : ""
-                title = " \(worst.symbol) \(sign)\(String(format: "%.1f", worst.changePercent))%"
-                color = worst.changePercent >= 0 ? .systemGreen : .systemRed
+                title = " \(worst.symbol) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", worst.changePercent))%"
+                color = worst.changePercent >= 0 ? upColor : downColor
             } else {
                 title = " --"
                 color = .secondaryLabelColor
@@ -374,12 +379,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             if let best = bestStock, let worst = worstStock, best.symbol != worst.symbol {
                 let bSign = best.changePercent >= 0 ? "+" : ""
                 let wSign = worst.changePercent >= 0 ? "+" : ""
-                title = " ▲\(best.symbol) \(bSign)\(String(format: "%.1f", best.changePercent))%  ▼\(worst.symbol) \(wSign)\(String(format: "%.1f", worst.changePercent))%"
+                title = " ▲\(best.symbol) \(bSign)\(String(format: "%.\(storageService.percentDecimals)f", best.changePercent))%  ▼\(worst.symbol) \(wSign)\(String(format: "%.\(storageService.percentDecimals)f", worst.changePercent))%"
                 color = .labelColor
             } else if let best = bestStock {
                 let sign = best.changePercent >= 0 ? "+" : ""
-                title = " \(best.symbol) \(sign)\(String(format: "%.1f", best.changePercent))%"
-                color = best.changePercent >= 0 ? .systemGreen : .systemRed
+                title = " \(best.symbol) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", best.changePercent))%"
+                color = best.changePercent >= 0 ? upColor : downColor
             } else {
                 title = " --"
                 color = .secondaryLabelColor
@@ -387,8 +392,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         case "portfolioRecap":
             let sign = totalPnlPct >= 0 ? "+" : ""
-            title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol)) \(sign)\(String(format: "%.1f", totalPnlPct))%"
-            color = totalPnl >= 0 ? .systemGreen : .systemRed
+            title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%"
+            color = totalPnl >= 0 ? upColor : downColor
 
         case "ticker":
             let symbols = storageService.watchlist
@@ -403,17 +408,49 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let priceCurr = storageService.stockPriceCurrency
                     let sym = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
                     let sign = quote.changePercent >= 0 ? "+" : ""
-                    title = " \(quote.symbol) \(sym)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2)) \(sign)\(String(format: "%.1f", quote.changePercent))%"
-                    color = quote.changePercent >= 0 ? .systemGreen : .systemRed
+                    title = " \(quote.symbol) \(sym)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", quote.changePercent))%"
+                    color = quote.changePercent >= 0 ? upColor : downColor
                 } else {
                     title = " \(symbol)"
                     color = .secondaryLabelColor
                 }
             }
 
+        case "tickerPortfolio":
+            // Issue #7.3: cycle through the watchlist AND a portfolio recap slide.
+            let symbols = storageService.watchlist
+            let hasPortfolio = storageService.portfolios.contains { !$0.holdings.isEmpty }
+            let slideCount = symbols.count + (hasPortfolio ? 1 : 0)
+            if slideCount == 0 {
+                title = " --"
+                color = .secondaryLabelColor
+            } else {
+                let index = tickerIndex % slideCount
+                if index < symbols.count {
+                    // Watchlist slide (same rendering as the "ticker" mode)
+                    let symbol = symbols[index]
+                    if let quote = stockService.quotes[symbol] {
+                        let pRate = stockService.priceRate(from: quote.currency)
+                        let priceCurr = storageService.stockPriceCurrency
+                        let sym = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
+                        let sign = quote.changePercent >= 0 ? "+" : ""
+                        title = " \(quote.symbol) \(sym)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", quote.changePercent))%"
+                        color = quote.changePercent >= 0 ? upColor : downColor
+                    } else {
+                        title = " \(symbol)"
+                        color = .secondaryLabelColor
+                    }
+                } else {
+                    // Portfolio recap slide
+                    let sign = totalPnlPct >= 0 ? "+" : ""
+                    title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%"
+                    color = totalPnl >= 0 ? upColor : downColor
+                }
+            }
+
         default: // "pnl"
             title = " P&L \(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true))"
-            color = totalPnl >= 0 ? .systemGreen : .systemRed
+            color = totalPnl >= 0 ? upColor : downColor
         }
 
         statusItem?.button?.image = nil

@@ -1,0 +1,129 @@
+/* StockDock — base (English). Keys are the exact source literals used in SwiftUI. */
+
+/* Tabs / navigation */
+"Watchlist" = "Lista de Observação";
+"Portfolios" = "Carteiras";
+"Search" = "Pesquisar";
+
+/* Language */
+"Language" = "Idioma";
+"Choose the app's language. Default is English." = "Escolha o idioma da aplicação. A predefinição é inglês.";
+
+/* Currencies */
+"Stock Price Currency" = "Moeda da Cotação";
+"Price currency" = "Moeda do preço";
+"Original" = "Original";
+"Portfolio Currency" = "Moeda da Carteira";
+"Portfolio currency" = "Moeda da carteira";
+
+/* Market hours */
+"Market Hours" = "Horário de Mercado";
+"Show extended hours (Pre/Post)" = "Mostrar horário alargado (Pre/Post)";
+"Show pre-market and after-hours prices" = "Mostrar preços de pré-abertura e pós-fecho";
+
+/* Watchlist display */
+"Watchlist Display" = "Apresentação da Lista de Observação";
+"Company name" = "Nome da empresa";
+"Day range (low – high)" = "Variação do dia (mínimo – máximo)";
+"52-week range bar" = "Barra de variação de 52 semanas";
+"52-week range" = "Variação de 52 semanas";
+"Absolute change value" = "Valor da variação absoluta";
+"Choose which details appear in each watchlist row" = "Escolha que detalhes aparecem em cada linha da lista de observação";
+
+/* Menu bar display */
+"Menu Bar Display" = "Apresentação na Barra de Menus";
+"Display" = "Apresentação";
+"Choose what to show in the menu bar" = "Escolha o que mostrar na barra de menus";
+"P&L (+321.09€)" = "P&L (+321.09€)";
+"P&L % (+2.3%)" = "P&L % (+2.3%)";
+"P&L + % (+321.09€ +2.3%)" = "P&L + % (+321.09€ +2.3%)";
+"Total Value (14396.67€)" = "Valor Total (14396.67€)";
+"Best Stock (▲ AAPL +1.2%)" = "Melhor Ação (▲ AAPL +1.2%)";
+"Worst Stock (▼ TSLA -0.8%)" = "Pior Ação (▼ TSLA -0.8%)";
+"Best & Worst" = "Melhor e Pior";
+"Portfolio (14396.67€ +1.2%)" = "Carteira (14396.67€ +1.2%)";
+"Ticker (cycle watchlist)" = "Ticker (percorrer lista de observação)";
+"Ticker + Portfolio (cycle)" = "Ticker + Carteira (percorrer)";
+"Icon Only" = "Apenas Ícone";
+"Show percentages with 2 decimals" = "Mostrar percentagens com 2 casas decimais";
+"Applies to the menu bar, watchlist and portfolios (e.g. +2.34% instead of +2.3%)." = "Aplica-se à barra de menus, lista de observação e carteiras (por exemplo, +2.34% em vez de +2.3%).";
+
+/* Menu bar colors */
+"Menu Bar Colors" = "Cores da Barra de Menus";
+"Use system text color" = "Usar a cor de texto do sistema";
+"Always readable on any background. Up/down stays shown by + / − and ▲ ▼." = "Sempre legível em qualquer fundo. A subida/descida continua indicada por + / − e ▲ ▼.";
+"Gain color" = "Cor de ganho";
+"Loss color" = "Cor de perda";
+"Reset to default green/red" = "Repor o verde/vermelho predefinido";
+
+/* Notifications */
+"Notifications" = "Notificações";
+"Channels" = "Canais";
+"Mirror notifications to a Discord/Slack webhook" = "Replicar notificações para um webhook do Discord/Slack";
+"Not a valid Discord or Slack webhook URL (must be https)." = "URL de webhook do Discord ou Slack inválido (tem de ser https).";
+"Price alerts and portfolio notifications are also sent here." = "Os alertas de preço e as notificações de carteira também são enviados para aqui.";
+"Send test" = "Enviar teste";
+"Price alerts" = "Alertas de preço";
+"No alerts. Right-click a stock in the watchlist to add one." = "Sem alertas. Clique com o botão direito numa ação na lista de observação para adicionar um.";
+"Portfolio notifications" = "Notificações de carteira";
+"None. Right-click a portfolio → “Notifications…” to add one." = "Nenhuma. Clique com o botão direito numa carteira → “Notificações…” para adicionar uma.";
+"Notifications…" = "Notificações…";
+"triggered" = "acionado";
+"Tip: enable the Discord/Slack webhook in Settings to also receive these on your phone." = "Dica: ative o webhook do Discord/Slack nas Definições para também receber estas notificações no telemóvel.";
+
+/* Font */
+"Font" = "Tipo de Letra";
+"Font family" = "Família do tipo de letra";
+
+/* Updates */
+"Updates" = "Atualizações";
+"Check for Updates..." = "Procurar Atualizações...";
+
+/* Reset */
+"Reset" = "Repor";
+"Reset to Default Settings" = "Repor as Definições Predefinidas";
+"This will not erase your portfolios or watchlist" = "Isto não apaga as suas carteiras nem a lista de observação";
+"This will reset all settings to their defaults. Your portfolios and watchlist will not be affected." = "Isto repõe todas as definições para os valores predefinidos. As suas carteiras e lista de observação não serão afetadas.";
+
+/* Watchlist / portfolio views */
+"No stocks in watchlist" = "Sem ações na lista de observação";
+"No results" = "Sem resultados";
+"No portfolios" = "Sem carteiras";
+"Total value" = "Valor total";
+"Create portfolio" = "Criar carteira";
+"New portfolio" = "Nova carteira";
+"Export All" = "Exportar Tudo";
+"Add to Portfolio" = "Adicionar à Carteira";
+"Remove from Watchlist" = "Remover da Lista de Observação";
+"Set Price Alert…" = "Definir Alerta de Preço…";
+"Add stock" = "Adicionar ação";
+"Add holding" = "Adicionar posição";
+"Value / P&L" = "Valor / P&L";
+"Avg price" = "Preço médio";
+"Purchase date" = "Data de compra";
+"Quantity" = "Quantidade";
+"Symbol" = "Símbolo";
+"Price" = "Preço";
+
+/* Alerts editor */
+"Set Price Alert" = "Definir Alerta de Preço";
+"Create Alert" = "Criar Alerta";
+"Condition" = "Condição";
+"Add notification" = "Adicionar notificação";
+"Mode" = "Modo";
+
+/* Common actions */
+"Add" = "Adicionar";
+"Save" = "Guardar";
+"Cancel" = "Cancelar";
+"Delete" = "Eliminar";
+"Edit" = "Editar";
+"Rename" = "Mudar o nome";
+"Done" = "Concluído";
+"Close" = "Fechar";
+"OK" = "OK";
+"Import" = "Importar";
+"Export" = "Exportar";
+
+/* Status menu */
+"Quit StockDock" = "Sair do StockDock";

@@ -163,5 +163,8 @@ struct ContentView: View {
         .environment(\.editHoldingAction, EditHoldingAction { portfolioId, holding in
             editHolding = (portfolioId, holding)
         })
+        // Issue #7: in-app language override. Reactive because ContentView observes
+        // storageService, so changing the language re-applies the locale to all children.
+        .environment(\.locale, Locale(identifier: storageService.appLanguage))
     }
 }

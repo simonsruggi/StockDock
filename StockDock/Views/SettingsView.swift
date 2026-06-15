@@ -10,6 +10,22 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                // MARK: - Language
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Language")
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    Picker("Language", selection: $storageService.appLanguage) {
+                        ForEach(StorageService.supportedLanguages, id: \.code) { lang in
+                            Text(lang.name).tag(lang.code)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    Text("Choose the app's language. Default is English.")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                }
+                Divider()
+
                 // MARK: - Stock Price Currency
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Stock Price Currency")
@@ -107,12 +123,46 @@ struct SettingsView: View {
                         Text("Best & Worst").tag("bestWorst")
                         Text("Portfolio (14396.67€ +1.2%)").tag("portfolioRecap")
                         Text("Ticker (cycle watchlist)").tag("ticker")
+                        Text("Ticker + Portfolio (cycle)").tag("tickerPortfolio")
                         Text("Icon Only").tag("icon")
                     }
                     .pickerStyle(.menu)
                     Text("Choose what to show in the menu bar")
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
+
+                    Toggle("Show percentages with 2 decimals", isOn: $storageService.percentTwoDecimals)
+                    Text("Applies to the menu bar, watchlist and portfolios (e.g. +2.34% instead of +2.3%).")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                }
+                Divider()
+
+                // MARK: - Menu Bar Colors
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Menu Bar Colors")
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+
+                    Toggle("Use system text color", isOn: $storageService.menuBarUseSystemColor)
+                    Text("Always readable on any background. Up/down stays shown by + / − and ▲ ▼.")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+
+                    if !storageService.menuBarUseSystemColor {
+                        ColorPicker("Gain color", selection: Binding(
+                            get: { Color(nsColor: storageService.gainColor) },
+                            set: { storageService.gainColorHex = $0.hexString }
+                        ))
+                        ColorPicker("Loss color", selection: Binding(
+                            get: { Color(nsColor: storageService.lossColor) },
+                            set: { storageService.lossColorHex = $0.hexString }
+                        ))
+                        Button("Reset to default green/red") {
+                            storageService.gainColorHex = ""
+                            storageService.lossColorHex = ""
+                        }
+                        .font(.inter(10, relativeTo: .caption))
+                    }
                 }
                 Divider()
 

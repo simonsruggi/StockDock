@@ -36,6 +36,21 @@ final class NumberFormattingTests: XCTestCase {
         XCTAssertEqual(StorageService.formatNumber(-4200.0, decimals: 2, locale: enUS), "-4,200.00")
     }
 
+    // Issue #7 follow-up: the portfolio cost line (qty×avgPrice) must always keep its
+    // two decimals. The value is correct at the data layer (the visible "missing decimals"
+    // was a column-width wrapping issue, not a formatting one) — these lock that in.
+    func testWholeAvgPriceKeepsTwoDecimalsDE() {
+        XCTAssertEqual(StorageService.formatNumber(135.0, decimals: 2, locale: deDE), "135,00")
+    }
+
+    func testWholeAvgPriceKeepsTwoDecimalsEN() {
+        XCTAssertEqual(StorageService.formatNumber(135.0, decimals: 2, locale: enUS), "135.00")
+    }
+
+    func testAvgPriceTrailingZeroKeptDE() {
+        XCTAssertEqual(StorageService.formatNumber(135.5, decimals: 2, locale: deDE), "135,50")
+    }
+
     // MARK: formatAmount (currency symbol before the figure, sign before symbol)
 
     func testAmountGroupedEN() {

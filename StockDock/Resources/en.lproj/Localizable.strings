@@ -1,0 +1,129 @@
+/* StockDock — base (English). Keys are the exact source literals used in SwiftUI. */
+
+/* Tabs / navigation */
+"Watchlist" = "Watchlist";
+"Portfolios" = "Portfolios";
+"Search" = "Search";
+
+/* Language */
+"Language" = "Language";
+"Choose the app's language. Default is English." = "Choose the app's language. Default is English.";
+
+/* Currencies */
+"Stock Price Currency" = "Stock Price Currency";
+"Price currency" = "Price currency";
+"Original" = "Original";
+"Portfolio Currency" = "Portfolio Currency";
+"Portfolio currency" = "Portfolio currency";
+
+/* Market hours */
+"Market Hours" = "Market Hours";
+"Show extended hours (Pre/Post)" = "Show extended hours (Pre/Post)";
+"Show pre-market and after-hours prices" = "Show pre-market and after-hours prices";
+
+/* Watchlist display */
+"Watchlist Display" = "Watchlist Display";
+"Company name" = "Company name";
+"Day range (low – high)" = "Day range (low – high)";
+"52-week range bar" = "52-week range bar";
+"52-week range" = "52-week range";
+"Absolute change value" = "Absolute change value";
+"Choose which details appear in each watchlist row" = "Choose which details appear in each watchlist row";
+
+/* Menu bar display */
+"Menu Bar Display" = "Menu Bar Display";
+"Display" = "Display";
+"Choose what to show in the menu bar" = "Choose what to show in the menu bar";
+"P&L (+321.09€)" = "P&L (+321.09€)";
+"P&L % (+2.3%)" = "P&L % (+2.3%)";
+"P&L + % (+321.09€ +2.3%)" = "P&L + % (+321.09€ +2.3%)";
+"Total Value (14396.67€)" = "Total Value (14396.67€)";
+"Best Stock (▲ AAPL +1.2%)" = "Best Stock (▲ AAPL +1.2%)";
+"Worst Stock (▼ TSLA -0.8%)" = "Worst Stock (▼ TSLA -0.8%)";
+"Best & Worst" = "Best & Worst";
+"Portfolio (14396.67€ +1.2%)" = "Portfolio (14396.67€ +1.2%)";
+"Ticker (cycle watchlist)" = "Ticker (cycle watchlist)";
+"Ticker + Portfolio (cycle)" = "Ticker + Portfolio (cycle)";
+"Icon Only" = "Icon Only";
+"Show percentages with 2 decimals" = "Show percentages with 2 decimals";
+"Applies to the menu bar, watchlist and portfolios (e.g. +2.34% instead of +2.3%)." = "Applies to the menu bar, watchlist and portfolios (e.g. +2.34% instead of +2.3%).";
+
+/* Menu bar colors */
+"Menu Bar Colors" = "Menu Bar Colors";
+"Use system text color" = "Use system text color";
+"Always readable on any background. Up/down stays shown by + / − and ▲ ▼." = "Always readable on any background. Up/down stays shown by + / − and ▲ ▼.";
+"Gain color" = "Gain color";
+"Loss color" = "Loss color";
+"Reset to default green/red" = "Reset to default green/red";
+
+/* Notifications */
+"Notifications" = "Notifications";
+"Channels" = "Channels";
+"Mirror notifications to a Discord/Slack webhook" = "Mirror notifications to a Discord/Slack webhook";
+"Not a valid Discord or Slack webhook URL (must be https)." = "Not a valid Discord or Slack webhook URL (must be https).";
+"Price alerts and portfolio notifications are also sent here." = "Price alerts and portfolio notifications are also sent here.";
+"Send test" = "Send test";
+"Price alerts" = "Price alerts";
+"No alerts. Right-click a stock in the watchlist to add one." = "No alerts. Right-click a stock in the watchlist to add one.";
+"Portfolio notifications" = "Portfolio notifications";
+"None. Right-click a portfolio → “Notifications…” to add one." = "None. Right-click a portfolio → “Notifications…” to add one.";
+"Notifications…" = "Notifications…";
+"triggered" = "triggered";
+"Tip: enable the Discord/Slack webhook in Settings to also receive these on your phone." = "Tip: enable the Discord/Slack webhook in Settings to also receive these on your phone.";
+
+/* Font */
+"Font" = "Font";
+"Font family" = "Font family";
+
+/* Updates */
+"Updates" = "Updates";
+"Check for Updates..." = "Check for Updates...";
+
+/* Reset */
+"Reset" = "Reset";
+"Reset to Default Settings" = "Reset to Default Settings";
+"This will not erase your portfolios or watchlist" = "This will not erase your portfolios or watchlist";
+"This will reset all settings to their defaults. Your portfolios and watchlist will not be affected." = "This will reset all settings to their defaults. Your portfolios and watchlist will not be affected.";
+
+/* Watchlist / portfolio views */
+"No stocks in watchlist" = "No stocks in watchlist";
+"No results" = "No results";
+"No portfolios" = "No portfolios";
+"Total value" = "Total value";
+"Create portfolio" = "Create portfolio";
+"New portfolio" = "New portfolio";
+"Export All" = "Export All";
+"Add to Portfolio" = "Add to Portfolio";
+"Remove from Watchlist" = "Remove from Watchlist";
+"Set Price Alert…" = "Set Price Alert…";
+"Add stock" = "Add stock";
+"Add holding" = "Add holding";
+"Value / P&L" = "Value / P&L";
+"Avg price" = "Avg price";
+"Purchase date" = "Purchase date";
+"Quantity" = "Quantity";
+"Symbol" = "Symbol";
+"Price" = "Price";
+
+/* Alerts editor */
+"Set Price Alert" = "Set Price Alert";
+"Create Alert" = "Create Alert";
+"Condition" = "Condition";
+"Add notification" = "Add notification";
+"Mode" = "Mode";
+
+/* Common actions */
+"Add" = "Add";
+"Save" = "Save";
+"Cancel" = "Cancel";
+"Delete" = "Delete";
+"Edit" = "Edit";
+"Rename" = "Rename";
+"Done" = "Done";
+"Close" = "Close";
+"OK" = "OK";
+"Import" = "Import";
+"Export" = "Export";
+
+/* Status menu */
+"Quit StockDock" = "Quit StockDock";

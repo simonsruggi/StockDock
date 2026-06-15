@@ -107,6 +107,12 @@ for bundle in "${PRODUCTS_DIR}"/*.bundle; do
     [[ -d "$bundle" ]] && cp -R "$bundle" "$APP_PATH/Contents/Resources/"
 done
 
+# Copy localization .lproj into the app's top-level Resources (Bundle.main),
+# so SwiftUI's LocalizedStringKey lookups resolve the chosen in-app language.
+for lproj in StockDock/Resources/*.lproj; do
+    [[ -d "$lproj" ]] && cp -R "$lproj" "$APP_PATH/Contents/Resources/"
+done
+
 install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP_PATH/Contents/MacOS/${APP_NAME}"
 
 info "App bundle assembled: $APP_PATH"

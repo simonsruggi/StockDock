@@ -91,7 +91,7 @@ struct PortfolioListView: View {
                                 .foregroundColor(.secondary)
                             HStack(spacing: 2) {
                                 Text(StorageService.formatAmount(grandPnl, symbol: currSym, signed: true))
-                                Text(String(format: "(%.1f%%)", grandPnlPct))
+                                Text(String(format: "(%.\(storageService.percentDecimals)f%%)", grandPnlPct))
                             }
                             .font(.inter(13, relativeTo: .body).monospacedDigit())
                             .fontWeight(.bold)
@@ -339,7 +339,7 @@ struct PortfolioSection: View {
                         .foregroundColor(.secondary)
                     HStack(spacing: 2) {
                         Text(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true))
-                        Text(String(format: "(%.1f%%)", totalPnlPercent))
+                        Text(String(format: "(%.\(storageService.percentDecimals)f%%)", totalPnlPercent))
                     }
                     .font(.inter(13, relativeTo: .body).monospacedDigit())
                     .fontWeight(.semibold)
@@ -464,8 +464,10 @@ struct HoldingRow: View {
                 Text("\(formatQty(holding.quantity))\u{00D7}\(StorageService.formatNumber(holding.avgPrice, decimals: 2))")
                     .font(.inter(10, relativeTo: .caption).monospacedDigit())
                     .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
-            .frame(width: 80, alignment: .leading)
+            .frame(width: 88, alignment: .leading)
 
             if let quote {
                 let rate = stockService.rate(from: quote.currency)
@@ -505,7 +507,7 @@ struct HoldingRow: View {
                     Text(StorageService.formatAmount(marketVal, symbol: prefSymbol))
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
-                    Text("\(StorageService.formatAmount(pnl, symbol: prefSymbol, signed: true)) (\(String(format: "%.1f%%", pnlPct)))")
+                    Text("\(StorageService.formatAmount(pnl, symbol: prefSymbol, signed: true)) (\(String(format: "%.\(storageService.percentDecimals)f%%", pnlPct)))")
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
                         .foregroundColor(pnl >= 0 ? .green : .red)
                 }

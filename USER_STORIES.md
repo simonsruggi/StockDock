@@ -5,9 +5,11 @@
 
 - [x] Menu bar shows P&L in the chosen format (absolute, %, both, total value, best/worst stock, icon only)
 - [x] Values update in real time with prices
-- [x] Green (positive) / red (negative) color coding
-- [x] 8 display modes: P&L, P&L %, P&L + %, Total Value, Best Stock, Worst Stock, Best & Worst, Icon Only
+- [x] Green (positive) / red (negative) color coding, with configurable up/down colors (see US-18)
+- [x] 11 display modes: P&L, P&L %, P&L + %, Total Value, Best Stock, Worst Stock, Best & Worst, Portfolio recap, Ticker (cycle watchlist), Ticker + Portfolio (cycle), Icon Only
+- [x] "Ticker + Portfolio (cycle)" rotates through the watchlist AND a portfolio-recap slide in the same cycle (issue #7.3)
 - [x] Numbers > 1,000 use a locale-aware thousands separator (menu bar, watchlist, portfolio, alerts, notifications)
+- [x] Percentages can optionally show 2 decimals instead of 1 (Settings toggle, off by default — issue #7.4)
 
 ## US-02: Watchlist
 **As a** user, **I want** to maintain a watchlist of stocks **so that** I can monitor their prices.
@@ -167,3 +169,28 @@
 - [x] Anti-spam state (`lastStepUp`/`lastStepDown`/`lastDay`) and rules persisted in `data.json`, keyed by portfolio id
 - [x] Notifications removed automatically when the portfolio is deleted
 - [x] Pure firing logic unit-tested in `PortfolioAlertEvaluatorTests` (crossingStep, milestoneCrossed, shouldFireSummary)
+
+## US-18: Configurable Menu Bar Colors
+**As a** user, **I want** to customize the menu bar text colors **so that** they stay readable on any desktop background (issue #7.1).
+
+- [x] Settings → "Menu Bar Colors": color pickers for Gain and Loss colors
+- [x] Defaults to the system green/red (dynamic) until a custom color is chosen
+- [x] "Use system text color" toggle: ignores gain/loss colors and uses the always-readable system label color; direction stays conveyed by `+/−` and `▲▼`
+- [x] "Reset to default green/red" button
+- [x] Colors persisted as hex in `data.json` (`gainColorHex`, `lossColorHex`, `menuBarUseSystemColor`); `ColorHex.swift` bridges hex ↔ `NSColor`/`Color`
+
+## US-19: Language / Localization
+**As a** user, **I want** to pick the app's language **so that** I can use StockDock in my own language (issue #7).
+
+- [x] Settings → "Language": picker with English (default), Deutsch, Français, Español, Italiano, Português
+- [x] In-app override of the locale via `\.environment(\.locale, …)` on `ContentView` — reactive, does not follow the system language
+- [x] UI strings in `Resources/<lang>.lproj/Localizable.strings` (6 languages, keys = source English literals)
+- [x] `release.sh` copies the `.lproj` into `Contents/Resources` (Bundle.main) so SwiftUI resolves them; `Package.swift` declares `defaultLocalization: "en"`; `Info.plist` lists `CFBundleLocalizations`
+- [x] Verified with real SwiftUI renders that the chosen language (incl. English default) overrides the system language
+- [ ] Note: in `swift run` (dev) translations don't show (SPM resources land in `Bundle.module`); only the bundled `.app` localizes
+
+## US-20: Portfolio cost line readability
+**As a** user, **I want** the `qty×avg price` line in the portfolio to always show its decimals **so that** large positions don't look truncated (issue #7 follow-up).
+
+- [x] Fixed: the cost line scales to stay on one line instead of wrapping when the share count is large (was a layout wrap, not a formatting bug — decimals were correct)
+- [x] Guardrail tests in `NumberFormattingTests` lock that the formatter keeps 2 decimals across locales (DE/EN), including whole and trailing-zero values

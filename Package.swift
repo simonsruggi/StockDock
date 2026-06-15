@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "StockDock",
+    defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     dependencies: [
         .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.28.0"),

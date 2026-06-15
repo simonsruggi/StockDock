@@ -43,6 +43,45 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    // MARK: - Menu bar colors (issue #7.1)
+    /// Hex color for gains/up moves. Empty = use the system green (dynamic).
+    @Published var gainColorHex: String = "" {
+        didSet { scheduleSave() }
+    }
+    /// Hex color for losses/down moves. Empty = use the system red (dynamic).
+    @Published var lossColorHex: String = "" {
+        didSet { scheduleSave() }
+    }
+    /// When true, the menu bar ignores gain/loss colors and uses the system label
+    /// color (always readable on any background; direction stays in the +/- and ▲▼).
+    @Published var menuBarUseSystemColor: Bool = false {
+        didSet { scheduleSave() }
+    }
+
+    /// Issue #7.4: show percentages with 2 decimals instead of 1 (off keeps the
+    /// menu bar compact). Applies everywhere a % is shown.
+    @Published var percentTwoDecimals: Bool = false {
+        didSet { scheduleSave() }
+    }
+
+    /// Number of decimals used for percentage displays (1 or 2).
+    var percentDecimals: Int { percentTwoDecimals ? 2 : 1 }
+
+    /// In-app UI language override (ISO code). Defaults to English.
+    @Published var appLanguage: String = "en" {
+        didSet { scheduleSave() }
+    }
+
+    /// Supported UI languages: (ISO code, native display name).
+    static let supportedLanguages: [(code: String, name: String)] = [
+        ("en", "English"),
+        ("de", "Deutsch"),
+        ("fr", "Français"),
+        ("es", "Español"),
+        ("it", "Italiano"),
+        ("pt", "Português"),
+    ]
+
     /// Maps symbol → ISIN for watchlist filtering
     @Published var isinMap: [String: String] = [:] {
         didSet { scheduleSave() }
@@ -289,6 +328,11 @@ class StorageService: ObservableObject {
         show52WeekBar = true
         showAbsoluteChange = true
         menuBarDisplay = "pnl"
+        gainColorHex = ""
+        lossColorHex = ""
+        menuBarUseSystemColor = false
+        percentTwoDecimals = false
+        appLanguage = "en"
         fontSizeLevel = 9
         fontFamily = "Inter Variable"
         lastSelectedTab = "Watchlist"
@@ -355,6 +399,11 @@ class StorageService: ObservableObject {
         var portfolioNotifications: [String: [PortfolioNotification]]?
         var discordWebhookURL: String?
         var discordEnabled: Bool?
+        var gainColorHex: String?
+        var lossColorHex: String?
+        var menuBarUseSystemColor: Bool?
+        var percentTwoDecimals: Bool?
+        var appLanguage: String?
     }
 
     private func scheduleSave() {
@@ -368,7 +417,7 @@ class StorageService: ObservableObject {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: percentTwoDecimals, appLanguage: appLanguage)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -399,6 +448,11 @@ class StorageService: ObservableObject {
             portfolioNotifications = decoded.portfolioNotifications ?? [:]
             discordWebhookURL = decoded.discordWebhookURL ?? ""
             discordEnabled = decoded.discordEnabled ?? false
+            gainColorHex = decoded.gainColorHex ?? ""
+            lossColorHex = decoded.lossColorHex ?? ""
+            menuBarUseSystemColor = decoded.menuBarUseSystemColor ?? false
+            percentTwoDecimals = decoded.percentTwoDecimals ?? false
+            appLanguage = decoded.appLanguage ?? "en"
             showCompanyName = decoded.showCompanyName ?? true
             showDayRange = decoded.showDayRange ?? true
             show52WeekBar = decoded.show52WeekBar ?? true
