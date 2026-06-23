@@ -106,11 +106,57 @@ final class AlertEvaluatorTests: XCTestCase {
         XCTAssertTrue(AlertEvaluator.shouldFire(alert, quote: quote))
     }
 
+    // MARK: - Stale previous-close must not fire during extended hours (bug repro)
+
+    /// Pre-market with no pre-market price yet: `price` is the PREVIOUS regular close.
+    /// An alert must NOT fire against that stale close — otherwise we get the
+    /// spurious "drops below 1100 — now 1100" notification seen in production.
+    func testPreMarketWithoutPreMarketPriceDoesNotFireOnPreviousClose() {
+        let quote = makeQuote(price: 1100, marketState: "PRE", preMarketPrice: nil)
+        let alert = PriceAlert(symbol: "MU", condition: .priceBelow, threshold: 1100)
+        XCTAssertFalse(AlertEvaluator.shouldFire(alert, quote: quote),
+                       "Alert fired on the stale previous close instead of waiting for pre-market data")
+    }
+
+    /// Same for a priceAbove alert during pre-market with no pre-market data.
+    func testPreMarketWithoutPreMarketPriceDoesNotFireAbove() {
+        let quote = makeQuote(price: 1100, marketState: "PRE", preMarketPrice: nil)
+        let alert = PriceAlert(symbol: "MU", condition: .priceAbove, threshold: 1050)
+        XCTAssertFalse(AlertEvaluator.shouldFire(alert, quote: quote))
+    }
+
+    /// Once real pre-market data is present, alerts fire against it normally.
+    func testPreMarketWithPreMarketPriceFiresOnPreMarketValue() {
+        let dip = makeQuote(price: 1100, marketState: "PRE", preMarketPrice: 1098)
+        XCTAssertTrue(AlertEvaluator.shouldFire(
+            PriceAlert(symbol: "MU", condition: .priceBelow, threshold: 1100), quote: dip))
+
+        let rise = makeQuote(price: 1100, marketState: "PRE", preMarketPrice: 1211.38)
+        XCTAssertTrue(AlertEvaluator.shouldFire(
+            PriceAlert(symbol: "MU", condition: .priceAbove, threshold: 1200), quote: rise))
+    }
+
+    /// Post-market with no post price yet must likewise not fire on the close.
+    func testPostMarketWithoutPostMarketPriceDoesNotFire() {
+        let quote = makeQuote(price: 1100, marketState: "POST", postMarketPrice: nil)
+        let alert = PriceAlert(symbol: "MU", condition: .priceBelow, threshold: 1100)
+        XCTAssertFalse(AlertEvaluator.shouldFire(alert, quote: quote))
+    }
+
+    /// When the market is fully CLOSED, `price` IS today's real close — alerts
+    /// should still be able to fire against it.
+    func testClosedMarketStillFiresOnRegularClose() {
+        let quote = makeQuote(price: 1100, marketState: "CLOSED", postMarketPrice: nil)
+        let alert = PriceAlert(symbol: "MU", condition: .priceBelow, threshold: 1100)
+        XCTAssertTrue(AlertEvaluator.shouldFire(alert, quote: quote))
+    }
+
     // MARK: - Helpers
 
     private func makeQuote(price: Double,
                            changePercent: Double = 0,
                            marketState: String = "REGULAR",
+                           preMarketPrice: Double? = nil,
                            postMarketPrice: Double? = nil,
                            fiftyTwoWeekHigh: Double? = nil,
                            fiftyTwoWeekLow: Double? = nil) -> StockQuote {
@@ -118,7 +164,7 @@ final class AlertEvaluatorTests: XCTestCase {
                    changePercent: changePercent, currency: "USD", marketState: marketState,
                    dayHigh: nil, dayLow: nil,
                    fiftyTwoWeekHigh: fiftyTwoWeekHigh, fiftyTwoWeekLow: fiftyTwoWeekLow,
-                   preMarketPrice: nil, preMarketChange: nil, preMarketChangePercent: nil,
+                   preMarketPrice: preMarketPrice, preMarketChange: nil, preMarketChangePercent: nil,
                    postMarketPrice: postMarketPrice, postMarketChange: nil, postMarketChangePercent: nil)
     }
 }

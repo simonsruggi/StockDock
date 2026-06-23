@@ -51,6 +51,23 @@ struct StockQuote: Identifiable, Codable {
         }
     }
 
+    /// Price to evaluate alerts against. Returns nil during PRE/POST when the
+    /// extended-hours price has not arrived yet, so alerts don't fire against the
+    /// stale previous regular close. When the market is CLOSED, `price` is today's
+    /// real close, so it's a valid fallback.
+    var alertPrice: Double? {
+        switch marketState {
+        case "PRE":
+            return preMarketPrice
+        case "POST":
+            return postMarketPrice
+        case "CLOSED":
+            return postMarketPrice ?? price
+        default:
+            return price
+        }
+    }
+
     /// True if we have extended hours data to show
     var isExtendedHours: Bool {
         switch marketState {

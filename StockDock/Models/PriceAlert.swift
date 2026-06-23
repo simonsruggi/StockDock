@@ -107,16 +107,19 @@ enum AlertEvaluator {
         }
     }
 
-    /// Convenience over a live `PriceAlert` + `StockQuote`. Uses the effective price
-    /// (including extended hours) so alerts react to pre/post-market moves too.
+    /// Convenience over a live `PriceAlert` + `StockQuote`. Uses `alertPrice`, which
+    /// reflects extended-hours moves but is nil during PRE/POST before the real
+    /// extended-hours price arrives — so alerts never fire against the stale
+    /// previous regular close.
     static func shouldFire(_ alert: PriceAlert, quote: StockQuote) -> Bool {
-        shouldFire(condition: alert.condition,
-                   threshold: alert.threshold,
-                   isEnabled: alert.isEnabled,
-                   price: quote.effectivePrice,
-                   changePercent: quote.changePercent,
-                   fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
-                   fiftyTwoWeekLow: quote.fiftyTwoWeekLow)
+        guard let price = quote.alertPrice else { return false }
+        return shouldFire(condition: alert.condition,
+                          threshold: alert.threshold,
+                          isEnabled: alert.isEnabled,
+                          price: price,
+                          changePercent: quote.changePercent,
+                          fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
+                          fiftyTwoWeekLow: quote.fiftyTwoWeekLow)
     }
 
     /// Human-readable summary, e.g. "Price rises above 200.00" — used in the UI.

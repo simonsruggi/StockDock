@@ -127,6 +127,7 @@
 - [x] Local macOS notification (title + condition + current price) via UNUserNotificationCenter
 - [x] Evaluated on every quote update (WebSocket flush, REST poll, launch, wake)
 - [x] Uses effective price so extended-hours moves can trigger alerts
+- [x] During pre/post-market, waits for the real extended-hours price before firing — never triggers against the stale previous close
 - [x] Alerts persisted in `data.json`
 - [x] Notification layer is a safe no-op in dev runs without an app bundle
 
