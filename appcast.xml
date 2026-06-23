@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.6.1</title>
-            <pubDate>Mon, 15 Jun 2026 12:19:01 +0200</pubDate>
-            <sparkle:version>15</sparkle:version>
-            <sparkle:shortVersionString>1.6.1</sparkle:shortVersionString>
+            <title>Version 1.6.2</title>
+            <pubDate>Tue, 23 Jun 2026 17:16:31 +0200</pubDate>
+            <sparkle:version>16</sparkle:version>
+            <sparkle:shortVersionString>1.6.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -18,22 +18,15 @@
     ul { padding-left: 20px; margin: 4px 0; }
     li { margin-bottom: 4px; }
 </style>
-<h3>New</h3>
-<ul>
-    <li><b>Languages</b> — StockDock is now localized in English, German, French, Spanish, Italian and Portuguese. Pick one in Settings → Language (English stays the default).</li>
-    <li><b>Custom menu bar colors</b> — set your own gain/loss colors in Settings → Menu Bar Colors, or switch on "Use system text color" to stay readable on any background (up/down is still shown by + / − and ▲ ▼).</li>
-    <li><b>Ticker + Portfolio cycle</b> — a new menu bar mode that rotates through your watchlist and a portfolio summary in the same cycle.</li>
-    <li><b>2-decimal percentages</b> — optional toggle to show percentages with two decimals instead of one (off by default to keep the bar compact).</li>
-</ul>
 <h3>Fixed</h3>
 <ul>
-    <li><b>Portfolio cost line</b> — the quantity × average price line no longer wraps and hides its decimals for large positions.</li>
+    <li><b>Pre-market alerts</b> — price alerts no longer fire against the previous day's close while pre-market or after-hours data hasn't arrived yet. An alert now waits for the real extended-hours price, so you won't get a spurious "now $1,100" notification at the previous close.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.6.1/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.6.2/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="EmBUzTldVk6etw34kRc58liOwVovFLbnqs+AgH0cRlgmln7dsENr7pXpa4s/EZfC8Pn0ecfUMwcqw64U1K9yAQ=="
-                       length="6597477"/>
+                       sparkle:edSignature="dPwUzZtk/vlnWnLF2+u6HDLZYt+C+CQ3NZoqRk9ba7ZamzCy0L+NftVvaqxx1TtzurnTeqeGQDVJ5wZgZzrZDw=="
+                       length="6597990"/>
         </item>
     </channel>
 </rss>
