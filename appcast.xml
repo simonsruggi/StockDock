@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.7.1</title>
-            <pubDate>Thu, 25 Jun 2026 23:19:56 +0200</pubDate>
-            <sparkle:version>18</sparkle:version>
-            <sparkle:shortVersionString>1.7.1</sparkle:shortVersionString>
+            <title>Version 1.7.2</title>
+            <pubDate>Fri, 26 Jun 2026 00:28:12 +0200</pubDate>
+            <sparkle:version>19</sparkle:version>
+            <sparkle:shortVersionString>1.7.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -20,13 +20,18 @@
 </style>
 <h3>New</h3>
 <ul>
-    <li><b>Short positions &amp; leverage</b> — enable them in Settings → Advanced, then enter a negative quantity for a short and an optional leverage multiplier per holding. P&amp;L, exposure and daily change are computed correctly in every case, so a portfolio can be tracked as a relative long/short basket. Long-only stays the default and untouched.</li>
+    <li><b>Long / Short picker</b> — when Advanced positions is on, add/edit holding now has a clear <b>Long / Short</b> selector instead of typing a negative quantity. Works in the quick "Add to Portfolio" sheet from the watchlist right-click too.</li>
+    <li><b>Clear all</b> — one-tap buttons to delete all price alerts, and all portfolio notifications, from Settings → Notifications.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+    <li><b>Too many portfolio notifications</b> — the "Daily move ≥ %/amount" notification fired at every step (+1%, +2%, +3%…) on a trending day. It now fires at most once per direction per day: once when today's move first crosses +threshold and once when it crosses −threshold.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.7.1/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.7.2/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="bq8uWJMHKQMk4nEyFlQqtwDrYvLykgbK6nY9f21OXw6w6SbDf1KRbVcQmV86JMrZ9vRsKAClY/s54cz+RacYAg=="
-                       length="6662019"/>
+                       sparkle:edSignature="WQ3XIc+AcA+Z8eBSAY7hY+RPEkueJJoWA7ZzLR2I1x7BVKblcc+DowPZuyKRBTMuf3NEY+2SFO/WcCs1YmH0CA=="
+                       length="6711052"/>
         </item>
     </channel>
 </rss>
