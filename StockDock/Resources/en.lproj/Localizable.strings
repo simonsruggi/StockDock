@@ -136,3 +136,11 @@
 "By type (stocks, ETFs, indices…)" = "By type (stocks, ETFs, indices…)";
 "Alphabetical" = "Alphabetical";
 "Order in which watchlist entries cycle in the menu bar." = "Order in which watchlist entries cycle in the menu bar.";
+
+/* Advanced positions (issue #9) */
+"Advanced" = "Advanced";
+"Enable short positions & leverage" = "Enable short positions & leverage";
+"Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket." = "Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket.";
+"Leverage" = "Leverage";
+"Use a negative quantity for a short position. Leverage multiplies P&L and exposure (leave empty for 1×)." = "Use a negative quantity for a short position. Leverage multiplies P&L and exposure (leave empty for 1×).";
+"Negative quantity = short. Leverage multiplies P&L and exposure (empty = 1×)." = "Negative quantity = short. Leverage multiplies P&L and exposure (empty = 1×).";

@@ -10,6 +10,7 @@ struct AddHoldingView: View {
     @State private var searchText = ""
     @State private var quantityText = ""
     @State private var avgPriceText = ""
+    @State private var leverageText = ""
     @State private var purchaseDate = Date()
     @State private var searchResults: [SearchResult] = []
     @State private var selectedSymbol: String?
@@ -108,8 +109,25 @@ struct AddHoldingView: View {
                     TextField("0.00", text: $avgPriceText)
                         .textFieldStyle(.roundedBorder)
                 }
+                if storageService.advancedPositions {
+                    VStack(alignment: .leading) {
+                        Text("Leverage")
+                            .font(.inter(10, relativeTo: .caption))
+                            .foregroundColor(.secondary)
+                        TextField("1\u{00D7}", text: $leverageText)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 56)
+                    }
+                }
             }
             .padding(.horizontal)
+
+            if storageService.advancedPositions {
+                Text("Use a negative quantity for a short position. Leverage multiplies P&L and exposure (leave empty for 1\u{00D7}).")
+                    .font(.inter(10, relativeTo: .caption))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+            }
 
             VStack(alignment: .leading) {
                 Text("Purchase date")
@@ -134,16 +152,29 @@ struct AddHoldingView: View {
     }
 
     private func addHolding() {
+        let advanced = storageService.advancedPositions
         guard let sym = selectedSymbol,
               let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
               let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
-              qty > 0, price > 0
+              price > 0,
+              advanced ? qty != 0 : qty > 0
         else { return }
 
-        storageService.addHolding(to: portfolioId, symbol: sym, quantity: qty, avgPrice: price, purchaseDate: purchaseDate)
+        let leverage = parsedLeverage()
+        storageService.addHolding(to: portfolioId, symbol: sym, quantity: qty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
         Task {
             await stockService.refreshAll(storageService: storageService)
         }
         isPresented = nil
+    }
+
+    /// Parsed leverage, or nil when advanced mode is off, the field is empty, or
+    /// the value is an unlevered 1× — so unlevered holdings stay clean in storage.
+    private func parsedLeverage() -> Double? {
+        guard storageService.advancedPositions,
+              let l = Double(leverageText.replacingOccurrences(of: ",", with: ".")),
+              l > 0, l != 1
+        else { return nil }
+        return l
     }
 }

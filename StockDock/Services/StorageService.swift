@@ -64,6 +64,13 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    /// Unlocks short positions (negative quantity) and per-holding leverage in
+    /// the add/edit holding sheets. Off by default to keep the common long-only
+    /// flow simple.
+    @Published var advancedPositions: Bool = false {
+        didSet { scheduleSave() }
+    }
+
     /// Number of decimals used for percentage displays (1 or 2).
     var percentDecimals: Int { percentTwoDecimals ? 2 : 1 }
 
@@ -371,9 +378,9 @@ class StorageService: ObservableObject {
         portfolioNotifications[id.uuidString] = nil
     }
 
-    func addHolding(to portfolioId: UUID, symbol: String, quantity: Double, avgPrice: Double, purchaseDate: Date? = nil) {
+    func addHolding(to portfolioId: UUID, symbol: String, quantity: Double, avgPrice: Double, purchaseDate: Date? = nil, leverage: Double? = nil) {
         guard let index = portfolios.firstIndex(where: { $0.id == portfolioId }) else { return }
-        let holding = Holding(symbol: symbol, quantity: quantity, avgPrice: avgPrice, purchaseDate: purchaseDate)
+        let holding = Holding(symbol: symbol, quantity: quantity, avgPrice: avgPrice, purchaseDate: purchaseDate, leverage: leverage)
         portfolios[index].holdings.append(holding)
     }
 
@@ -382,13 +389,14 @@ class StorageService: ObservableObject {
         portfolios[pIndex].holdings.removeAll { $0.id == holdingId }
     }
 
-    func updateHolding(in portfolioId: UUID, holdingId: UUID, quantity: Double, avgPrice: Double, purchaseDate: Date? = nil) {
+    func updateHolding(in portfolioId: UUID, holdingId: UUID, quantity: Double, avgPrice: Double, purchaseDate: Date? = nil, leverage: Double? = nil) {
         guard let pIndex = portfolios.firstIndex(where: { $0.id == portfolioId }),
               let hIndex = portfolios[pIndex].holdings.firstIndex(where: { $0.id == holdingId })
         else { return }
         portfolios[pIndex].holdings[hIndex].quantity = quantity
         portfolios[pIndex].holdings[hIndex].avgPrice = avgPrice
         portfolios[pIndex].holdings[hIndex].purchaseDate = purchaseDate
+        portfolios[pIndex].holdings[hIndex].leverage = leverage
     }
 
     func resetToDefaults() {
@@ -405,6 +413,7 @@ class StorageService: ObservableObject {
         menuBarUseSystemColor = false
         percentTwoDecimals = false
         tickerShowName = false
+        advancedPositions = false
         watchlistSort = "manual"
         appLanguage = "en"
         fontSizeLevel = 9
@@ -481,6 +490,7 @@ class StorageService: ObservableObject {
         var watchlistSort: String?
         var symbolType: [String: String]?
         var appLanguage: String?
+        var advancedPositions: Bool?
     }
 
     private func scheduleSave() {
@@ -494,7 +504,7 @@ class StorageService: ObservableObject {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: percentTwoDecimals, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, appLanguage: appLanguage)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: percentTwoDecimals, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, appLanguage: appLanguage, advancedPositions: advancedPositions)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -530,6 +540,7 @@ class StorageService: ObservableObject {
             menuBarUseSystemColor = decoded.menuBarUseSystemColor ?? false
             percentTwoDecimals = decoded.percentTwoDecimals ?? false
             tickerShowName = decoded.tickerShowName ?? false
+            advancedPositions = decoded.advancedPositions ?? false
             watchlistSort = decoded.watchlistSort ?? "manual"
             symbolType = decoded.symbolType ?? [:]
             appLanguage = decoded.appLanguage ?? "en"

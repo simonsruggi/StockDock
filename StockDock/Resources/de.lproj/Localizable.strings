@@ -136,3 +136,11 @@
 "By type (stocks, ETFs, indices…)" = "Nach Typ (Aktien, ETFs, Indizes…)";
 "Alphabetical" = "Alphabetisch";
 "Order in which watchlist entries cycle in the menu bar." = "Reihenfolge, in der Watchlist-Einträge in der Menüleiste durchlaufen werden.";
+
+/* Advanced positions (issue #9) */
+"Advanced" = "Erweitert";
+"Enable short positions & leverage" = "Short-Positionen & Hebel aktivieren";
+"Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket." = "Fügt ein Hebel-Feld hinzu und erlaubt eine negative Stückzahl für Short-Positionen, sodass ein Portfolio ein relativer Long/Short-Korb sein kann.";
+"Leverage" = "Hebel";
+"Use a negative quantity for a short position. Leverage multiplies P&L and exposure (leave empty for 1×)." = "Verwende eine negative Stückzahl für eine Short-Position. Der Hebel multipliziert G&V und Exposure (leer = 1×).";
+"Negative quantity = short. Leverage multiplies P&L and exposure (empty = 1×)." = "Negative Stückzahl = Short. Der Hebel multipliziert G&V und Exposure (leer = 1×).";

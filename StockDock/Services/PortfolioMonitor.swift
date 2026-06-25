@@ -145,12 +145,15 @@ final class PortfolioMonitor {
             let rate = stockService.rate(from: quote.currency)
             let displayPrice = quote.displayPrice(extendedHours: storage.showExtendedHours)
             let value = holding.marketValue(currentPrice: displayPrice) * rate
-            // Today's change uses the regular-session change per share.
-            let contribution = holding.quantity * quote.change * rate
+            // Today's change uses the regular-session change per share, scaled by
+            // signed quantity and leverage so shorts and levered lots contribute
+            // correctly.
+            let exposure = holding.quantity * holding.effectiveLeverage
+            let contribution = exposure * quote.change * rate
             let prevClose = quote.price - quote.change
             m.totalValue += value
             m.dayChange += contribution
-            m.prevValue += holding.quantity * prevClose * rate
+            m.prevValue += exposure * prevClose * rate
             var entry = acc[quote.symbol] ?? (quote.changePercent, 0, 0)
             entry.changePercent = quote.changePercent
             entry.value += value

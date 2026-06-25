@@ -77,6 +77,19 @@ struct SettingsView: View {
 
                 Divider()
 
+                // MARK: - Advanced Positions
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Advanced")
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    Toggle("Enable short positions & leverage", isOn: $storageService.advancedPositions)
+                        .toggleStyle(.switch)
+                    Text("Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket.")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                }
+
+                Divider()
+
                 // MARK: - Extended Hours
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Market Hours")

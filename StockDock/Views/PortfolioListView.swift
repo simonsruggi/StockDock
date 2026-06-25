@@ -73,7 +73,9 @@ struct PortfolioListView: View {
                     let grandTotal = grandTotalValue
                     let grandCost = grandTotalCost
                     let grandPnl = grandTotal - grandCost
-                    let grandPnlPct = grandCost > 0 ? (grandPnl / grandCost) * 100 : 0
+                    // Use the magnitude of the cost basis so long/short baskets
+                    // (where the signed cost can be near zero) still report a %.
+                    let grandPnlPct = abs(grandCost) >= 0.01 ? (grandPnl / abs(grandCost)) * 100 : 0
 
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
@@ -194,7 +196,7 @@ struct PortfolioListView: View {
             total + portfolio.holdings.reduce(0) { sum, holding in
                 guard let quote = stockService.quotes[holding.symbol] else { return sum }
                 let rate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
-                return sum + (holding.avgPrice * holding.quantity) * rate
+                return sum + holding.costBasisLocal * rate
             }
         }
     }
@@ -311,13 +313,13 @@ struct PortfolioSection: View {
         portfolio.holdings.reduce(0) { sum, holding in
             guard let quote = stockService.quotes[holding.symbol] else { return sum }
             let rate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
-            return sum + (holding.avgPrice * holding.quantity) * rate
+            return sum + holding.costBasisLocal * rate
         }
     }
 
     var totalPnlPercent: Double {
-        guard totalCost > 0 else { return 0 }
-        return (totalPnl / totalCost) * 100
+        guard abs(totalCost) >= 0.01 else { return 0 }
+        return (totalPnl / abs(totalCost)) * 100
     }
 
     var body: some View {
@@ -458,9 +460,27 @@ struct HoldingRow: View {
         HStack(spacing: 0) {
             // Col 1: Ticker + Qty@Avg
             VStack(alignment: .leading, spacing: 1) {
-                Text(holding.symbol)
-                    .font(.inter(13, relativeTo: .body).monospacedDigit())
-                    .fontWeight(.bold)
+                HStack(spacing: 3) {
+                    Text(holding.symbol)
+                        .font(.inter(13, relativeTo: .body).monospacedDigit())
+                        .fontWeight(.bold)
+                    if holding.isShort {
+                        Text("SHORT")
+                            .font(.inter(8, weight: .bold, relativeTo: .caption2))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 3)
+                            .padding(.vertical, 1)
+                            .background(RoundedRectangle(cornerRadius: 2).fill(.orange))
+                    }
+                    if holding.effectiveLeverage != 1 {
+                        Text("\(StorageService.formatNumber(holding.effectiveLeverage, decimals: holding.effectiveLeverage == holding.effectiveLeverage.rounded() ? 0 : 1))\u{00D7}")
+                            .font(.inter(8, weight: .bold, relativeTo: .caption2))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 3)
+                            .padding(.vertical, 1)
+                            .background(RoundedRectangle(cornerRadius: 2).fill(.blue))
+                    }
+                }
                 Text("\(formatQty(holding.quantity))\u{00D7}\(StorageService.formatNumber(holding.avgPrice, decimals: 2))")
                     .font(.inter(10, relativeTo: .caption).monospacedDigit())
                     .foregroundColor(.secondary)
@@ -499,9 +519,9 @@ struct HoldingRow: View {
                 let displayPrice = quote.displayPrice(extendedHours: storageService.showExtendedHours)
                 let marketVal = holding.marketValue(currentPrice: displayPrice) * rate
                 let costRate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
-                let costBasis = holding.avgPrice * holding.quantity * costRate
+                let costBasis = holding.costBasisLocal * costRate
                 let pnl = marketVal - costBasis
-                let pnlPct = costBasis > 0 ? (pnl / costBasis) * 100 : 0
+                let pnlPct = abs(costBasis) >= 0.01 ? (pnl / abs(costBasis)) * 100 : 0
 
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(StorageService.formatAmount(marketVal, symbol: prefSymbol))
@@ -544,6 +564,7 @@ struct EditHoldingView: View {
 
     @State private var quantityText: String
     @State private var avgPriceText: String
+    @State private var leverageText: String
     @State private var purchaseDate: Date
 
     init(portfolioId: UUID, holding: Holding, isPresented: Binding<(portfolioId: UUID, holding: Holding)?>) {
@@ -552,6 +573,7 @@ struct EditHoldingView: View {
         self._isPresented = isPresented
         _quantityText = State(initialValue: String(format: "%.2f", holding.quantity))
         _avgPriceText = State(initialValue: String(format: "%.2f", holding.avgPrice))
+        _leverageText = State(initialValue: (holding.leverage.map { $0 != 1 ? String(format: "%g", $0) : "" }) ?? "")
         _purchaseDate = State(initialValue: holding.purchaseDate ?? Date())
     }
 
@@ -559,7 +581,7 @@ struct EditHoldingView: View {
         guard let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
               let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
               let quote = stockService.quotes[holding.symbol],
-              qty > 0, price > 0
+              qty != 0, price > 0
         else { return nil }
         let costInStock = price * qty
         let rate = stockService.rate(from: quote.currency, for: purchaseDate)
@@ -593,8 +615,25 @@ struct EditHoldingView: View {
                     TextField("0.00", text: $avgPriceText)
                         .textFieldStyle(.roundedBorder)
                 }
+                if storageService.advancedPositions {
+                    VStack(alignment: .leading) {
+                        Text("Leverage")
+                            .font(.inter(10, relativeTo: .caption))
+                            .foregroundColor(.secondary)
+                        TextField("1\u{00D7}", text: $leverageText)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 56)
+                    }
+                }
             }
             .padding(.horizontal)
+
+            if storageService.advancedPositions {
+                Text("Negative quantity = short. Leverage multiplies P&L and exposure (empty = 1\u{00D7}).")
+                    .font(.inter(10, relativeTo: .caption))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+            }
 
             VStack(alignment: .leading) {
                 Text("Purchase date")
@@ -645,11 +684,20 @@ struct EditHoldingView: View {
     }()
 
     private func save() {
+        let advanced = storageService.advancedPositions
         guard let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
               let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
-              qty > 0, price > 0
+              price > 0,
+              advanced ? qty != 0 : qty > 0
         else { return }
-        storageService.updateHolding(in: portfolioId, holdingId: holding.id, quantity: qty, avgPrice: price, purchaseDate: purchaseDate)
+        let leverage: Double? = {
+            guard advanced,
+                  let l = Double(leverageText.replacingOccurrences(of: ",", with: ".")),
+                  l > 0, l != 1
+            else { return nil }
+            return l
+        }()
+        storageService.updateHolding(in: portfolioId, holdingId: holding.id, quantity: qty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
         Task {
             await stockService.refreshAll(storageService: storageService)
         }

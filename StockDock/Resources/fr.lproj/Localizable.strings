@@ -136,3 +136,11 @@
 "By type (stocks, ETFs, indices…)" = "Par type (actions, ETF, indices…)";
 "Alphabetical" = "Alphabétique";
 "Order in which watchlist entries cycle in the menu bar." = "Ordre de défilement des entrées de la liste dans la barre de menus.";
+
+/* Advanced positions (issue #9) */
+"Advanced" = "Avancé";
+"Enable short positions & leverage" = "Activer les positions courtes et le levier";
+"Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket." = "Ajoute un champ de levier et permet de saisir une quantité négative pour les positions courtes, afin qu'un portefeuille puisse être un panier relatif long/short.";
+"Leverage" = "Levier";
+"Use a negative quantity for a short position. Leverage multiplies P&L and exposure (leave empty for 1×)." = "Utilisez une quantité négative pour une position courte. Le levier multiplie le P&L et l'exposition (vide = 1×).";
+"Negative quantity = short. Leverage multiplies P&L and exposure (empty = 1×)." = "Quantité négative = position courte. Le levier multiplie le P&L et l'exposition (vide = 1×).";
