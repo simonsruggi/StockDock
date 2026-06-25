@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.7.0</title>
-            <pubDate>Thu, 25 Jun 2026 11:03:27 +0200</pubDate>
-            <sparkle:version>17</sparkle:version>
-            <sparkle:shortVersionString>1.7.0</sparkle:shortVersionString>
+            <title>Version 1.7.1</title>
+            <pubDate>Thu, 25 Jun 2026 23:19:56 +0200</pubDate>
+            <sparkle:version>18</sparkle:version>
+            <sparkle:shortVersionString>1.7.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -20,18 +20,13 @@
 </style>
 <h3>New</h3>
 <ul>
-    <li><b>Show name instead of symbol</b> — optional toggle so the menu bar ticker shows the readable name (e.g. "S&P 500") instead of the raw symbol ("^GSPC"). Settings → Menu Bar Display, in the Ticker modes.</li>
-    <li><b>Ticker order</b> — choose how watchlist entries cycle in the menu bar: as added, grouped by type (stocks, ETFs, indices, futures…), or alphabetical.</li>
-</ul>
-<h3>Fixed</h3>
-<ul>
-    <li><b>No currency symbol on indices</b> — index values (e.g. S&P 500, DAX) no longer show a currency prefix, since an index has no associated currency.</li>
+    <li><b>Short positions &amp; leverage</b> — enable them in Settings → Advanced, then enter a negative quantity for a short and an optional leverage multiplier per holding. P&amp;L, exposure and daily change are computed correctly in every case, so a portfolio can be tracked as a relative long/short basket. Long-only stays the default and untouched.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.7.0/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.7.1/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="cJM4eyz6svBi4UBewjAGktOHedDu1aRAbbjMzMK5zt5qYTUCtku03/mHnbJ0dIlxBY4EsKX3ApTHcfY1PsHIBQ=="
-                       length="6637292"/>
+                       sparkle:edSignature="bq8uWJMHKQMk4nEyFlQqtwDrYvLykgbK6nY9f21OXw6w6SbDf1KRbVcQmV86JMrZ9vRsKAClY/s54cz+RacYAg=="
+                       length="6662019"/>
         </item>
     </channel>
 </rss>
