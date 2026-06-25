@@ -127,3 +127,12 @@
 
 /* Status menu */
 "Quit StockDock" = "Quitter StockDock";
+
+/* Ticker options (issue #8) */
+"Show name instead of symbol" = "Afficher le nom au lieu du symbole";
+"Shows the readable name in the ticker (e.g. \"S&P 500\" instead of \"^GSPC\")." = "Affiche le nom lisible dans le téléscripteur (par ex. « S&P 500 » au lieu de « ^GSPC »).";
+"Ticker order" = "Ordre du téléscripteur";
+"As added" = "Dans l’ordre d’ajout";
+"By type (stocks, ETFs, indices…)" = "Par type (actions, ETF, indices…)";
+"Alphabetical" = "Alphabétique";
+"Order in which watchlist entries cycle in the menu bar." = "Ordre de défilement des entrées de la liste dans la barre de menus.";

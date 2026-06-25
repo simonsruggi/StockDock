@@ -236,6 +236,7 @@ class StockService: ObservableObject {
                 )
 
                 quotes[q.symbol] = quote
+                if let t = q.quoteType { StorageService.shared.setType(t, for: q.symbol) }
             }
 
             return true
@@ -344,6 +345,7 @@ class StockService: ObservableObject {
             )
 
             quotes[meta.symbol] = quote
+            if let t = meta.instrumentType { StorageService.shared.setType(t, for: meta.symbol) }
         } catch {
         }
     }
@@ -508,6 +510,7 @@ private struct YahooChartResponse: Codable {
         let fiftyTwoWeekLow: Double?
         let longName: String?
         let shortName: String?
+        let instrumentType: String?
         let currentTradingPeriod: TradingPeriods?
     }
 
@@ -554,6 +557,7 @@ private struct YahooV7Response: Codable {
         let fiftyTwoWeekLow: Double?
         let preMarketPrice: Double?
         let postMarketPrice: Double?
+        let quoteType: String?
     }
 
     struct V7Error: Codable {

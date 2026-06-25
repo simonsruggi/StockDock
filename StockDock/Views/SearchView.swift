@@ -121,6 +121,9 @@ struct SearchView: View {
         switch mode {
         case .watchlist:
             storageService.addToWatchlist(result.symbol)
+            // Issue #8: cache the asset class right away (search already carries it),
+            // so index detection / grouping work before the first quote arrives.
+            if !result.type.isEmpty { storageService.setType(result.type, for: result.symbol) }
             if queryLooksLikeISIN {
                 storageService.setISIN(query.trimmingCharacters(in: .whitespaces).uppercased(), for: result.symbol)
             }

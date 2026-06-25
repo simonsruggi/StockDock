@@ -135,6 +135,24 @@ struct SettingsView: View {
                     Text("Applies to the menu bar, watchlist and portfolios (e.g. +2.34% instead of +2.3%).")
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
+
+                    // Ticker-specific options (issue #8) — only relevant in ticker modes.
+                    if storageService.menuBarDisplay == "ticker" || storageService.menuBarDisplay == "tickerPortfolio" {
+                        Toggle("Show name instead of symbol", isOn: $storageService.tickerShowName)
+                        Text("Shows the readable name in the ticker (e.g. \"S&P 500\" instead of \"^GSPC\").")
+                            .font(.inter(10, relativeTo: .caption))
+                            .foregroundColor(.secondary)
+
+                        Picker("Ticker order", selection: $storageService.watchlistSort) {
+                            Text("As added").tag("manual")
+                            Text("By type (stocks, ETFs, indices…)").tag("type")
+                            Text("Alphabetical").tag("alpha")
+                        }
+                        .pickerStyle(.menu)
+                        Text("Order in which watchlist entries cycle in the menu bar.")
+                            .font(.inter(10, relativeTo: .caption))
+                            .foregroundColor(.secondary)
+                    }
                 }
                 Divider()
 

@@ -291,6 +291,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         CGFloat(storageService.fontSizeLevel) + 5
     }
 
+    /// Renders one watchlist slide for the menu bar ticker. Applies issue #8.2
+    /// (show name vs symbol) and #8.3 (no currency symbol for indices).
+    private func watchlistSlide(symbol: String, upColor: NSColor, downColor: NSColor) -> (title: String, color: NSColor) {
+        guard let quote = stockService.quotes[symbol] else {
+            return (" \(symbol)", .secondaryLabelColor)
+        }
+        let pRate = stockService.priceRate(from: quote.currency)
+        let priceCurr = storageService.stockPriceCurrency
+        // #8.3: indices have no currency, so don't prefix a currency symbol.
+        let isIndex = StorageService.isIndex(symbol: quote.symbol, type: storageService.type(for: quote.symbol))
+        let sym = isIndex ? "" : StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
+        // #8.2: prefer the readable name when the user opted in and it's available.
+        let label = (storageService.tickerShowName && !quote.name.isEmpty) ? quote.name : quote.symbol
+        let sign = quote.changePercent >= 0 ? "+" : ""
+        let price = StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2)
+        let pct = String(format: "%.\(storageService.percentDecimals)f", quote.changePercent)
+        let title = " \(label) \(sym)\(price) \(sign)\(pct)%"
+        return (title, quote.changePercent >= 0 ? upColor : downColor)
+    }
+
     private func updateMenuBarTitle() {
         let displayMode = storageService.menuBarDisplay
 
@@ -396,29 +416,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             color = totalPnl >= 0 ? upColor : downColor
 
         case "ticker":
-            let symbols = storageService.watchlist
+            // #8.1: cycle in the user-selected order (as added / by type / alphabetical).
+            let symbols = StorageService.tickerOrder(storageService.watchlist, mode: storageService.watchlistSort, types: storageService.symbolType)
             if symbols.isEmpty {
                 title = " --"
                 color = .secondaryLabelColor
             } else {
-                let index = tickerIndex % symbols.count
-                let symbol = symbols[index]
-                if let quote = stockService.quotes[symbol] {
-                    let pRate = stockService.priceRate(from: quote.currency)
-                    let priceCurr = storageService.stockPriceCurrency
-                    let sym = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
-                    let sign = quote.changePercent >= 0 ? "+" : ""
-                    title = " \(quote.symbol) \(sym)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", quote.changePercent))%"
-                    color = quote.changePercent >= 0 ? upColor : downColor
-                } else {
-                    title = " \(symbol)"
-                    color = .secondaryLabelColor
-                }
+                let symbol = symbols[tickerIndex % symbols.count]
+                (title, color) = watchlistSlide(symbol: symbol, upColor: upColor, downColor: downColor)
             }
 
         case "tickerPortfolio":
             // Issue #7.3: cycle through the watchlist AND a portfolio recap slide.
-            let symbols = storageService.watchlist
+            let symbols = StorageService.tickerOrder(storageService.watchlist, mode: storageService.watchlistSort, types: storageService.symbolType)
             let hasPortfolio = storageService.portfolios.contains { !$0.holdings.isEmpty }
             let slideCount = symbols.count + (hasPortfolio ? 1 : 0)
             if slideCount == 0 {
@@ -428,18 +438,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 let index = tickerIndex % slideCount
                 if index < symbols.count {
                     // Watchlist slide (same rendering as the "ticker" mode)
-                    let symbol = symbols[index]
-                    if let quote = stockService.quotes[symbol] {
-                        let pRate = stockService.priceRate(from: quote.currency)
-                        let priceCurr = storageService.stockPriceCurrency
-                        let sym = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
-                        let sign = quote.changePercent >= 0 ? "+" : ""
-                        title = " \(quote.symbol) \(sym)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", quote.changePercent))%"
-                        color = quote.changePercent >= 0 ? upColor : downColor
-                    } else {
-                        title = " \(symbol)"
-                        color = .secondaryLabelColor
-                    }
+                    (title, color) = watchlistSlide(symbol: symbols[index], upColor: upColor, downColor: downColor)
                 } else {
                     // Portfolio recap slide
                     let sign = totalPnlPct >= 0 ? "+" : ""

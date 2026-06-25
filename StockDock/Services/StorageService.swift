@@ -67,6 +67,18 @@ class StorageService: ObservableObject {
     /// Number of decimals used for percentage displays (1 or 2).
     var percentDecimals: Int { percentTwoDecimals ? 2 : 1 }
 
+    /// Issue #8.2: show the human-readable name (e.g. "S&P 500") instead of the
+    /// raw symbol ("^GSPC") in the menu bar ticker. Off keeps the bar compact.
+    @Published var tickerShowName: Bool = false {
+        didSet { scheduleSave() }
+    }
+
+    /// Issue #8.1: order of the watchlist entries cycled in the menu bar ticker.
+    /// "manual" = as added, "type" = grouped by asset class, "alpha" = alphabetical.
+    @Published var watchlistSort: String = "manual" {
+        didSet { scheduleSave() }
+    }
+
     /// In-app UI language override (ISO code). Defaults to English.
     @Published var appLanguage: String = "en" {
         didSet { scheduleSave() }
@@ -86,6 +98,24 @@ class StorageService: ObservableObject {
     @Published var isinMap: [String: String] = [:] {
         didSet { scheduleSave() }
     }
+
+    /// Issue #8: maps symbol → Yahoo asset class ("EQUITY", "ETF", "INDEX",
+    /// "FUTURE", …), uppercased. A symbol's type is stable, so it's resolved once
+    /// (from search on add, or from the quote/chart feeds) and cached/persisted.
+    @Published var symbolType: [String: String] = [:] {
+        didSet { scheduleSave() }
+    }
+
+    /// Records a symbol's asset class. Ignores empty values and no-ops when
+    /// unchanged so it doesn't churn the save loop on every price refresh.
+    func setType(_ type: String, for symbol: String) {
+        let normalized = type.uppercased()
+        guard !normalized.isEmpty, symbolType[symbol] != normalized else { return }
+        symbolType[symbol] = normalized
+    }
+
+    /// Asset class for a symbol, or "" if not yet known.
+    func type(for symbol: String) -> String { symbolType[symbol] ?? "" }
 
     /// One-shot price alerts.
     @Published var alerts: [PriceAlert] = [] {
@@ -230,6 +260,48 @@ class StorageService: ObservableObject {
         return "\(sign)\(symbol)\(magnitude)"
     }
 
+    /// Issue #8.3: true when a symbol is a market index, which has no associated
+    /// currency (so no currency symbol should prefix its value). Uses the resolved
+    /// Yahoo type when known, falling back to the "^" convention (e.g. ^GSPC).
+    nonisolated static func isIndex(symbol: String, type: String?) -> Bool {
+        if let t = type, !t.isEmpty { return t.uppercased() == "INDEX" }
+        return symbol.hasPrefix("^")
+    }
+
+    /// Issue #8.1: orders watchlist symbols for the menu bar ticker cycle.
+    /// "type" groups by asset class (stocks → ETFs → indices → futures → …),
+    /// keeping the original relative order within each group (stable). Symbols with
+    /// an unknown type sort last. "alpha" sorts alphabetically. "manual" (default)
+    /// preserves the as-added order.
+    nonisolated static func tickerOrder(_ symbols: [String], mode: String, types: [String: String]) -> [String] {
+        switch mode {
+        case "alpha":
+            return symbols.sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+        case "type":
+            func rank(_ symbol: String) -> Int {
+                switch (types[symbol] ?? "").uppercased() {
+                case "EQUITY": return 0
+                case "ETF": return 1
+                case "INDEX": return 2
+                case "FUTURE": return 3
+                case "MUTUALFUND": return 4
+                case "CURRENCY": return 5
+                case "CRYPTOCURRENCY": return 6
+                case "": return 100 // unknown type → end
+                default: return 50
+                }
+            }
+            return symbols.enumerated()
+                .sorted { a, b in
+                    let ra = rank(a.element), rb = rank(b.element)
+                    return ra != rb ? ra < rb : a.offset < b.offset // stable within a group
+                }
+                .map { $0.element }
+        default:
+            return symbols
+        }
+    }
+
     static func currencySymbol(for code: String) -> String {
         switch code {
         case "EUR": return "€"
@@ -332,6 +404,8 @@ class StorageService: ObservableObject {
         lossColorHex = ""
         menuBarUseSystemColor = false
         percentTwoDecimals = false
+        tickerShowName = false
+        watchlistSort = "manual"
         appLanguage = "en"
         fontSizeLevel = 9
         fontFamily = "Inter Variable"
@@ -403,6 +477,9 @@ class StorageService: ObservableObject {
         var lossColorHex: String?
         var menuBarUseSystemColor: Bool?
         var percentTwoDecimals: Bool?
+        var tickerShowName: Bool?
+        var watchlistSort: String?
+        var symbolType: [String: String]?
         var appLanguage: String?
     }
 
@@ -417,7 +494,7 @@ class StorageService: ObservableObject {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: percentTwoDecimals, appLanguage: appLanguage)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: percentTwoDecimals, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, appLanguage: appLanguage)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -452,6 +529,9 @@ class StorageService: ObservableObject {
             lossColorHex = decoded.lossColorHex ?? ""
             menuBarUseSystemColor = decoded.menuBarUseSystemColor ?? false
             percentTwoDecimals = decoded.percentTwoDecimals ?? false
+            tickerShowName = decoded.tickerShowName ?? false
+            watchlistSort = decoded.watchlistSort ?? "manual"
+            symbolType = decoded.symbolType ?? [:]
             appLanguage = decoded.appLanguage ?? "en"
             showCompanyName = decoded.showCompanyName ?? true
             showDayRange = decoded.showDayRange ?? true

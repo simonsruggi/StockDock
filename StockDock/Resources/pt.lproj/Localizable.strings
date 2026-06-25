@@ -127,3 +127,12 @@
 
 /* Status menu */
 "Quit StockDock" = "Sair do StockDock";
+
+/* Ticker options (issue #8) */
+"Show name instead of symbol" = "Mostrar o nome em vez do símbolo";
+"Shows the readable name in the ticker (e.g. \"S&P 500\" instead of \"^GSPC\")." = "Mostra o nome legível no ticker (ex.: «S&P 500» em vez de «^GSPC»).";
+"Ticker order" = "Ordem do ticker";
+"As added" = "Conforme adicionados";
+"By type (stocks, ETFs, indices…)" = "Por tipo (ações, ETFs, índices…)";
+"Alphabetical" = "Alfabético";
+"Order in which watchlist entries cycle in the menu bar." = "Ordem em que as entradas da watchlist circulam na barra de menus.";
