@@ -51,8 +51,8 @@ enum PortfolioNotificationMode: String, Codable, CaseIterable {
 
     var help: String {
         switch self {
-        case .dailyPercent: return "Get pinged each time today's gain/loss crosses another step of this percentage."
-        case .dailyAbsolute: return "Get pinged each time today's gain/loss crosses another step of this amount."
+        case .dailyPercent: return "Get pinged once when today's gain or loss first reaches ±this percentage — at most once up and once down per day."
+        case .dailyAbsolute: return "Get pinged once when today's gain or loss first reaches ±this amount — at most once up and once down per day."
         case .dailySummary: return "One recap per day after this hour: total value, today's P&L and the biggest mover."
         case .milestone: return "Get pinged when the total value crosses a new multiple of this amount."
         }
@@ -96,23 +96,23 @@ struct PortfolioNotification: Identifiable, Codable, Equatable {
 /// This is the unit under test; the monitor feeds it live metrics and persists the returned state.
 enum PortfolioAlertEvaluator {
 
-    /// Threshold-crossing with **per-direction high-water marks**. Returns the signed step to
-    /// announce only when the metric reaches a step further from zero than anything already
-    /// notified on that side today; retracing or hovering returns nil (no spam).
+    /// Per-direction **once-a-day** gate. Fires `+1` the first time today's value reaches
+    /// `+threshold`, and `-1` the first time it reaches `-threshold`; everything afterwards on
+    /// that side stays silent until the next calendar day. This caps a trending or oscillating
+    /// day at one up + one down notification — no per-step stream.
     /// - Parameters:
     ///   - value: the metric (percent for dailyPercent, currency amount for dailyAbsolute).
-    ///   - threshold: step size (> 0).
-    ///   - lastUp: highest positive step already notified today (nil if none / new day).
-    ///   - lastDown: lowest (most negative) step already notified today (nil if none / new day).
+    ///   - threshold: trigger magnitude (> 0).
+    ///   - lastUp: non-nil once the up side has already fired today (caller resets each new day).
+    ///   - lastDown: non-nil once the down side has already fired today.
     static func crossingStep(value: Double, threshold: Double, lastUp: Double?, lastDown: Double?) -> Double? {
         guard threshold > 0 else { return nil }
-        let step = (value / threshold).rounded(.towardZero)   // signed whole steps
-        guard step != 0 else { return nil }                   // within ±1 threshold: nothing crossed
-        if step > 0 {
-            return step > (lastUp ?? 0) ? step : nil          // only a new positive high fires
-        } else {
-            return step < (lastDown ?? 0) ? step : nil        // only a new negative low fires
+        if value >= threshold {
+            return lastUp == nil ? 1 : nil      // first up-crossing of the day
+        } else if value <= -threshold {
+            return lastDown == nil ? -1 : nil   // first down-crossing of the day
         }
+        return nil                              // within ±threshold: nothing to announce
     }
 
     /// Returns the milestone (a multiple of `step`) to announce, using **high-water bounds** so a

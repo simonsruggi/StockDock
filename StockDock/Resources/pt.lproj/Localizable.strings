@@ -142,5 +142,12 @@
 "Enable short positions & leverage" = "Ativar posições vendidas e alavancagem";
 "Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket." = "Adiciona um campo de alavancagem e permite inserir uma quantidade negativa para posições vendidas, para que uma carteira possa ser uma cesta relativa comprada/vendida.";
 "Leverage" = "Alavancagem";
-"Use a negative quantity for a short position. Leverage multiplies P&L and exposure (leave empty for 1×)." = "Use uma quantidade negativa para uma posição vendida. A alavancagem multiplica o P&L e a exposição (vazio = 1×).";
-"Negative quantity = short. Leverage multiplies P&L and exposure (empty = 1×)." = "Quantidade negativa = vendida. A alavancagem multiplica o P&L e a exposição (vazio = 1×).";
+"Position" = "Posição";
+"Pick Long or Short. Leverage multiplies P&L and exposure (empty = 1×)." = "Escolha Long ou Short. A alavancagem multiplica o P&L e a exposição (vazio = 1×).";
+
+/* Clear all alerts */
+"Clear all" = "Limpar tudo";
+"Clear all alerts" = "Limpar todos os alertas";
+"This will delete all your price alerts. This cannot be undone." = "Isto irá eliminar todos os teus alertas de preço. Esta ação não pode ser desfeita.";
+"Clear all portfolio notifications" = "Limpar todas as notificações de carteira";
+"This will delete all portfolio notifications across every portfolio. This cannot be undone." = "Isto irá eliminar todas as notificações de carteira de todas as carteiras. Esta ação não pode ser desfeita.";

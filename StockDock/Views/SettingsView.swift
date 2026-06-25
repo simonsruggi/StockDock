@@ -6,6 +6,8 @@ struct SettingsView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var updaterViewModel: UpdaterViewModel
     @State private var showResetAlert = false
+    @State private var showClearAlerts = false
+    @State private var showClearPortfolioNotifs = false
 
     var body: some View {
         ScrollView {
@@ -235,9 +237,20 @@ struct SettingsView: View {
 
                     // Price alerts
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Price alerts")
-                            .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
-                            .foregroundColor(.secondary)
+                        HStack {
+                            Text("Price alerts")
+                                .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            if !storageService.alerts.isEmpty {
+                                Button(action: { showClearAlerts = true }) {
+                                    Text("Clear all")
+                                        .font(.inter(10, relativeTo: .caption))
+                                }
+                                .buttonStyle(.borderless)
+                                .foregroundColor(.red)
+                            }
+                        }
                         if storageService.alerts.isEmpty {
                             Text("No alerts. Right-click a stock in the watchlist to add one.")
                                 .font(.inter(10, relativeTo: .caption))
@@ -251,11 +264,22 @@ struct SettingsView: View {
 
                     // Portfolio notifications
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Portfolio notifications")
-                            .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
-                            .foregroundColor(.secondary)
                         let withNotifs = storageService.portfolios.filter {
                             !storageService.notifications(for: $0.id).isEmpty
+                        }
+                        HStack {
+                            Text("Portfolio notifications")
+                                .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            if !withNotifs.isEmpty {
+                                Button(action: { showClearPortfolioNotifs = true }) {
+                                    Text("Clear all")
+                                        .font(.inter(10, relativeTo: .caption))
+                                }
+                                .buttonStyle(.borderless)
+                                .foregroundColor(.red)
+                            }
                         }
                         if withNotifs.isEmpty {
                             Text("None. Right-click a portfolio → “Notifications…” to add one.")
@@ -345,6 +369,22 @@ struct SettingsView: View {
             }
         } message: {
             Text("This will reset all settings to their defaults. Your portfolios and watchlist will not be affected.")
+        }
+        .alert("Clear all alerts", isPresented: $showClearAlerts) {
+            Button("Cancel", role: .cancel) {}
+            Button("Clear all", role: .destructive) {
+                storageService.removeAllAlerts()
+            }
+        } message: {
+            Text("This will delete all your price alerts. This cannot be undone.")
+        }
+        .alert("Clear all portfolio notifications", isPresented: $showClearPortfolioNotifs) {
+            Button("Cancel", role: .cancel) {}
+            Button("Clear all", role: .destructive) {
+                storageService.removeAllPortfolioNotifications()
+            }
+        } message: {
+            Text("This will delete all portfolio notifications across every portfolio. This cannot be undone.")
         }
     }
 

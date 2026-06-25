@@ -142,5 +142,12 @@
 "Enable short positions & leverage" = "Enable short positions & leverage";
 "Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket." = "Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket.";
 "Leverage" = "Leverage";
-"Use a negative quantity for a short position. Leverage multiplies P&L and exposure (leave empty for 1×)." = "Use a negative quantity for a short position. Leverage multiplies P&L and exposure (leave empty for 1×).";
-"Negative quantity = short. Leverage multiplies P&L and exposure (empty = 1×)." = "Negative quantity = short. Leverage multiplies P&L and exposure (empty = 1×).";
+"Position" = "Position";
+"Pick Long or Short. Leverage multiplies P&L and exposure (empty = 1×)." = "Pick Long or Short. Leverage multiplies P&L and exposure (empty = 1×).";
+
+/* Clear all alerts */
+"Clear all" = "Clear all";
+"Clear all alerts" = "Clear all alerts";
+"This will delete all your price alerts. This cannot be undone." = "This will delete all your price alerts. This cannot be undone.";
+"Clear all portfolio notifications" = "Clear all portfolio notifications";
+"This will delete all portfolio notifications across every portfolio. This cannot be undone." = "This will delete all portfolio notifications across every portfolio. This cannot be undone.";

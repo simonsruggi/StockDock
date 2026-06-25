@@ -157,7 +157,7 @@ struct WatchlistView: View {
                 }
                 .environmentObject(stockService)
                 .environmentObject(storageService)
-                .frame(width: 300, height: 220)
+                .frame(width: 300, height: storageService.advancedPositions ? 290 : 220)
             }
             .sheet(item: Binding<AlertSheetItem?>(
                 get: { alertSymbol.map { AlertSheetItem(symbol: $0) } },
@@ -241,6 +241,8 @@ struct QuickAddHoldingView: View {
 
     @State private var quantityText = ""
     @State private var avgPriceText = ""
+    @State private var leverageText = ""
+    @State private var isShort = false
     @State private var purchaseDate = Date()
 
     var body: some View {
@@ -253,6 +255,18 @@ struct QuickAddHoldingView: View {
                     .buttonStyle(.borderless)
             }
 
+            if storageService.advancedPositions {
+                VStack(alignment: .leading) {
+                    Text("Position").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
+                    Picker("Position", selection: $isShort) {
+                        Text("Long").tag(false)
+                        Text("Short").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                }
+            }
+
             HStack(spacing: 12) {
                 VStack(alignment: .leading) {
                     Text("Quantity").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
@@ -263,6 +277,14 @@ struct QuickAddHoldingView: View {
                     Text("Avg price").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
                     TextField("0.00", text: $avgPriceText)
                         .textFieldStyle(.roundedBorder)
+                }
+                if storageService.advancedPositions {
+                    VStack(alignment: .leading) {
+                        Text("Leverage").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
+                        TextField("1\u{00D7}", text: $leverageText)
+                            .textFieldStyle(.roundedBorder)
+                            .frame(width: 56)
+                    }
                 }
             }
 
@@ -278,9 +300,18 @@ struct QuickAddHoldingView: View {
             Button("Add") {
                 guard let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
                       let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
-                      qty > 0, price > 0
+                      abs(qty) > 0, price > 0
                 else { return }
-                storageService.addHolding(to: portfolioId, symbol: symbol, quantity: qty, avgPrice: price, purchaseDate: purchaseDate)
+                let advanced = storageService.advancedPositions
+                let signedQty = (advanced && isShort) ? -abs(qty) : abs(qty)
+                let leverage: Double? = {
+                    guard advanced,
+                          let l = Double(leverageText.replacingOccurrences(of: ",", with: ".")),
+                          l > 0, l != 1
+                    else { return nil }
+                    return l
+                }()
+                storageService.addHolding(to: portfolioId, symbol: symbol, quantity: signedQty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
                 Task { await stockService.refreshAll(storageService: storageService) }
                 onDismiss()
             }

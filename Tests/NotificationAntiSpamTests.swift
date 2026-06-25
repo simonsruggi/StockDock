@@ -2,45 +2,65 @@ import XCTest
 @testable import StockDock
 
 /// Regression tests for the "quintali di notifiche" bug: portfolio notifications
-/// re-firing on every tick when the value oscillates around a step/milestone boundary.
-/// The intended behaviour is "smart anti-spam": only genuinely NEW extremes notify;
-/// hovering or retracing must stay silent.
+/// firing too often. Daily-move notifications must fire at most once per direction
+/// per day (first +threshold crossing, first -threshold crossing); a trending or
+/// oscillating day must NOT produce a stream.
 final class NotificationAntiSpamTests: XCTestCase {
 
-    // MARK: - Daily step oscillation (dailyPercent / dailyAbsolute)
-
-    /// Once step 2 has been announced today, retracing into the step-1 band must NOT
-    /// re-fire — the user already passed step 1 on the way up.
-    func testStepDoesNotRefireWhenRetracingSameDirection() {
-        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: 1.5, threshold: 1, lastUp: 2, lastDown: nil))
-        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: 1.0, threshold: 1, lastUp: 2, lastDown: nil))
+    /// Mirrors PortfolioMonitor.evaluateDailyStep state threading for a single day:
+    /// scope marks reset at day start (passed in as nil), fire via crossingStep,
+    /// advance only the side that fired. Returns how many notifications the sequence
+    /// would emit — the end-to-end anti-spam assertion.
+    private func dailyFireCount(_ values: [Double], threshold: Double) -> Int {
+        var lastUp: Double? = nil
+        var lastDown: Double? = nil
+        var count = 0
+        for v in values {
+            guard let step = PortfolioAlertEvaluator.crossingStep(value: v, threshold: threshold, lastUp: lastUp, lastDown: lastDown) else { continue }
+            count += 1
+            if step > 0 { lastUp = step } else { lastDown = step }
+        }
+        return count
     }
 
-    /// Hovering at the +2% boundary (1.99 ↔ 2.01) must produce at most the first +2,
-    /// never a stream of alternating +1/+2.
-    func testStepHoveringAtBoundaryDoesNotSpam() {
-        // already announced +2 today
-        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: 1.99, threshold: 1, lastUp: 2, lastDown: nil))
-        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: 2.01, threshold: 1, lastUp: 2, lastDown: nil))
+    // MARK: - Daily move: at most one up + one down per day
+
+    /// A steadily climbing day (+1.1 … +4.9%) must fire ONCE, not once per step.
+    /// This is the "too many notifications" regression.
+    func testTrendingUpDayFiresOnce() {
+        XCTAssertEqual(dailyFireCount([1.1, 2.3, 3.6, 4.9], threshold: 1), 1)
     }
 
-    /// A genuinely higher step still fires.
-    func testStepStillFiresOnNewHigh() {
-        XCTAssertEqual(PortfolioAlertEvaluator.crossingStep(value: 3.1, threshold: 1, lastUp: 2, lastDown: nil), 3)
+    /// A full swing — up through +threshold then down through -threshold — fires
+    /// exactly one up and one down.
+    func testSwingFiresOnceEachDirection() {
+        XCTAssertEqual(dailyFireCount([1.1, 2.3, -1.2, -2.5], threshold: 1), 2)
     }
 
-    /// First move into the negative side fires once, then negative hovering is silent,
-    /// even though the positive high-water remains recorded.
-    func testStepFiresFirstNegativeThenSilent() {
-        XCTAssertEqual(PortfolioAlertEvaluator.crossingStep(value: -1.2, threshold: 1, lastUp: 2, lastDown: nil), -1)
-        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: -1.2, threshold: 1, lastUp: 2, lastDown: -1))
-        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: -0.8, threshold: 1, lastUp: 2, lastDown: -1))
+    /// All-day oscillation around both boundaries still caps at one up + one down.
+    func testOscillatingDayCapsAtTwo() {
+        XCTAssertEqual(dailyFireCount([1.2, 0.5, 1.8, 0.3, 2.9, -1.1, -0.2, -3.0, -0.5, 1.5], threshold: 1), 2)
     }
 
-    /// Zero-cross oscillation (+1 ↔ -1) must not spam once both sides are known.
-    func testStepZeroCrossOscillationDoesNotSpam() {
-        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: 1.2, threshold: 1, lastUp: 1, lastDown: -1))
-        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: -1.2, threshold: 1, lastUp: 1, lastDown: -1))
+    /// Absolute mode (currency threshold) behaves identically.
+    func testAbsoluteModeTrendingDayFiresOnce() {
+        XCTAssertEqual(dailyFireCount([260, 540, 820, 1100], threshold: 250), 1)
+    }
+
+    // MARK: - crossingStep direction gate
+
+    /// Once the up side has fired today, higher values stay silent until tomorrow.
+    func testUpSideSilentAfterFiring() {
+        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: 3.1, threshold: 1, lastUp: 1, lastDown: nil))
+        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: 1.0, threshold: 1, lastUp: 1, lastDown: nil))
+    }
+
+    /// First move into the negative side fires once, then the down side is silent,
+    /// independently of whether the up side already fired.
+    func testDownSideFiresOnceThenSilent() {
+        XCTAssertEqual(PortfolioAlertEvaluator.crossingStep(value: -1.2, threshold: 1, lastUp: 1, lastDown: nil), -1)
+        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: -2.4, threshold: 1, lastUp: 1, lastDown: -1))
+        XCTAssertNil(PortfolioAlertEvaluator.crossingStep(value: -0.8, threshold: 1, lastUp: 1, lastDown: -1))
     }
 
     // MARK: - Milestone oscillation

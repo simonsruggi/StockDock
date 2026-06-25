@@ -170,6 +170,10 @@ class StorageService: ObservableObject {
         alerts.removeAll { $0.id == id }
     }
 
+    func removeAllAlerts() {
+        alerts.removeAll()
+    }
+
     func setAlertEnabled(id: UUID, enabled: Bool) {
         guard let i = alerts.firstIndex(where: { $0.id == id }) else { return }
         alerts[i].isEnabled = enabled
@@ -195,6 +199,10 @@ class StorageService: ObservableObject {
 
     func addPortfolioNotification(_ notification: PortfolioNotification, to portfolioId: UUID) {
         portfolioNotifications[portfolioId.uuidString, default: []].append(notification)
+    }
+
+    func removeAllPortfolioNotifications() {
+        portfolioNotifications = [:]
     }
 
     func removePortfolioNotification(id: UUID, from portfolioId: UUID) {

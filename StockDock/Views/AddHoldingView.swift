@@ -11,6 +11,7 @@ struct AddHoldingView: View {
     @State private var quantityText = ""
     @State private var avgPriceText = ""
     @State private var leverageText = ""
+    @State private var isShort = false
     @State private var purchaseDate = Date()
     @State private var searchResults: [SearchResult] = []
     @State private var selectedSymbol: String?
@@ -93,6 +94,22 @@ struct AddHoldingView: View {
                 }
             }
 
+            // Position type (Advanced)
+            if storageService.advancedPositions {
+                VStack(alignment: .leading) {
+                    Text("Position")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                    Picker("Position", selection: $isShort) {
+                        Text("Long").tag(false)
+                        Text("Short").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                }
+                .padding(.horizontal)
+            }
+
             // Quantity & price
             HStack(spacing: 12) {
                 VStack(alignment: .leading) {
@@ -123,7 +140,7 @@ struct AddHoldingView: View {
             .padding(.horizontal)
 
             if storageService.advancedPositions {
-                Text("Use a negative quantity for a short position. Leverage multiplies P&L and exposure (leave empty for 1\u{00D7}).")
+                Text("Pick Long or Short. Leverage multiplies P&L and exposure (empty = 1\u{00D7}).")
                     .font(.inter(10, relativeTo: .caption))
                     .foregroundColor(.secondary)
                     .padding(.horizontal)
@@ -156,12 +173,14 @@ struct AddHoldingView: View {
         guard let sym = selectedSymbol,
               let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
               let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
-              price > 0,
-              advanced ? qty != 0 : qty > 0
+              price > 0, abs(qty) > 0
         else { return }
 
+        // Quantity is entered as a positive magnitude; the Long/Short picker
+        // (Advanced only) decides the sign.
+        let signedQty = (advanced && isShort) ? -abs(qty) : abs(qty)
         let leverage = parsedLeverage()
-        storageService.addHolding(to: portfolioId, symbol: sym, quantity: qty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
+        storageService.addHolding(to: portfolioId, symbol: sym, quantity: signedQty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
         Task {
             await stockService.refreshAll(storageService: storageService)
         }

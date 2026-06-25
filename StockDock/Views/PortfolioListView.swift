@@ -565,15 +565,18 @@ struct EditHoldingView: View {
     @State private var quantityText: String
     @State private var avgPriceText: String
     @State private var leverageText: String
+    @State private var isShort: Bool
     @State private var purchaseDate: Date
 
     init(portfolioId: UUID, holding: Holding, isPresented: Binding<(portfolioId: UUID, holding: Holding)?>) {
         self.portfolioId = portfolioId
         self.holding = holding
         self._isPresented = isPresented
-        _quantityText = State(initialValue: String(format: "%.2f", holding.quantity))
+        // Quantity is edited as a positive magnitude; the Long/Short picker holds the sign.
+        _quantityText = State(initialValue: String(format: "%.2f", abs(holding.quantity)))
         _avgPriceText = State(initialValue: String(format: "%.2f", holding.avgPrice))
         _leverageText = State(initialValue: (holding.leverage.map { $0 != 1 ? String(format: "%g", $0) : "" }) ?? "")
+        _isShort = State(initialValue: holding.quantity < 0)
         _purchaseDate = State(initialValue: holding.purchaseDate ?? Date())
     }
 
@@ -599,6 +602,21 @@ struct EditHoldingView: View {
             }
             .padding(.horizontal)
             .padding(.top)
+
+            if storageService.advancedPositions {
+                VStack(alignment: .leading) {
+                    Text("Position")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                    Picker("Position", selection: $isShort) {
+                        Text("Long").tag(false)
+                        Text("Short").tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                }
+                .padding(.horizontal)
+            }
 
             HStack(spacing: 12) {
                 VStack(alignment: .leading) {
@@ -629,7 +647,7 @@ struct EditHoldingView: View {
             .padding(.horizontal)
 
             if storageService.advancedPositions {
-                Text("Negative quantity = short. Leverage multiplies P&L and exposure (empty = 1\u{00D7}).")
+                Text("Pick Long or Short. Leverage multiplies P&L and exposure (empty = 1\u{00D7}).")
                     .font(.inter(10, relativeTo: .caption))
                     .foregroundColor(.secondary)
                     .padding(.horizontal)
@@ -687,17 +705,20 @@ struct EditHoldingView: View {
         let advanced = storageService.advancedPositions
         guard let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
               let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
-              price > 0,
-              advanced ? qty != 0 : qty > 0
+              price > 0, abs(qty) > 0
         else { return }
+        // When Advanced is off, keep the holding's existing direction and
+        // leverage so a plain edit never silently flips a short or drops leverage.
+        let short = advanced ? isShort : (holding.quantity < 0)
+        let signedQty = short ? -abs(qty) : abs(qty)
         let leverage: Double? = {
-            guard advanced,
-                  let l = Double(leverageText.replacingOccurrences(of: ",", with: ".")),
+            guard advanced else { return holding.leverage }
+            guard let l = Double(leverageText.replacingOccurrences(of: ",", with: ".")),
                   l > 0, l != 1
             else { return nil }
             return l
         }()
-        storageService.updateHolding(in: portfolioId, holdingId: holding.id, quantity: qty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
+        storageService.updateHolding(in: portfolioId, holdingId: holding.id, quantity: signedQty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
         Task {
             await stockService.refreshAll(storageService: storageService)
         }
