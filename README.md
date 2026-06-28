@@ -4,6 +4,8 @@ A lightweight macOS menu bar app for tracking stocks and portfolios in real time
 
 Built with SwiftUI. No account required, no API keys needed — data comes directly from Yahoo Finance.
 
+> ⭐️ **Using StockDock?** It's free and there's no tracking, so a GitHub star is the only way I know anyone's out there. If the app is useful to you, please [star the repo](https://github.com/simonsruggi/StockDock) — it takes a second and genuinely helps.
+
 ## Screenshots
 
 | Menu Bar | Watchlist | Portfolios | Settings |
@@ -162,6 +164,10 @@ StockDock checks for updates automatically on launch via [Sparkle](https://spark
 - Yahoo Finance WebSocket (real-time) + REST API (fallback)
 - [Sparkle](https://sparkle-project.org/) for auto-updates
 - [swift-protobuf](https://github.com/apple/swift-protobuf) for WebSocket decoding
+
+## Support the project
+
+StockDock is free, open source, and completely private — there's no analytics, no telemetry, no way for me to know how many people use it. If you find it useful, the best thing you can do is **[⭐️ star the repo](https://github.com/simonsruggi/StockDock)**. It's quick, it's free, and it's the only signal I get that the app is worth maintaining. Thank you!
 
 ## License
 
