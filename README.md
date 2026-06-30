@@ -167,7 +167,11 @@ StockDock checks for updates automatically on launch via [Sparkle](https://spark
 
 ## Support the project
 
-StockDock is free, open source, and completely private — there's no analytics, no telemetry, no way for me to know how many people use it. If you find it useful, the best thing you can do is **[⭐️ star the repo](https://github.com/simonsruggi/StockDock)**. It's quick, it's free, and it's the only signal I get that the app is worth maintaining. Thank you!
+StockDock is **free and open source, and it will always stay that way** — no paid tiers, no premium lock, no subscription, ever. It's also completely private: there's no analytics, no telemetry, no way for me to know how many people use it.
+
+If you find it useful, the best (and free) thing you can do is **[⭐️ star the repo](https://github.com/simonsruggi/StockDock)** — it's quick and it's the only signal I get that the app is worth maintaining.
+
+And if you'd like to go a step further, you can **[💛 sponsor me on GitHub](https://github.com/sponsors/simonsruggi)**. It's completely optional and changes nothing about the app — every feature stays free for everyone — but it helps me keep building and maintaining StockDock and my other open-source projects. Thank you! 🙏
 
 ## License
 
