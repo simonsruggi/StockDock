@@ -1,10 +1,48 @@
+<div align="center">
+
+<img src="screenshots/banner.png" alt="StockDock — track stocks from your macOS menu bar" width="100%">
+
 # StockDock
 
-A lightweight macOS menu bar app for tracking stocks and portfolios in real time.
+**A free, open-source macOS menu bar app for tracking stocks, ETFs, indices, crypto, and your portfolio P&L in real time.**
 
-Built with SwiftUI. No account required, no API keys needed — data comes directly from Yahoo Finance.
+No account. No API keys. No subscription. No tracking. Just your watchlist and portfolio, always one click away in the menu bar.
+
+<br>
+
+[![Latest Release](https://img.shields.io/github/v/release/simonsruggi/StockDock?label=download&logo=apple&color=black)](https://github.com/simonsruggi/StockDock/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/simonsruggi/StockDock/total?logo=github&color=2ea44f)](https://github.com/simonsruggi/StockDock/releases)
+[![Platform](https://img.shields.io/badge/macOS-14%2B-black?logo=apple)](https://github.com/simonsruggi/StockDock/releases/latest)
+[![Swift](https://img.shields.io/badge/Swift-5.9-orange?logo=swift&logoColor=white)](https://swift.org)
+[![License: MIT](https://img.shields.io/github/license/simonsruggi/StockDock?color=blue)](LICENSE)
+[![Star](https://img.shields.io/github/stars/simonsruggi/StockDock?style=social)](https://github.com/simonsruggi/StockDock)
+
+<br>
+
+```bash
+brew install simonsruggi/tap/stockdock
+```
+
+**[⬇️ Download](https://github.com/simonsruggi/StockDock/releases/latest)** · **[✨ Features](#features)** · **[📸 Screenshots](#screenshots)** · **[🐛 Report a bug](https://github.com/simonsruggi/StockDock/issues)**
+
+</div>
+
+---
 
 > ⭐️ **Using StockDock?** It's free and there's no tracking, so a GitHub star is the only way I know anyone's out there. If the app is useful to you, please [star the repo](https://github.com/simonsruggi/StockDock) — it takes a second and genuinely helps.
+
+## Why StockDock?
+
+- 🆓 **Truly free & open source** — no paid tiers, no premium lock, no subscription, ever.
+- 🔒 **Private by design** — no account, no login, no analytics, no telemetry. Your watchlist and portfolio never leave your Mac.
+- ⚡️ **Live in your menu bar** — real-time P&L and prices without opening a single browser tab.
+- 🌍 **Multi-currency** — track holdings in mixed currencies and see totals converted to yours, with historical rates on your cost basis.
+- 🔔 **Alerts that reach you** — native macOS notifications plus optional Discord / Slack webhooks.
+- 🍎 **Native & lightweight** — pure SwiftUI, universal binary (Apple Silicon + Intel), auto-updating via Sparkle.
+
+## What you can track
+
+Stocks, ETFs, indices (S&P 500, NASDAQ…), crypto, and forex — anything with a Yahoo Finance symbol. Search by **symbol**, **company name**, or **ISIN** (e.g. `AAPL`, `Tesla`, `IE00B4L5Y983`).
 
 ## Screenshots
 
@@ -18,6 +56,7 @@ Built with SwiftUI. No account required, no API keys needed — data comes direc
 - **Watchlist** — Track any stock by symbol, name, or ISIN with live prices and daily change
 - **52-Week Range** — A range bar in the watchlist showing where the price sits between its yearly low and high
 - **Portfolios** — Create multiple portfolios with holdings, average cost, purchase date, and P&L
+- **Long & Short + Leverage** — Track short positions and leveraged holdings with correct P&L math (optional, off by default)
 - **Export / Import** — Export single or all portfolios to JSON and import them back
 - **Extended Hours** — Pre-market and after-hours prices with PRE/POST badges
 - **Currency Conversion** — Convert stock prices and portfolio values to your preferred currency
@@ -26,6 +65,7 @@ Built with SwiftUI. No account required, no API keys needed — data comes direc
 - **Discord / Slack Webhooks** — Mirror every notification to a Discord or Slack webhook with colored embeds
 - **Customizable Watchlist** — Toggle company name, day range, 52-week bar, and absolute change per row
 - **Customizable Menu Bar** — Choose what to display: P&L, total value, percentages, best/worst stock, or just an icon
+- **6 Languages** — English, German, French, Spanish, Italian, Portuguese
 - **Auto-Updates** — Updates are delivered automatically via Sparkle, no manual downloads needed
 
 ## Install
@@ -89,6 +129,10 @@ Right-click a holding to edit or delete it. Right-click a portfolio header to co
 
 You can **Export** a single portfolio (or **Export All**) to a JSON file, and **Import** portfolios back — imports regenerate IDs and de-duplicate names so nothing is overwritten.
 
+### Long / Short & Leverage
+
+By default every holding is a plain long position. Turn on **Settings → Advanced → "Enable short positions & leverage"** to unlock a **Long / Short** picker and a per-holding **leverage** field when adding or editing a holding. P&L, market value, and portfolio percentages are computed with the correct sign and exposure so long and short baskets don't cancel each other out. Existing portfolios are unaffected — the feature is opt-in.
+
 ### Price Alerts
 
 Create a one-shot alert from a watchlist stock's right-click menu. Six conditions are supported:
@@ -128,6 +172,7 @@ Click the gear icon tab to configure:
 | **Show Extended Hours** | Toggle pre-market and after-hours prices on/off — affects prices, P&L, and menu bar |
 | **Watchlist Display** | Toggle company name, day range, 52-week range bar, and absolute change value per row |
 | **Menu Bar Display** | What appears in your menu bar (see below) |
+| **Language** | English, German, French, Spanish, Italian, Portuguese |
 | **Notifications** | Discord/Slack webhook, plus management of price alerts and portfolio notifications |
 
 ### Menu Bar Display Options
@@ -157,6 +202,26 @@ StockDock checks for updates automatically on launch via [Sparkle](https://spark
 - No data is sent anywhere — the app only talks to Yahoo Finance APIs (and your own Discord/Slack webhook, if you enable it)
 - No account required, no API keys needed
 
+## FAQ
+
+**Is StockDock really free?**
+Yes — free and open source under the MIT license, with no paid tier or subscription. If you want to support development, you can optionally [sponsor me](https://github.com/sponsors/simonsruggi).
+
+**Does it work on Intel Macs?**
+Yes. StockDock ships as a universal binary for both Apple Silicon and Intel, on macOS 14 (Sonoma) and later.
+
+**Where does the data come from?**
+Public Yahoo Finance endpoints (WebSocket for live prices, REST for exchange rates). No API key needed.
+
+**Can I track crypto, ETFs, or indices?**
+Yes — anything with a Yahoo Finance symbol, including crypto, ETFs, and market indices.
+
+**Do you collect any data about me?**
+No. There's no analytics, no telemetry, no account. Everything stays local on your Mac.
+
+**How do I uninstall it?**
+`brew uninstall stockdock` (or drag the app to the Trash), then optionally delete `~/Library/Application Support/StockDock`.
+
 ## Tech Stack
 
 - Swift 5.9 / SwiftUI
@@ -175,4 +240,4 @@ And if you'd like to go a step further, you can **[💛 sponsor me on GitHub](ht
 
 ## License
 
-MIT
+[MIT](LICENSE) © [Simone Ruggiero](https://simoneruggiero.com)
