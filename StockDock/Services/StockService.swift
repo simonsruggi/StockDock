@@ -528,13 +528,19 @@ class StockService: ObservableObject {
         defer { isLoadingNews = false }
 
         let symbols = Self.collectSymbols(storageService: storageService).sorted()
-        let queries: [String] = symbols.isEmpty ? ["stock market"] : Array(symbols.prefix(6))
+        // Each query is (search term, reference ticker). For tracked symbols the
+        // reference ticker is the symbol itself; the general-market fallback has none.
+        let queries: [(term: String, symbol: String?)] = symbols.isEmpty
+            ? [("stock market", nil)]
+            : symbols.prefix(6).map { ($0, $0) }
 
         var seen = Set<String>()
         var collected: [NewsArticle] = []
         await withTaskGroup(of: [NewsArticle].self) { group in
             for query in queries {
-                group.addTask { [weak self] in await self?.fetchNewsChunk(query: query) ?? [] }
+                group.addTask { [weak self] in
+                    await self?.fetchNewsChunk(query: query.term, sourceSymbol: query.symbol) ?? []
+                }
             }
             for await chunk in group {
                 for article in chunk where !article.link.isEmpty && seen.insert(article.id).inserted {
@@ -547,12 +553,14 @@ class StockService: ObservableObject {
         lastNewsFetch = Date()
     }
 
-    private func fetchNewsChunk(query: String) async -> [NewsArticle] {
+    private func fetchNewsChunk(query: String, sourceSymbol: String?) async -> [NewsArticle] {
         let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
         guard let url = URL(string: "https://query1.finance.yahoo.com/v1/finance/search?q=\(encoded)&quotesCount=0&newsCount=10") else { return [] }
         do {
             let (data, _) = try await session.data(from: url)
-            return try JSONDecoder().decode(YahooNewsResponse.self, from: data).news ?? []
+            let articles = try JSONDecoder().decode(YahooNewsResponse.self, from: data).news ?? []
+            guard let sourceSymbol else { return articles }
+            return articles.map { var a = $0; a.sourceSymbol = sourceSymbol; return a }
         } catch {
             return []
         }

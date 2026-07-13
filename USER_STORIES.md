@@ -204,7 +204,8 @@
 - [x] News fetched from Yahoo Finance's public search endpoint (`v1/finance/search?newsCount=…`) — no API key, consistent with quotes/search
 - [x] Feed is personalized: stories for the user's tracked symbols (watchlist + portfolio holdings, up to 6 concurrent queries), deduped by uuid and sorted newest-first (cap 40)
 - [x] Fallback to general "stock market" news when nothing is tracked
-- [x] Each row: thumbnail, headline (3 lines), publisher · relative time (localized), related tickers; tap opens the article in the default browser
+- [x] Each row: thumbnail, headline (3 lines), publisher · relative time (localized); tap opens the article in the default browser
+- [x] Each row shows a ticker pill for the reference stock (the tracked symbol the story was fetched for, via `NewsArticle.sourceSymbol`; falls back to the first related ticker for general-market news), emphasized with a filled accent background, plus up to 2 more related tickers as subtle pills
 - [x] Throttled refresh (max once / 5 min) + force-refresh via the header refresh button while on Home; loading and empty states
 - [x] `NewsArticle` decoding covered by `Tests/NewsArticleTests.swift` (all fields, smallest-thumbnail pick, missing-field fallbacks, required uuid)
 

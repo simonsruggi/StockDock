@@ -12,6 +12,11 @@ struct NewsArticle: Identifiable, Decodable, Hashable {
     let thumbnailURL: String?
     let relatedTickers: [String]
 
+    /// The tracked symbol this story was fetched for (the "reference stock").
+    /// Not part of the Yahoo payload — set by the fetcher after decoding.
+    /// nil for general-market news (empty watchlist fallback).
+    var sourceSymbol: String? = nil
+
     var url: URL? { URL(string: link) }
     var publishedAt: Date { Date(timeIntervalSince1970: TimeInterval(publishTime)) }
 
@@ -45,7 +50,8 @@ struct NewsArticle: Identifiable, Decodable, Hashable {
     }
 
     init(id: String, title: String, publisher: String, link: String,
-         publishTime: Int, thumbnailURL: String?, relatedTickers: [String]) {
+         publishTime: Int, thumbnailURL: String?, relatedTickers: [String],
+         sourceSymbol: String? = nil) {
         self.id = id
         self.title = title
         self.publisher = publisher
@@ -53,5 +59,6 @@ struct NewsArticle: Identifiable, Decodable, Hashable {
         self.publishTime = publishTime
         self.thumbnailURL = thumbnailURL
         self.relatedTickers = relatedTickers
+        self.sourceSymbol = sourceSymbol
     }
 }

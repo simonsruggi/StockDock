@@ -31,6 +31,7 @@ final class NewsArticleTests: XCTestCase {
         XCTAssertEqual(a.publishTime, 1719400000)
         XCTAssertEqual(a.relatedTickers, ["AAPL", "MSFT"])
         XCTAssertEqual(a.url?.scheme, "https")
+        XCTAssertNil(a.sourceSymbol, "sourceSymbol is not part of the payload; set by the fetcher")
     }
 
     func testPrefersSmallestThumbnailResolution() throws {
