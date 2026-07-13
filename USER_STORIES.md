@@ -48,6 +48,7 @@
 - [x] REST polling every 5 min as fallback for exchange rates
 - [x] After portfolio/watchlist change, WebSocket subscriptions updated within 500ms
 - [x] Ticks buffered and flushed 1x/sec to avoid excessive rendering
+- [x] Batch quote parsing is resilient: a single delisted/suspended ticker (returned without a price) is skipped instead of failing the whole v7 batch and dropping every symbol's live quote — pure `StockService.parseV7Response`, covered by `Tests/V7QuoteParsingTests.swift` (bugcheck 2026-07-13)
 
 ## US-06: Currency Conversion
 **As a** user, **I want** to see portfolio values in my preferred currency **so that** amounts are meaningful to me.

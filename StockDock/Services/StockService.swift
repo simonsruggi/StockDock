@@ -194,58 +194,93 @@ class StockService: ObservableObject {
 
             guard httpResp.statusCode == 200 else { return false }
 
-            let decoded = try JSONDecoder().decode(YahooV7Response.self, from: data)
-            guard let results = decoded.quoteResponse.result, !results.isEmpty else { return false }
+            let parsed: V7ParseResult
+            do {
+                parsed = try Self.parseV7Response(data)
+            } catch {
+                return false
+            }
+            guard !parsed.quotes.isEmpty else { return false }
 
-            for q in results {
-                let price = q.regularMarketPrice
-                let previousClose = q.regularMarketPreviousClose ?? price
-                let change = q.regularMarketChange ?? (price - previousClose)
-                let changePercent = q.regularMarketChangePercent ?? (previousClose > 0 ? (change / previousClose) * 100 : 0)
-
-                // Normalize marketState
-                let rawState = q.marketState ?? "CLOSED"
-                let marketState: String
-                switch rawState {
-                case "REGULAR": marketState = "REGULAR"
-                case "PRE": marketState = "PRE"
-                case "POST": marketState = "POST"
-                default: marketState = "CLOSED" // PREPRE, POSTPOST, etc.
-                }
-
-                let preChg: Double? = if let pm = q.preMarketPrice { pm - price } else { nil }
-                let prePct: Double? = if let ch = preChg, price > 0 { (ch / price) * 100 } else { nil }
-                let postChg: Double? = if let pm = q.postMarketPrice { pm - price } else { nil }
-                let postPct: Double? = if let ch = postChg, price > 0 { (ch / price) * 100 } else { nil }
-
-                let quote = StockQuote(
-                    symbol: q.symbol,
-                    name: q.longName ?? q.shortName ?? q.symbol,
-                    price: price,
-                    change: change,
-                    changePercent: changePercent,
-                    currency: q.currency ?? "USD",
-                    marketState: marketState,
-                    dayHigh: q.regularMarketDayHigh,
-                    dayLow: q.regularMarketDayLow,
-                    fiftyTwoWeekHigh: q.fiftyTwoWeekHigh,
-                    fiftyTwoWeekLow: q.fiftyTwoWeekLow,
-                    preMarketPrice: q.preMarketPrice,
-                    preMarketChange: preChg,
-                    preMarketChangePercent: prePct,
-                    postMarketPrice: q.postMarketPrice,
-                    postMarketChange: postChg,
-                    postMarketChangePercent: postPct
-                )
-
-                quotes[q.symbol] = quote
-                if let t = q.quoteType { StorageService.shared.setType(t, for: q.symbol) }
+            for quote in parsed.quotes {
+                quotes[quote.symbol] = quote
+            }
+            for (symbol, type) in parsed.types {
+                StorageService.shared.setType(type, for: symbol)
             }
 
             return true
         } catch {
             return false
         }
+    }
+
+    /// Parsed output of a Yahoo v7 batch-quote response.
+    struct V7ParseResult {
+        let quotes: [StockQuote]
+        let types: [String: String]  // symbol -> Yahoo quoteType
+    }
+
+    /// Decode and map a Yahoo v7 `/finance/quote` batch response into `StockQuote`s.
+    /// Entries without a `regularMarketPrice` (delisted/suspended tickers come back
+    /// partial) are skipped rather than making the whole batch throw — so one bad
+    /// symbol can no longer drop live quotes for every other symbol. Pure and
+    /// `nonisolated` so it is unit-testable without running the service.
+    nonisolated static func parseV7Response(_ data: Data) throws -> V7ParseResult {
+        let decoded = try JSONDecoder().decode(YahooV7Response.self, from: data)
+        guard let results = decoded.quoteResponse.result else {
+            return V7ParseResult(quotes: [], types: [:])
+        }
+
+        var quotes: [StockQuote] = []
+        var types: [String: String] = [:]
+
+        for q in results {
+            guard let price = q.regularMarketPrice else { continue }
+            let previousClose = q.regularMarketPreviousClose ?? price
+            let change = q.regularMarketChange ?? (price - previousClose)
+            let changePercent = q.regularMarketChangePercent ?? (previousClose > 0 ? (change / previousClose) * 100 : 0)
+
+            // Normalize marketState
+            let rawState = q.marketState ?? "CLOSED"
+            let marketState: String
+            switch rawState {
+            case "REGULAR": marketState = "REGULAR"
+            case "PRE": marketState = "PRE"
+            case "POST": marketState = "POST"
+            default: marketState = "CLOSED" // PREPRE, POSTPOST, etc.
+            }
+
+            let preChg: Double? = if let pm = q.preMarketPrice { pm - price } else { nil }
+            let prePct: Double? = if let ch = preChg, price > 0 { (ch / price) * 100 } else { nil }
+            let postChg: Double? = if let pm = q.postMarketPrice { pm - price } else { nil }
+            let postPct: Double? = if let ch = postChg, price > 0 { (ch / price) * 100 } else { nil }
+
+            let quote = StockQuote(
+                symbol: q.symbol,
+                name: q.longName ?? q.shortName ?? q.symbol,
+                price: price,
+                change: change,
+                changePercent: changePercent,
+                currency: q.currency ?? "USD",
+                marketState: marketState,
+                dayHigh: q.regularMarketDayHigh,
+                dayLow: q.regularMarketDayLow,
+                fiftyTwoWeekHigh: q.fiftyTwoWeekHigh,
+                fiftyTwoWeekLow: q.fiftyTwoWeekLow,
+                preMarketPrice: q.preMarketPrice,
+                preMarketChange: preChg,
+                preMarketChangePercent: prePct,
+                postMarketPrice: q.postMarketPrice,
+                postMarketChange: postChg,
+                postMarketChangePercent: postPct
+            )
+
+            quotes.append(quote)
+            if let t = q.quoteType { types[q.symbol] = t }
+        }
+
+        return V7ParseResult(quotes: quotes, types: types)
     }
 
     private func fetchSingleQuote(symbol: String) async {
@@ -499,7 +534,7 @@ class StockService: ObservableObject {
         var collected: [NewsArticle] = []
         await withTaskGroup(of: [NewsArticle].self) { group in
             for query in queries {
-                group.addTask { await self.fetchNewsChunk(query: query) }
+                group.addTask { [weak self] in await self?.fetchNewsChunk(query: query) ?? [] }
             }
             for await chunk in group {
                 for article in chunk where !article.link.isEmpty && seen.insert(article.id).inserted {
@@ -594,7 +629,7 @@ private struct YahooV7Response: Codable {
         let longName: String?
         let shortName: String?
         let currency: String?
-        let regularMarketPrice: Double
+        let regularMarketPrice: Double?
         let regularMarketChange: Double?
         let regularMarketChangePercent: Double?
         let regularMarketPreviousClose: Double?
