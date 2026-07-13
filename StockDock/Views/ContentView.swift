@@ -1,6 +1,7 @@
 import SwiftUI
 
 enum Tab: String, CaseIterable {
+    case home = "Home"
     case watchlist = "Watchlist"
     case portfolios = "Portfolios"
     case settings = "Settings"
@@ -9,6 +10,7 @@ enum Tab: String, CaseIterable {
 extension Tab {
     var icon: String {
         switch self {
+        case .home: return "newspaper"
         case .watchlist: return "list.bullet"
         case .portfolios: return "briefcase"
         case .settings: return "gear"
@@ -113,6 +115,9 @@ struct ContentView: View {
                 Button(action: {
                     Task {
                         await stockService.refreshAll(storageService: storageService)
+                        if selectedTab == .home {
+                            await stockService.refreshNews(storageService: storageService, force: true)
+                        }
                     }
                 }) {
                     Image(systemName: "arrow.clockwise")
@@ -133,6 +138,7 @@ struct ContentView: View {
 
             // Tab picker
             Picker("", selection: $selectedTab) {
+                Text("Home").tag(Tab.home)
                 Text("Watchlist").tag(Tab.watchlist)
                 Text("Portfolios").tag(Tab.portfolios)
                 Image(systemName: "gear").tag(Tab.settings)
@@ -146,6 +152,8 @@ struct ContentView: View {
             // Content
             Group {
                 switch selectedTab {
+                case .home:
+                    HomeView()
                 case .watchlist:
                     WatchlistView(showSearch: $showSearch)
                 case .portfolios:

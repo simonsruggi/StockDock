@@ -151,3 +151,14 @@
 "This will delete all your price alerts. This cannot be undone." = "Isto irá eliminar todos os teus alertas de preço. Esta ação não pode ser desfeita.";
 "Clear all portfolio notifications" = "Limpar todas as notificações de carteira";
 "This will delete all portfolio notifications across every portfolio. This cannot be undone." = "Isto irá eliminar todas as notificações de carteira de todas as carteiras. Esta ação não pode ser desfeita.";
+
+/* Home / news */
+"Home" = "Início";
+"Loading news…" = "Carregando notícias…";
+"No news available" = "Nenhuma notícia disponível";
+"Refresh" = "Atualizar";
+
+/* Sponsor */
+"Enjoying StockDock?" = "Está gostando do StockDock?";
+"StockDock is free and open source — and always will be. If it's useful to you, you can sponsor its development. Every feature stays free for everyone." = "O StockDock é gratuito e de código aberto — e sempre será. Se ele é útil para você, você pode patrocinar o desenvolvimento. Todos os recursos continuam gratuitos para todos.";
+"Become a Sponsor" = "Seja um patrocinador";

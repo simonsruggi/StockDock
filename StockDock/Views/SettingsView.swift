@@ -1,3 +1,4 @@
+import AppKit
 import Sparkle
 import SwiftUI
 
@@ -340,6 +341,27 @@ struct SettingsView: View {
                         updaterViewModel.checkForUpdates()
                     }
                     .disabled(!updaterViewModel.canCheckForUpdates)
+                }
+
+                Divider()
+
+                // MARK: - Support / Sponsor
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Enjoying StockDock?")
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    Text("StockDock is free and open source — and always will be. If it's useful to you, you can sponsor its development. Every feature stays free for everyone.")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                    Button {
+                        if let url = URL(string: "https://github.com/sponsors/simonsruggi") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    } label: {
+                        Label("Become a Sponsor", systemImage: "heart.fill")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .tint(.pink)
                 }
 
                 Divider()

@@ -195,3 +195,21 @@
 
 - [x] Fixed: the cost line scales to stay on one line instead of wrapping when the share count is large (was a layout wrap, not a formatting bug — decimals were correct)
 - [x] Guardrail tests in `NumberFormattingTests` lock that the formatter keeps 2 decimals across locales (DE/EN), including whole and trailing-zero values
+
+## US-21: Home tab — finance news
+**As a** user, **I want** a Home tab with finance news **so that** I see what's moving the stocks I follow without leaving the menu bar.
+
+- [x] New "Home" tab (first tab, `newspaper` icon) in the segmented control alongside Watchlist / Portfolios / Settings
+- [x] News fetched from Yahoo Finance's public search endpoint (`v1/finance/search?newsCount=…`) — no API key, consistent with quotes/search
+- [x] Feed is personalized: stories for the user's tracked symbols (watchlist + portfolio holdings, up to 6 concurrent queries), deduped by uuid and sorted newest-first (cap 40)
+- [x] Fallback to general "stock market" news when nothing is tracked
+- [x] Each row: thumbnail, headline (3 lines), publisher · relative time (localized), related tickers; tap opens the article in the default browser
+- [x] Throttled refresh (max once / 5 min) + force-refresh via the header refresh button while on Home; loading and empty states
+- [x] `NewsArticle` decoding covered by `Tests/NewsArticleTests.swift` (all fields, smallest-thumbnail pick, missing-field fallbacks, required uuid)
+
+## US-22: Sponsor the project
+**As a** user, **I want** an easy way to support StockDock **so that** I can fund development while everything stays free.
+
+- [x] Settings → "Enjoying StockDock?" section: copy clarifying the app is free & open source forever, with a pink "Become a Sponsor" button
+- [x] Opens `https://github.com/sponsors/simonsruggi` in the browser
+- [x] All strings localized across the 6 supported languages

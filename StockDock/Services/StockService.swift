@@ -8,9 +8,12 @@ class StockService: ObservableObject {
     @Published var isLoading = false
     @Published var exchangeRates: [String: Double] = [:]  // e.g. "USDEUR" -> 0.92 (rate to preferred currency)
     @Published var historicalRates: [String: Double] = [:]  // e.g. "USDEUR:1704067200" -> 0.9045 (rate at date)
+    @Published var news: [NewsArticle] = []
+    @Published var isLoadingNews = false
 
     private let session: URLSession
     private var crumb: String?
+    private var lastNewsFetch: Date?
 
     private init() {
         let config = URLSessionConfiguration.default
@@ -474,6 +477,51 @@ class StockService: ObservableObject {
             return []
         }
     }
+
+    // MARK: - Finance News (Home tab)
+
+    /// Refresh the Home news feed. Pulls stories related to the user's tracked
+    /// symbols (or general market news when nothing is tracked), from the same
+    /// Yahoo search endpoint used for quote lookup — no API key required.
+    /// Throttled to at most once every 5 minutes unless `force` is set.
+    func refreshNews(storageService: StorageService, force: Bool = false) async {
+        if !force, !news.isEmpty, let last = lastNewsFetch,
+           Date().timeIntervalSince(last) < 300 {
+            return
+        }
+        isLoadingNews = true
+        defer { isLoadingNews = false }
+
+        let symbols = Self.collectSymbols(storageService: storageService).sorted()
+        let queries: [String] = symbols.isEmpty ? ["stock market"] : Array(symbols.prefix(6))
+
+        var seen = Set<String>()
+        var collected: [NewsArticle] = []
+        await withTaskGroup(of: [NewsArticle].self) { group in
+            for query in queries {
+                group.addTask { await self.fetchNewsChunk(query: query) }
+            }
+            for await chunk in group {
+                for article in chunk where !article.link.isEmpty && seen.insert(article.id).inserted {
+                    collected.append(article)
+                }
+            }
+        }
+        collected.sort { $0.publishTime > $1.publishTime }
+        news = Array(collected.prefix(40))
+        lastNewsFetch = Date()
+    }
+
+    private func fetchNewsChunk(query: String) async -> [NewsArticle] {
+        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
+        guard let url = URL(string: "https://query1.finance.yahoo.com/v1/finance/search?q=\(encoded)&quotesCount=0&newsCount=10") else { return [] }
+        do {
+            let (data, _) = try await session.data(from: url)
+            return try JSONDecoder().decode(YahooNewsResponse.self, from: data).news ?? []
+        } catch {
+            return []
+        }
+    }
 }
 
 // MARK: - Yahoo Finance v8 Chart API Models
@@ -568,4 +616,8 @@ private struct YahooV7Response: Codable {
 
 private struct YahooSearchResponse: Codable {
     let quotes: [SearchResult]
+}
+
+private struct YahooNewsResponse: Decodable {
+    let news: [NewsArticle]?
 }

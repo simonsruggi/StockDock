@@ -27,7 +27,8 @@ StockDock/
 │   ├── Models/
 │   │   ├── StockQuote.swift    # Modelli: StockQuote (con 52w range), Portfolio, Holding, SearchResult
 │   │   ├── PriceAlert.swift    # PriceAlert, AlertCondition, AlertEvaluator (logica pura testabile)
-│   │   └── PortfolioNotification.swift # PortfolioNotification(Mode) + PortfolioAlertEvaluator (logica pura testabile)
+│   │   ├── PortfolioNotification.swift # PortfolioNotification(Mode) + PortfolioAlertEvaluator (logica pura testabile)
+│   │   └── NewsArticle.swift   # Modello news (decode dall'endpoint Yahoo search, no API key) per il tab Home
 │   ├── Services/
 │   │   ├── StockService.swift      # Fetch quotazioni e tassi di cambio da Yahoo Finance REST
 │   │   ├── WebSocketService.swift  # Streaming real-time via WSS + protobuf + auto-reconnect
@@ -37,7 +38,8 @@ StockDock/
 │   │   ├── yaticker.pb.swift       # Codice Swift generato da yaticker.proto
 │   │   └── StorageService.swift    # Persistenza locale (JSON) + formatNumber/formatAmount (separatore migliaia locale-aware)
 │   ├── Views/
-│   │   ├── ContentView.swift   # Contenitore con tab (Watchlist / Portfolios / Settings)
+│   │   ├── ContentView.swift   # Contenitore con tab (Home / Watchlist / Portfolios / Settings)
+│   │   ├── HomeView.swift      # Tab Home: feed news finanziarie (thumbnail, publisher, ticker correlati)
 │   │   ├── WatchlistView.swift # Lista ticker con prezzi, variazione giornaliera e 52w range bar
 │   │   ├── RangeBar.swift      # Barra 52 settimane con marker di posizione
 │   │   ├── PortfolioListView.swift # Portafogli con P&L per holding
@@ -45,7 +47,7 @@ StockDock/
 │   │   ├── AlertEditView.swift # Sheet creazione price alert
 │   │   ├── PortfolioNotificationsView.swift # Popover gestione notifiche per-portfolio
 │   │   ├── SearchView.swift    # Ricerca ticker per simbolo o nome
-│   │   └── SettingsView.swift  # Valuta, extended hours, menu bar, sezione Notifications (webhook + price alert + notifiche portfolio)
+│   │   └── SettingsView.swift  # Valuta, extended hours, menu bar, Notifications (webhook + price alert + portfolio), sezione Sponsor
 │   ├── Assets.xcassets
 │   └── Resources/AppIcon.icns
 └── screenshots/                # Screenshot per README
@@ -53,6 +55,8 @@ StockDock/
 
 ## Funzionalità chiave
 
+- **Home — news finanziarie** (tab principale): feed di notizie dagli stessi endpoint pubblici Yahoo (`v1/finance/search?newsCount=…`, nessuna API key). Personalizzato sui simboli seguiti (watchlist + holding, fino a 6 query concorrenti via `withTaskGroup`), deduplicato per `uuid`, ordinato dal più recente (cap 40); fallback "stock market" se non segui nulla. Ogni riga: thumbnail (`AsyncImage`), titolo, publisher · tempo relativo (localizzato), ticker correlati; tap → apre l'articolo nel browser (`NSWorkspace`). Refresh throttlato (max 1 ogni 5 min) + force dal pulsante refresh dell'header quando sei su Home. Stato in `StockService` (`news`, `isLoadingNews`, `refreshNews`), modello `NewsArticle` con test di decoding
+- **Sponsor**: sezione Settings → "Enjoying StockDock?" con bottone rosa "Become a Sponsor" → `github.com/sponsors/simonsruggi`. Nel README, badge + link Sponsor in cima (hero + nav) oltre alla sezione dedicata. Ribadisce che l'app resta gratis e open source per sempre
 - **Menu bar configurabile**: P&L assoluto, P&L %, P&L + %, valore totale portafoglio, miglior/peggior titolo watchlist, riepilogo portafoglio, **Ticker (scorre la watchlist)**, **Ticker + Portfolio (scorre watchlist + 1 slide riepilogo portafoglio)**, solo icona
 - **Colori menu bar personalizzabili**: in Settings → "Menu Bar Colors", color picker per i colori di rialzo/ribasso (default = verde/rosso di sistema finché non si toccano) + toggle "Use system text color" che usa il colore testo di sistema (sempre leggibile su qualsiasi sfondo; la direzione resta data da `+/−` e `▲▼`). Persistiti come hex in `data.json`; helper `ColorHex.swift` (bridge hex↔`NSColor`/`Color`)
 - **Percentuali a 2 decimali**: toggle in Settings (default off per tenere la barra compatta) che porta tutte le % da 1 a 2 decimali (menu bar, watchlist, portafogli)
