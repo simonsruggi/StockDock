@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.7.2</title>
-            <pubDate>Fri, 26 Jun 2026 00:28:12 +0200</pubDate>
-            <sparkle:version>19</sparkle:version>
-            <sparkle:shortVersionString>1.7.2</sparkle:shortVersionString>
+            <title>Version 1.8.0</title>
+            <pubDate>Mon, 13 Jul 2026 13:40:58 +0200</pubDate>
+            <sparkle:version>20</sparkle:version>
+            <sparkle:shortVersionString>1.8.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -20,18 +20,18 @@
 </style>
 <h3>New</h3>
 <ul>
-    <li><b>Long / Short picker</b> — when Advanced positions is on, add/edit holding now has a clear <b>Long / Short</b> selector instead of typing a negative quantity. Works in the quick "Add to Portfolio" sheet from the watchlist right-click too.</li>
-    <li><b>Clear all</b> — one-tap buttons to delete all price alerts, and all portfolio notifications, from Settings → Notifications.</li>
+    <li><b>Home tab — finance news</b> — a new Home tab shows the latest finance news for the stocks you follow (and general market news when your watchlist is empty). Each story shows the source, when it was published and related tickers; tap to open it in your browser. No account, no API keys — same privacy-first approach as the rest of the app.</li>
+    <li><b>Support the project</b> — StockDock is free and open source, and always will be. If it's useful to you, there's now a "Become a Sponsor" button in Settings to help fund development. Every feature stays free for everyone.</li>
 </ul>
 <h3>Fixed</h3>
 <ul>
-    <li><b>Too many portfolio notifications</b> — the "Daily move ≥ %/amount" notification fired at every step (+1%, +2%, +3%…) on a trending day. It now fires at most once per direction per day: once when today's move first crosses +threshold and once when it crosses −threshold.</li>
+    <li><b>More reliable price updates</b> — a single delisted or suspended ticker in your watchlist could stop live prices from loading for every other symbol. Prices now load reliably even when one ticker returns incomplete data.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.7.2/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.8.0/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="WQ3XIc+AcA+Z8eBSAY7hY+RPEkueJJoWA7ZzLR2I1x7BVKblcc+DowPZuyKRBTMuf3NEY+2SFO/WcCs1YmH0CA=="
-                       length="6711052"/>
+                       sparkle:edSignature="Wy3RaM3CXM9ASZ70/Iyc/eENY6Ldwwiy9oxJs6FCnEtkydxscuLLYOxmSBNTVOlpVTRBmIqiGHQhJ0I2eoE+Dw=="
+                       length="6845354"/>
         </item>
     </channel>
 </rss>
