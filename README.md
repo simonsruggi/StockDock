@@ -16,6 +16,7 @@ No account. No API keys. No subscription. No tracking. Just your watchlist and p
 [![Swift](https://img.shields.io/badge/Swift-5.9-orange?logo=swift&logoColor=white)](https://swift.org)
 [![License: MIT](https://img.shields.io/github/license/simonsruggi/StockDock?color=blue)](LICENSE)
 [![Star](https://img.shields.io/github/stars/simonsruggi/StockDock?style=social)](https://github.com/simonsruggi/StockDock)
+[![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-EA4AAA?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/simonsruggi)
 
 <br>
 
@@ -23,13 +24,13 @@ No account. No API keys. No subscription. No tracking. Just your watchlist and p
 brew install simonsruggi/tap/stockdock
 ```
 
-**[⬇️ Download](https://github.com/simonsruggi/StockDock/releases/latest)** · **[✨ Features](#features)** · **[📸 Screenshots](#screenshots)** · **[🐛 Report a bug](https://github.com/simonsruggi/StockDock/issues)**
+**[⬇️ Download](https://github.com/simonsruggi/StockDock/releases/latest)** · **[✨ Features](#features)** · **[📸 Screenshots](#screenshots)** · **[❤️ Sponsor](https://github.com/sponsors/simonsruggi)** · **[🐛 Report a bug](https://github.com/simonsruggi/StockDock/issues)**
 
 </div>
 
 ---
 
-> ⭐️ **Using StockDock?** It's free and there's no tracking, so a GitHub star is the only way I know anyone's out there. If the app is useful to you, please [star the repo](https://github.com/simonsruggi/StockDock) — it takes a second and genuinely helps.
+> ⭐️ **Using StockDock?** It's free and there's no tracking, so a GitHub star is the only way I know anyone's out there. If the app is useful to you, please [star the repo](https://github.com/simonsruggi/StockDock) — it takes a second and genuinely helps. And if you'd like to fuel development, you can [**❤️ sponsor me**](https://github.com/sponsors/simonsruggi) — every feature stays free for everyone.
 
 ## Why StockDock?
 
