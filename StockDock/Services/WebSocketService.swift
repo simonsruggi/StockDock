@@ -10,6 +10,7 @@ final class WebSocketService: NSObject, ObservableObject {
     private var webSocketTask: URLSessionWebSocketTask?
     private var heartbeatTimer: Timer?
     private var watchdogTimer: Timer?
+    private var connectWatchdogTimer: Timer?
     private var lastTickTime: Date?
     private var subscribedSymbols: [String] = []
     private var reconnectAttempts = 0
@@ -17,6 +18,15 @@ final class WebSocketService: NSObject, ObservableObject {
 
     private static let watchdogInterval: TimeInterval = 30
     private static let watchdogTimeout: TimeInterval = 60
+    /// If the socket doesn't open within this window, treat it as a silent
+    /// failure and reconnect. Guards against a connection that fails *before*
+    /// `didOpenWithProtocol` fires (common right after wake), which otherwise
+    /// leaves the service stuck with no tick and no failure callback.
+    private static let connectTimeout: TimeInterval = 12
+
+    /// Last time the socket showed life (opened or received a tick). Used by
+    /// `ConnectionSupervisor.shouldReconnect` to detect a silently dead socket.
+    var lastActivity: Date? { lastTickTime }
 
     /// Called on main actor whenever a new tick arrives
     var onTick: ((Yaticker) -> Void)?
@@ -45,6 +55,21 @@ final class WebSocketService: NSObject, ObservableObject {
         openConnection()
     }
 
+    /// Supervisor entry point (called from the periodic REST poll). Keeps the
+    /// subscription list current and force-reconnects when the feed looks dead,
+    /// so a socket that silently died across sleep/wake is revived within one
+    /// poll interval instead of staying frozen until an app restart.
+    func ensureConnected(symbols: [String]) {
+        subscribedSymbols = symbols
+        guard !symbols.isEmpty else { return }
+        if ConnectionSupervisor.shouldReconnect(isConnected: isConnected, lastActivity: lastTickTime, now: Date(), reconnectPending: reconnectTimer != nil) {
+            reconnectAttempts = 0
+            openConnection()
+        } else {
+            updateSymbols(symbols)
+        }
+    }
+
     func updateSymbols(_ symbols: [String]) {
         let oldSet = Set(subscribedSymbols)
         let newSet = Set(symbols)
@@ -71,6 +96,8 @@ final class WebSocketService: NSObject, ObservableObject {
         heartbeatTimer = nil
         watchdogTimer?.invalidate()
         watchdogTimer = nil
+        connectWatchdogTimer?.invalidate()
+        connectWatchdogTimer = nil
         reconnectTimer?.invalidate()
         reconnectTimer = nil
         lastTickTime = nil
@@ -87,7 +114,15 @@ final class WebSocketService: NSObject, ObservableObject {
         let task = urlSession.webSocketTask(with: Self.endpoint)
         webSocketTask = task
         task.resume()
-        // Subscribe + receive will start in didOpenWithProtocol delegate
+        // Subscribe + receive will start in didOpenWithProtocol delegate.
+        // Arm a watchdog in case the socket never opens (silent pre-open failure).
+        connectWatchdogTimer?.invalidate()
+        connectWatchdogTimer = Timer.scheduledTimer(withTimeInterval: Self.connectTimeout, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, !self.isConnected else { return }
+                self.handleDisconnect()
+            }
+        }
     }
 
     // MARK: - Messaging
@@ -189,6 +224,16 @@ final class WebSocketService: NSObject, ObservableObject {
         isConnected = false
         heartbeatTimer?.invalidate()
         heartbeatTimer = nil
+        connectWatchdogTimer?.invalidate()
+        connectWatchdogTimer = nil
+
+        // Abandon the current task so any late delegate callback for this
+        // generation (didClose / didCompleteWithError / a slow didOpen) fails
+        // its `task === webSocketTask` identity check and can't run
+        // handleDisconnect twice (which would double-count reconnectAttempts and
+        // skew the backoff) or resurrect a stale socket.
+        webSocketTask?.cancel(with: .goingAway, reason: nil)
+        webSocketTask = nil
 
         guard !subscribedSymbols.isEmpty else { return }
 
@@ -198,6 +243,7 @@ final class WebSocketService: NSObject, ObservableObject {
         reconnectTimer?.invalidate()
         reconnectTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { [weak self] _ in
             Task { @MainActor in
+                self?.reconnectTimer = nil
                 self?.openConnection()
             }
         }
@@ -209,8 +255,14 @@ final class WebSocketService: NSObject, ObservableObject {
 extension WebSocketService: URLSessionWebSocketDelegate {
     nonisolated func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         Task { @MainActor in
+            // Ignore a stale open (e.g. a slow connect the watchdog already gave
+            // up on) so it can't resurrect a socket we've moved on from.
+            guard webSocketTask === self.webSocketTask else { return }
+            self.connectWatchdogTimer?.invalidate()
+            self.connectWatchdogTimer = nil
             self.isConnected = true
             self.reconnectAttempts = 0
+            self.lastTickTime = Date() // count "opened" as activity until first tick
             self.sendJSON(["subscribe": self.subscribedSymbols])
             self.startHeartbeat()
             self.startWatchdog()
@@ -220,7 +272,20 @@ extension WebSocketService: URLSessionWebSocketDelegate {
 
     nonisolated func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         Task { @MainActor in
-            handleDisconnect()
+            guard webSocketTask === self.webSocketTask else { return }
+            self.handleDisconnect()
+        }
+    }
+
+    /// Catches a socket that fails *before* (or without) opening — e.g. a
+    /// connection attempt right after wake when the network isn't ready yet.
+    /// Without this, `didOpenWithProtocol` never fires, nothing calls `receive`,
+    /// and the failure would go unnoticed with no reconnect. Guarded by task
+    /// identity so an intentionally-cancelled old socket can't trigger a loop.
+    nonisolated func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        Task { @MainActor in
+            guard error != nil, task === self.webSocketTask else { return }
+            self.handleDisconnect()
         }
     }
 }

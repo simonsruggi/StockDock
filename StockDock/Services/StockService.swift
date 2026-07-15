@@ -470,9 +470,18 @@ class StockService: ObservableObject {
         default: marketState = existing?.marketState ?? "CLOSED"
         }
 
-        let price = Double(ticker.price)
-        let change = Double(ticker.change)
-        let changePercent = Double(ticker.changePercent)
+        let tickPrice = Double(ticker.price)
+        let tickChange = Double(ticker.change)
+        let tickChangePercent = Double(ticker.changePercent)
+
+        // Only a REGULAR-session tick updates the regular price. A PRE/POST tick
+        // must not overwrite it — otherwise a user with extended hours off would
+        // see the pre/post price where they expect the last regular close. The
+        // extended value is routed into the pre/post fields below instead.
+        let isRegular = (marketState == "REGULAR")
+        let price = isRegular ? tickPrice : (existing?.price ?? tickPrice)
+        let change = isRegular ? tickChange : (existing?.change ?? tickChange)
+        let changePercent = isRegular ? tickChangePercent : (existing?.changePercent ?? tickChangePercent)
 
         // Keep extended hours data from existing quote if WSS doesn't provide it
         let quote = StockQuote(
@@ -487,12 +496,12 @@ class StockService: ObservableObject {
             dayLow: existing?.dayLow,
             fiftyTwoWeekHigh: existing?.fiftyTwoWeekHigh,
             fiftyTwoWeekLow: existing?.fiftyTwoWeekLow,
-            preMarketPrice: marketState == "PRE" ? price : existing?.preMarketPrice,
-            preMarketChange: marketState == "PRE" ? change : existing?.preMarketChange,
-            preMarketChangePercent: marketState == "PRE" ? changePercent : existing?.preMarketChangePercent,
-            postMarketPrice: marketState == "POST" ? price : existing?.postMarketPrice,
-            postMarketChange: marketState == "POST" ? change : existing?.postMarketChange,
-            postMarketChangePercent: marketState == "POST" ? changePercent : existing?.postMarketChangePercent
+            preMarketPrice: marketState == "PRE" ? tickPrice : existing?.preMarketPrice,
+            preMarketChange: marketState == "PRE" ? tickChange : existing?.preMarketChange,
+            preMarketChangePercent: marketState == "PRE" ? tickChangePercent : existing?.preMarketChangePercent,
+            postMarketPrice: marketState == "POST" ? tickPrice : existing?.postMarketPrice,
+            postMarketChange: marketState == "POST" ? tickChange : existing?.postMarketChange,
+            postMarketChangePercent: marketState == "POST" ? tickChangePercent : existing?.postMarketChangePercent
         )
 
         quotes[symbol] = quote

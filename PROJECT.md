@@ -112,11 +112,12 @@ L'app non compare nel Dock (`.accessory` policy): l'icona appare nella menu bar 
 ## Architettura dati
 
 - **WebSocket (primario)**: `WebSocketService` si connette a `wss://streamer.finance.yahoo.com/?version=2`, riceve tick in formato JSON-wrapped base64 protobuf. I tick vengono bufferizzati e flushati in batch 1 volta al secondo per evitare SwiftUI redraw eccessivi.
-- **REST polling (secondario)**: ogni 5 min per exchange rates (correnti e storici). Usato anche come bootstrap iniziale e fallback se il WSS cade.
+- **REST polling (secondario/supervisore)**: ogni 60s aggiorna quotes + exchange rates (correnti e storici). Usato come bootstrap iniziale, fallback se il WSS cade e **supervisore**: ad ogni ciclo chiama `WebSocketService.ensureConnected(...)`, che rianima un socket morto entro un ciclo invece di lasciarlo fermo fino a un riavvio manuale.
 - **Cache eviction**: ad ogni refresh REST, vengono rimossi quotes, exchange rates e historical rates non più necessari.
 - **Sleep/Wake**: il WSS si disconnette su system sleep e si riconnette al wake con refresh immediato.
 - **P&L con FX corretto**: il P&L è calcolato come `marketValue × currentRate − costBasis × historicalRate`, considerando il tasso di cambio storico alla data di acquisto per il costo carico.
-- **Auto-reconnect**: backoff esponenziale (2s, 4s, 8s... max 120s) in caso di disconnessione WSS.
+- **Auto-reconnect resiliente**: backoff esponenziale (2s, 4s, 8s... max 120s). La logica di recovery pura e testabile è isolata in `ConnectionSupervisor` (`refreshIsBlocking`, `shouldReconnect`). Difese aggiuntive: `didCompleteWithError` (cattura fallimenti prima dell'apertura), watchdog di connessione (12s), guardie d'identità sui delegate (niente doppio-reconnect), flag refresh a timestamp auto-guarito (mai più bloccato dopo una race sleep/wake). Copertura in `Tests/ConnectionSupervisorTests`.
+- **applyTick (WSS)**: un tick aggiorna il prezzo *regolare* solo in sessione REGULAR; i tick PRE/POST vanno nei rispettivi campi, così con extended-hours OFF si vede sempre l'ultima chiusura regolare (`Tests/ApplyTickTests`).
 
 ## Note importanti
 

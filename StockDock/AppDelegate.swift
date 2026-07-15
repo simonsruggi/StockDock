@@ -52,7 +52,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var timer: Timer?
     private var tickerIndex = 0
     private var eventMonitor: Any?
-    private var isRefreshing = false
+    /// When the current refresh started. Nil = no refresh in flight. Used via
+    /// `ConnectionSupervisor.refreshIsBlocking` instead of a bare Bool so a
+    /// refresh Task cancelled by a sleep/wake race can't leave polling wedged.
+    private var refreshStartedAt: Date?
+    private var isRefreshing: Bool {
+        ConnectionSupervisor.refreshIsBlocking(startedAt: refreshStartedAt, now: Date())
+    }
     private var refreshTask: Task<Void, Never>?
     private var pendingTicks: [Yaticker] = []
     private var tickBatchTimer: Timer?
@@ -90,8 +96,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover = p
 
         refreshTask = Task {
-            isRefreshing = true
-            defer { isRefreshing = false }
+            let start = Date()
+            refreshStartedAt = start
+            // Compare-and-clear: only clear if a newer refresh hasn't superseded
+            // us, so a cancelled Task's defer can't unblock a live refresh.
+            defer { if refreshStartedAt == start { refreshStartedAt = nil } }
             await stockService.refreshAll(storageService: storageService)
             guard !Task.isCancelled else { return }
             updateMenuBarTitle()
@@ -132,9 +141,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 let symbols = Array(self.collectSymbols())
                 self.webSocketService.updateSymbols(symbols)
                 self.refreshTask?.cancel()
-                self.isRefreshing = true
+                let start = Date()
+                self.refreshStartedAt = start
                 self.refreshTask = Task { @MainActor in
-                    defer { self.isRefreshing = false }
+                    defer { if self.refreshStartedAt == start { self.refreshStartedAt = nil } }
                     await self.stockService.refreshAll(storageService: self.storageService)
                     self.updateMenuBarTitle()
                     self.alertMonitor.check(quotes: self.stockService.quotes)
@@ -245,15 +255,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         timer = Timer.scheduledTimer(withTimeInterval: Self.restPollingInterval, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 guard let self, !self.isRefreshing else { return }
-                self.isRefreshing = true
-                defer { self.isRefreshing = false }
+                let start = Date()
+                self.refreshStartedAt = start
+                defer { if self.refreshStartedAt == start { self.refreshStartedAt = nil } }
                 let symbols = Array(StockService.collectSymbols(storageService: self.storageService))
                 await self.stockService.fetchQuotes(symbols: symbols)
                 await self.stockService.refreshExchangeRates(storageService: self.storageService)
                 self.updateMenuBarTitle()
                 self.alertMonitor.check(quotes: self.stockService.quotes)
                 self.portfolioMonitor.check()
-                self.webSocketService.updateSymbols(Array(self.collectSymbols()))
+                // Supervisor: revive the WebSocket if it silently died, otherwise
+                // just keep its subscriptions current.
+                self.webSocketService.ensureConnected(symbols: Array(self.collectSymbols()))
             }
         }
     }
@@ -267,7 +280,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         tickBatchTimer = nil
         refreshTask?.cancel()
         refreshTask = nil
-        isRefreshing = false
+        refreshStartedAt = nil
         tickerTimer?.invalidate()
         tickerTimer = nil
         pendingTicks.removeAll()
@@ -277,8 +290,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func handleWake() {
         refreshTask?.cancel()
         refreshTask = Task {
-            isRefreshing = true
-            defer { isRefreshing = false }
+            let start = Date()
+            refreshStartedAt = start
+            defer { if refreshStartedAt == start { refreshStartedAt = nil } }
             await stockService.refreshAll(storageService: storageService)
             guard !Task.isCancelled else { return }
             updateMenuBarTitle()
