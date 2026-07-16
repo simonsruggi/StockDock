@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.8.2</title>
-            <pubDate>Wed, 15 Jul 2026 11:45:55 +0200</pubDate>
-            <sparkle:version>22</sparkle:version>
-            <sparkle:shortVersionString>1.8.2</sparkle:shortVersionString>
+            <title>Version 1.9.0</title>
+            <pubDate>Thu, 16 Jul 2026 12:02:50 +0200</pubDate>
+            <sparkle:version>23</sparkle:version>
+            <sparkle:shortVersionString>1.9.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -18,16 +18,23 @@
     ul { padding-left: 20px; margin: 4px 0; }
     li { margin-bottom: 4px; }
 </style>
-<h3>Fixed</h3>
+<h3>New: the full desktop window</h3>
 <ul>
-    <li><b>Prices no longer freeze</b> — fixed a bug where live prices could stop updating after your Mac woke from sleep or after the app had been running for a long time. StockDock now detects a stalled connection and reconnects automatically.</li>
-    <li><b>Correct price outside market hours</b> — with extended hours turned off, prices now stay on the last regular close during pre-market and after-hours instead of briefly showing the extended-hours price.</li>
+    <li><b>Try the new desktop app</b> — StockDock now has a complete window, not just the menu-bar popover. Open the popover and click the <b>“Open”</b> button to try the new view: News, Watchlist, Portfolios and Settings in a spacious, redesigned interface. Everything stays in sync with the menu bar.</li>
+</ul>
+<h3>Added</h3>
+<ul>
+    <li><b>Watchlist — Price &amp; After-hours side by side</b> — separate columns for the regular price and the pre/post-market price (with its own % move). Every column is sortable.</li>
+    <li><b>Search your news</b> — filter stories by headline, ticker or publisher.</li>
+    <li><b>Add to portfolio from a stock’s detail</b> — open any symbol and add it as a position in one click.</li>
+    <li><b>More price precision</b> — forex pairs and sub-dollar prices now show extra decimals (e.g. 0.7119 instead of 0.71).</li>
+    <li><b>Decimal controls</b> — choose how many decimals to show for percentages and for values, and a menu-bar option to hide the percentage entirely.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.8.2/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.0/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="VfQqFber4rZFJF/ddvVVAZQ/y0KsTcGv+AIk5NbcWc0I9N8tb6YSt6KxUAIQpbgBhHV7Z/3sTGChswylAyreCg=="
-                       length="6872400"/>
+                       sparkle:edSignature="LxNIQgq+OfuOSfYfye01J0S1OCZhJYf3ZPJFee082WNFjNdDvWFOsROhlCtmjfvUg+/5XhyIiKAa9J0mDahXDw=="
+                       length="9405345"/>
         </item>
     </channel>
 </rss>
