@@ -267,6 +267,17 @@ struct SettingsWideView: View {
 
     private var appearanceCard: some View {
         SettingsCard(title: "Appearance") {
+            SettingRow("Theme") {
+                DSPicker(options: AppearanceMode.allCases.map { ($0, $0.label) },
+                         selection: Binding(get: { storageService.appearanceMode },
+                                            set: { storageService.appearanceMode = $0 }),
+                         width: 160)
+            }
+            SettingDivider()
+            SettingRow("Show News tab", caption: "The Home feed only fetches while open — no background use") {
+                DSToggle(isOn: $storageService.showNewsTab)
+            }
+            SettingDivider()
             SettingRow("Font") {
                 DSPicker(options: FontRegistration.availableFonts.map { ($0.family, $0.label) },
                          selection: $storageService.fontFamily, width: 200)

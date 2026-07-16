@@ -29,6 +29,31 @@ struct SettingsView: View {
                 }
                 Divider()
 
+                // MARK: - Appearance (issue #11)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Appearance")
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    Picker("Theme", selection: Binding(
+                        get: { storageService.appearanceMode },
+                        set: { storageService.appearanceMode = $0 }
+                    )) {
+                        ForEach(AppearanceMode.allCases, id: \.self) { mode in
+                            Text(mode.label).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    Text("Follow the system, or force Light or Dark.")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+
+                    Toggle("Show News tab", isOn: $storageService.showNewsTab)
+                        .toggleStyle(.switch)
+                    Text("The Home news feed is off by default when hidden — it only fetches while its tab is open (throttled, no background use).")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                }
+                Divider()
+
                 // MARK: - Stock Price Currency
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Stock Price Currency")

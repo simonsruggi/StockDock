@@ -38,6 +38,24 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    // MARK: - Appearance & tabs (issue #11)
+    /// "system" | "light" | "dark". The 1.9.0 redesign forced light; this restores
+    /// the choice. Read through `appearanceMode` for the typed value.
+    @Published var appearanceRaw: String = AppearanceMode.default.rawValue {
+        didSet { scheduleSave() }
+    }
+    /// Show the Home/News tab. Off = the tab is hidden entirely (no fetching, no
+    /// tab), for users who want just their watchlist and portfolio.
+    @Published var showNewsTab: Bool = true {
+        didSet { scheduleSave() }
+    }
+
+    /// Typed appearance preference, tolerant of unknown persisted values.
+    var appearanceMode: AppearanceMode {
+        get { AppearanceMode(rawValue: appearanceRaw) ?? .default }
+        set { appearanceRaw = newValue.rawValue }
+    }
+
     /// What to display in the menu bar: "pnl", "totalValue", "icon"
     @Published var menuBarDisplay: String = "pnl" {
         didSet { scheduleSave() }
@@ -514,6 +532,8 @@ class StorageService: ObservableObject {
         appLanguage = "en"
         fontSizeLevel = 9
         fontFamily = "Inter Variable"
+        appearanceRaw = AppearanceMode.default.rawValue
+        showNewsTab = true
         lastSelectedTab = "Watchlist"
     }
 
@@ -591,6 +611,8 @@ class StorageService: ObservableObject {
         var symbolType: [String: String]?
         var appLanguage: String?
         var advancedPositions: Bool?
+        var appearanceRaw: String?
+        var showNewsTab: Bool?
     }
 
     private func scheduleSave() {
@@ -604,7 +626,7 @@ class StorageService: ObservableObject {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, portfolioSnapshots: portfolioSnapshots, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: nil, percentDecimals: percentDecimals, valueDecimals: valueDecimals, menuBarHidePercent: menuBarHidePercent, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, appLanguage: appLanguage, advancedPositions: advancedPositions)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, portfolioSnapshots: portfolioSnapshots, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: nil, percentDecimals: percentDecimals, valueDecimals: valueDecimals, menuBarHidePercent: menuBarHidePercent, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, appLanguage: appLanguage, advancedPositions: advancedPositions, appearanceRaw: appearanceRaw, showNewsTab: showNewsTab)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -654,6 +676,8 @@ class StorageService: ObservableObject {
             showAbsoluteChange = decoded.showAbsoluteChange ?? true
             fontSizeLevel = decoded.fontSizeLevel ?? 9
             fontFamily = decoded.fontFamily ?? "Inter Variable"
+            appearanceRaw = decoded.appearanceRaw ?? AppearanceMode.default.rawValue
+            showNewsTab = decoded.showNewsTab ?? true
             FontRegistration.familyName = fontFamily
             FontRegistration.sizeOffset = CGFloat(fontSizeLevel - 9)
         } catch {

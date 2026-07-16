@@ -20,16 +20,19 @@ enum DS {
     static let cardAlt = dynamic(light: NSColor(red: 0.961, green: 0.949, blue: 0.925, alpha: 1),
                                  dark: NSColor(white: 0.17, alpha: 1))
     /// Borders and dividers — warm, near-invisible.
-    static let hairline = Color(red: 0.102, green: 0.090, blue: 0.059).opacity(0.07)
+    static let hairline = dynamic(light: NSColor(red: 0.102, green: 0.090, blue: 0.059, alpha: 0.07),
+                                  dark: NSColor(white: 1, alpha: 0.10))
 
     // MARK: Ink
     /// Warm near-black for display text.
     static let ink = dynamic(light: NSColor(red: 0.110, green: 0.102, blue: 0.082, alpha: 1),
                              dark: NSColor(white: 0.94, alpha: 1))
     /// Warm secondary gray (instead of the blue-ish system secondary).
-    static let inkSecondary = Color(red: 0.431, green: 0.416, blue: 0.376)
+    static let inkSecondary = dynamic(light: NSColor(red: 0.431, green: 0.416, blue: 0.376, alpha: 1),
+                                      dark: NSColor(red: 0.64, green: 0.62, blue: 0.58, alpha: 1))
     /// Captions, placeholders, timestamps.
-    static let inkTertiary = Color(red: 0.608, green: 0.588, blue: 0.541)
+    static let inkTertiary = dynamic(light: NSColor(red: 0.608, green: 0.588, blue: 0.541, alpha: 1),
+                                     dark: NSColor(red: 0.50, green: 0.485, blue: 0.45, alpha: 1))
 
     // MARK: Accents
     /// Brand emerald — selection, links, the mark.
@@ -197,8 +200,9 @@ struct PageHeader<Trailing: View>: View {
 struct ScrollEdgeFade: View {
     var height: CGFloat = 64
     var body: some View {
-        LinearGradient(colors: [Color(nsColor: .init(name: nil) { _ in
-            NSColor(red: 0.984, green: 0.980, blue: 0.969, alpha: 1) }), .clear],
+        // Follows the appearance so the scrolled-content fade matches the window
+        // ground in both light and dark (was pinned to the light paper color).
+        LinearGradient(colors: [DS.ground, .clear],
                        startPoint: .top, endPoint: .bottom)
             .frame(height: height)
             .allowsHitTesting(false)

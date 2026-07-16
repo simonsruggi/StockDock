@@ -68,6 +68,11 @@ struct PortfolioWindowView: View {
         .toolbar(removing: .sidebarToggle)
         .toolbarBackground(.hidden, for: .windowToolbar)
         .frame(minWidth: 1000, minHeight: 680)
+        .preferredColorScheme(storageService.appearanceMode.colorScheme)
+        // If News is turned off while its pane is open, fall back to Watchlist.
+        .onChange(of: storageService.showNewsTab) { _, showNews in
+            if !showNews, selection == .home { selection = .watchlist }
+        }
         .environment(\.locale, Locale(identifier: storageService.appLanguage))
         .environment(\.addHoldingAction, AddHoldingAction { addHoldingPortfolioId = $0 })
         .environment(\.editHoldingAction, EditHoldingAction { editHolding = EditTarget(portfolioId: $0, holding: $1) })
@@ -112,7 +117,7 @@ struct PortfolioWindowView: View {
     /// ⌘1 Home · ⌘2 Watchlist · ⌘3 Portfolios · ⌘4 Settings · ⌘R Refresh · ⌘N New portfolio.
     private var keyboardShortcuts: some View {
         Group {
-            Button("") { selection = .home }.keyboardShortcut("1", modifiers: .command)
+            Button("") { if storageService.showNewsTab { selection = .home } }.keyboardShortcut("1", modifiers: .command)
             Button("") { selection = .watchlist }.keyboardShortcut("2", modifiers: .command)
             Button("") { selection = .portfoliosAll }.keyboardShortcut("3", modifiers: .command)
             Button("") { selection = .settings }.keyboardShortcut("4", modifiers: .command)
@@ -144,8 +149,10 @@ struct PortfolioWindowView: View {
             brand
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
-                    NavRow(icon: "newspaper", title: "Home", helpText: "Financial news for your symbols  ⌘1",
-                           selected: selection == .home, namespace: navNamespace) { selection = .home }
+                    if storageService.showNewsTab {
+                        NavRow(icon: "newspaper", title: "Home", helpText: "Financial news for your symbols  ⌘1",
+                               selected: selection == .home, namespace: navNamespace) { selection = .home }
+                    }
                     NavRow(icon: "list.bullet", title: "Watchlist", helpText: "Your tracked symbols  ⌘2",
                            selected: selection == .watchlist, namespace: navNamespace) { selection = .watchlist }
 

@@ -94,8 +94,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         p.contentSize = NSSize(width: 380, height: 520)
         p.behavior = .transient
         p.delegate = self
-        // Same "private banking" light look as the desktop window.
-        p.appearance = NSAppearance(named: .aqua)
+        // Appearance follows the user's preference (issue #11), applied reactively
+        // via `.preferredColorScheme` on the SwiftUI root — not pinned here.
         popover = p
 
         refreshTask = Task {
@@ -585,9 +585,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.titleVisibility = .hidden
         window.isMovableByWindowBackground = true
         window.minSize = NSSize(width: 1000, height: 680)
-        // Editorial-luxury look is designed light; pin the window to it regardless
-        // of the system appearance.
-        window.appearance = NSAppearance(named: .aqua)
+        // Appearance follows the user's preference (issue #11), applied reactively
+        // via `.preferredColorScheme` on the SwiftUI root — not pinned here.
         window.contentViewController = NSHostingController(rootView: root)
         window.isReleasedWhenClosed = false
         window.delegate = self

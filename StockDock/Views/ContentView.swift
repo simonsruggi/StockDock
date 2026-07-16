@@ -16,6 +16,23 @@ extension Tab {
         case .settings: return "gear"
         }
     }
+
+    /// Issue #11: the tabs that actually render, in order. The Home/News tab is
+    /// opt-out — when hidden, Watchlist leads. Single source of truth so the tab
+    /// bar, the content switch and the restored-selection logic never disagree.
+    static func visible(showNews: Bool) -> [Tab] {
+        let all: [Tab] = [.home, .watchlist, .portfolios, .settings]
+        return showNews ? all : all.filter { $0 != .home }
+    }
+
+    /// Resolve a persisted tab against the current visibility: a stored selection
+    /// that's now hidden (e.g. "Home" after News was turned off) falls back to the
+    /// first visible tab so the user is never stranded on a blank tab.
+    static func resolve(stored: String, showNews: Bool) -> Tab {
+        let tabs = visible(showNews: showNews)
+        if let t = Tab(rawValue: stored), tabs.contains(t) { return t }
+        return tabs.first ?? .watchlist
+    }
 }
 
 // Environment keys for navigation from child views
@@ -99,11 +116,17 @@ struct ContentView: View {
             }
         }
         .frame(width: 380, height: 520)
+        .preferredColorScheme(storageService.appearanceMode.colorScheme)
         .onAppear {
-            selectedTab = Tab(rawValue: storageService.lastSelectedTab) ?? .watchlist
+            selectedTab = Tab.resolve(stored: storageService.lastSelectedTab,
+                                      showNews: storageService.showNewsTab)
         }
         .onChange(of: selectedTab) { _, newValue in
             storageService.lastSelectedTab = newValue.rawValue
+        }
+        // If News is turned off while its tab is selected, move off the now-hidden tab.
+        .onChange(of: storageService.showNewsTab) { _, showNews in
+            selectedTab = Tab.resolve(stored: selectedTab.rawValue, showNews: showNews)
         }
     }
 
@@ -186,12 +209,17 @@ struct ContentView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
 
-            // Tab picker
+            // Tab picker — Home is present only when News is enabled (issue #11).
+            // All-text segments: a segmented Picker that mixes an Image (the old
+            // gear) with Text bleeds the neighbouring label onto the icon segment,
+            // so Settings uses a plain "Settings" label like the others.
             Picker("", selection: $selectedTab) {
-                Text("Home").tag(Tab.home)
+                if storageService.showNewsTab {
+                    Text("Home").tag(Tab.home)
+                }
                 Text("Watchlist").tag(Tab.watchlist)
                 Text("Portfolios").tag(Tab.portfolios)
-                Image(systemName: "gear").tag(Tab.settings)
+                Text("Settings").tag(Tab.settings)
             }
             .pickerStyle(.segmented)
             .padding(.horizontal, 16)
