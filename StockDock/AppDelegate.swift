@@ -46,6 +46,7 @@ final class UpdaterViewModel: ObservableObject {
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
+    private var portfolioWindow: NSWindow?
     private var stockService = StockService.shared
     private var storageService = StorageService.shared
     private var webSocketService = WebSocketService.shared
@@ -93,6 +94,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         p.contentSize = NSSize(width: 380, height: 520)
         p.behavior = .transient
         p.delegate = self
+        // Same "private banking" light look as the desktop window.
+        p.appearance = NSAppearance(named: .aqua)
         popover = p
 
         refreshTask = Task {
@@ -106,11 +109,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             updateMenuBarTitle()
             alertMonitor.check(quotes: stockService.quotes)
             portfolioMonitor.check()
+            recordSnapshots()
             startWebSocket()
         }
 
         // REST polling at low frequency for exchange rates and as WSS fallback
         scheduleRESTPolling()
+
+        // Dev affordance: open the Portfolio window on launch for screenshots/testing.
+        if ProcessInfo.processInfo.environment["SD_OPEN_WINDOW"] != nil {
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+                self.showPortfolioWindow()
+            }
+        }
 
         // Pause on system sleep, resume on wake
         NSWorkspace.shared.notificationCenter.addObserver(
@@ -149,6 +161,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     self.updateMenuBarTitle()
                     self.alertMonitor.check(quotes: self.stockService.quotes)
                     self.portfolioMonitor.check()
+                    self.recordSnapshots()
                 }
             }
     }
@@ -218,6 +231,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// Captures a daily value/P&L snapshot per portfolio from the current quotes,
+    /// for the Portfolio window's history chart. Skips a portfolio until every
+    /// holding has a quote, so a partially-loaded feed can't record an understated
+    /// value. `StorageService.recordSnapshot` keeps one entry per day.
+    private func recordSnapshots() {
+        for portfolio in storageService.portfolios {
+            guard !portfolio.holdings.isEmpty else { continue }
+            let inputs: [PortfolioValuation.Input] = portfolio.holdings.compactMap { holding in
+                guard let quote = stockService.quotes[holding.symbol] else { return nil }
+                return PortfolioValuation.Input(
+                    holding: holding,
+                    price: quote.displayPrice(extendedHours: storageService.showExtendedHours),
+                    rate: stockService.rate(from: quote.currency),
+                    costRate: stockService.rate(from: quote.currency, for: holding.purchaseDate)
+                )
+            }
+            guard inputs.count == portfolio.holdings.count else { continue }
+            let totals = PortfolioValuation.totals(inputs)
+            storageService.recordSnapshot(for: portfolio.id, totalValue: totals.value, totalCost: totals.cost)
+        }
+    }
+
     private func collectSymbols() -> Set<String> {
         var symbols = Set(storageService.watchlist)
         for portfolio in storageService.portfolios {
@@ -264,6 +299,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self.updateMenuBarTitle()
                 self.alertMonitor.check(quotes: self.stockService.quotes)
                 self.portfolioMonitor.check()
+                self.recordSnapshots()
                 // Supervisor: revive the WebSocket if it silently died, otherwise
                 // just keep its subscriptions current.
                 self.webSocketService.ensureConnected(symbols: Array(self.collectSymbols()))
@@ -319,9 +355,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // #8.2: prefer the readable name when the user opted in and it's available.
         let label = (storageService.tickerShowName && !quote.name.isEmpty) ? quote.name : quote.symbol
         let sign = quote.changePercent >= 0 ? "+" : ""
-        let price = StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2)
-        let pct = String(format: "%.\(storageService.percentDecimals)f", quote.changePercent)
-        let title = " \(label) \(sym)\(price) \(sign)\(pct)%"
+        let priceValue = quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate
+        let price = StorageService.formatNumber(priceValue, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: priceValue))
+        // Issue #10: optionally drop the percentage from the menu-bar ticker.
+        let pctPart = storageService.menuBarHidePercent
+            ? ""
+            : " \(sign)\(String(format: "%.\(storageService.percentDecimals)f", quote.changePercent))%"
+        let title = " \(label) \(sym)\(price)\(pctPart)"
         return (title, quote.changePercent >= 0 ? upColor : downColor)
     }
 
@@ -376,7 +416,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         switch displayMode {
         case "totalValue":
-            title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol))"
+            title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol, decimals: storageService.amountDecimals))"
             color = totalPnl >= 0 ? upColor : downColor
 
         case "pnlPercent":
@@ -386,7 +426,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         case "pnlFull":
             let pctSign = totalPnlPct >= 0 ? "+" : ""
-            title = " \(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true)) (\(pctSign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%)"
+            let pctPart = storageService.menuBarHidePercent ? "" : " (\(pctSign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%)"
+            title = " \(StorageService.formatAmount(totalPnl, symbol: currSymbol, decimals: storageService.amountDecimals, signed: true))\(pctPart)"
             color = totalPnl >= 0 ? upColor : downColor
 
         case "bestStock":
@@ -426,7 +467,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         case "portfolioRecap":
             let sign = totalPnlPct >= 0 ? "+" : ""
-            title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%"
+            let pctPart = storageService.menuBarHidePercent ? "" : " \(sign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%"
+            title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol, decimals: storageService.amountDecimals))\(pctPart)"
             color = totalPnl >= 0 ? upColor : downColor
 
         case "ticker":
@@ -456,13 +498,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 } else {
                     // Portfolio recap slide
                     let sign = totalPnlPct >= 0 ? "+" : ""
-                    title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%"
+                    title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol, decimals: storageService.amountDecimals)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", totalPnlPct))%"
                     color = totalPnl >= 0 ? upColor : downColor
                 }
             }
 
         default: // "pnl"
-            title = " P&L \(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true))"
+            title = " P&L \(StorageService.formatAmount(totalPnl, symbol: currSymbol, decimals: storageService.amountDecimals, signed: true))"
             color = totalPnl >= 0 ? upColor : downColor
         }
 
@@ -492,6 +534,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     .environmentObject(stockService)
                     .environmentObject(storageService)
                     .environmentObject(updaterViewModel)
+                    .environment(\.openWindowAction, { [weak self] in self?.showPortfolioWindow() })
                 popover.contentViewController = NSHostingController(rootView: contentView)
             }
             let rect = NSRect(x: 0, y: 0, width: button.bounds.width, height: 0)
@@ -505,6 +548,90 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func closePopover() {
         popover?.performClose(nil)
+    }
+
+    // MARK: - Portfolio Window
+
+    /// Opens (or focuses) the full navigable Portfolio window. The menu-bar glance
+    /// stays put; this is the "expanded" surface over the same shared state. While
+    /// the window is up the app shows a Dock icon (regular policy) so it behaves
+    /// like a normal app; closing it returns to accessory (menu-bar-only) mode.
+    @objc func showPortfolioWindow() {
+        let reusable = portfolioWindow?.isVisible ?? false
+        NSLog("[StockDock] Open clicked — \(reusable ? "focusing existing window" : "creating new window")")
+        closePopover()
+        // Reuse the window only while it's actually on screen. Once closed with
+        // the red button it's ordered out (and not reliably re-showable), so we
+        // drop it and build a fresh one — otherwise "Open" would silently no-op.
+        if let window = portfolioWindow, window.isVisible {
+            bringWindowFront(window)
+            return
+        }
+        portfolioWindow = nil
+
+        let root = PortfolioWindowView()
+            .environmentObject(stockService)
+            .environmentObject(storageService)
+            .environmentObject(updaterViewModel)
+
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 1220, height: 820),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+            backing: .buffered, defer: false)
+        window.title = "StockDock"
+        // One uninterrupted surface: transparent titlebar, no system title text
+        // (the sidebar brand is the title), only floating traffic lights.
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.isMovableByWindowBackground = true
+        window.minSize = NSSize(width: 1000, height: 680)
+        // Editorial-luxury look is designed light; pin the window to it regardless
+        // of the system appearance.
+        window.appearance = NSAppearance(named: .aqua)
+        window.contentViewController = NSHostingController(rootView: root)
+        window.isReleasedWhenClosed = false
+        window.delegate = self
+        window.setFrameAutosaveName("StockDockPortfolioWindow")
+        window.center()
+        portfolioWindow = window
+
+        bringWindowFront(window)
+    }
+
+    /// Brings the desktop window reliably in front of every other app.
+    ///
+    /// StockDock is a menu-bar (accessory) app, and on macOS 14+ `activate` no
+    /// longer lets a background app steal focus — so opening the window from the
+    /// popover would leave it *behind* whatever app was active ("it doesn't
+    /// open"). The fix: raise it at `.floating` level so it draws above other
+    /// apps' windows, then drop back to `.normal` on the next runloop so it
+    /// behaves like a normal window afterwards.
+    private func bringWindowFront(_ window: NSWindow) {
+        NSApp.setActivationPolicy(.regular)
+        window.level = .floating
+        window.makeKeyAndOrderFront(nil)
+        window.orderFrontRegardless()
+        NSApp.activate(ignoringOtherApps: true)
+        DispatchQueue.main.async {
+            window.level = .normal
+            window.makeKeyAndOrderFront(nil)
+            window.orderFrontRegardless()
+            NSApp.activate(ignoringOtherApps: true)
+            NSLog("[StockDock] window shown — visible=\(window.isVisible) key=\(window.isKeyWindow) frame=\(NSStringFromRect(window.frame))")
+        }
+    }
+}
+
+// MARK: - NSWindowDelegate
+
+extension AppDelegate: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        guard (notification.object as? NSWindow) === portfolioWindow else { return }
+        // Back to menu-bar-only mode once the window and popover are both gone.
+        Task { @MainActor in
+            let popoverShown = popover?.isShown ?? false
+            if !popoverShown { NSApp.setActivationPolicy(.accessory) }
+        }
     }
 }
 

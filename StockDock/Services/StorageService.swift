@@ -58,9 +58,39 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
-    /// Issue #7.4: show percentages with 2 decimals instead of 1 (off keeps the
-    /// menu bar compact). Applies everywhere a % is shown.
-    @Published var percentTwoDecimals: Bool = false {
+    /// Issue #7.4 / #10: number of decimal places shown for percentages (0–4),
+    /// everywhere a % appears (menu bar, watchlist, portfolios). Clamped on set.
+    @Published var percentDecimals: Int = 1 {
+        didSet {
+            let clamped = min(max(percentDecimals, 0), 4)
+            if clamped != percentDecimals { percentDecimals = clamped; return }
+            scheduleSave()
+        }
+    }
+
+    /// Issue #10: decimal places for *values* — prices and currency amounts.
+    /// -1 = Auto (smart per #10: forex/sub-dollar get more precision, amounts use 2);
+    /// 0–4 = force that many decimals everywhere (prices AND amounts).
+    @Published var valueDecimals: Int = -1 {
+        didSet {
+            let clamped = min(max(valueDecimals, -1), 4)
+            if clamped != valueDecimals { valueDecimals = clamped; return }
+            scheduleSave()
+        }
+    }
+
+    /// Price decimals honoring the manual override; Auto (-1) falls back to the
+    /// smart per-symbol logic.
+    func resolvedPriceDecimals(symbol: String, price: Double) -> Int {
+        valueDecimals >= 0 ? valueDecimals : StorageService.priceDecimals(symbol: symbol, price: price)
+    }
+
+    /// Decimals for currency amounts (totals, P&L, position values); Auto (-1) = 2.
+    var amountDecimals: Int { valueDecimals >= 0 ? valueDecimals : 2 }
+
+    /// Issue #10: hide the percentage change in the menu bar (ticker/recap modes
+    /// show just price / value). Off by default.
+    @Published var menuBarHidePercent: Bool = false {
         didSet { scheduleSave() }
     }
 
@@ -70,9 +100,6 @@ class StorageService: ObservableObject {
     @Published var advancedPositions: Bool = false {
         didSet { scheduleSave() }
     }
-
-    /// Number of decimals used for percentage displays (1 or 2).
-    var percentDecimals: Int { percentTwoDecimals ? 2 : 1 }
 
     /// Issue #8.2: show the human-readable name (e.g. "S&P 500") instead of the
     /// raw symbol ("^GSPC") in the menu bar ticker. Off keeps the bar compact.
@@ -131,6 +158,12 @@ class StorageService: ObservableObject {
 
     /// Recurring portfolio notifications, keyed by portfolio id (uuidString).
     @Published var portfolioNotifications: [String: [PortfolioNotification]] = [:] {
+        didSet { scheduleSave() }
+    }
+
+    /// Daily value/P&L snapshots for the Portfolio window's history chart, keyed
+    /// by portfolio id (uuidString). Accumulates forward — see `PortfolioSnapshot`.
+    @Published var portfolioSnapshots: [String: [PortfolioSnapshot]] = [:] {
         didSet { scheduleSave() }
     }
 
@@ -231,9 +264,41 @@ class StorageService: ObservableObject {
         portfolioNotifications[portfolioId.uuidString]?[i].lastDay = lastDay
     }
 
+    // MARK: - Portfolio snapshots
+
+    func snapshots(for portfolioId: UUID) -> [PortfolioSnapshot] {
+        portfolioSnapshots[portfolioId.uuidString] ?? []
+    }
+
+    /// Records a portfolio's value/cost for today, keeping one snapshot per day
+    /// (today's is replaced so the latest intraday value wins). The date is
+    /// normalized to the start of the local day. No-ops for an empty portfolio so
+    /// the history doesn't fill with zeros before any holdings exist.
+    func recordSnapshot(for portfolioId: UUID, totalValue: Double, totalCost: Double,
+                        now: Date = Date(), calendar: Calendar = .current) {
+        guard totalValue != 0 || totalCost != 0 else { return }
+        let snapshot = PortfolioSnapshot(date: calendar.startOfDay(for: now),
+                                         totalValue: totalValue, totalCost: totalCost)
+        let key = portfolioId.uuidString
+        portfolioSnapshots[key] = SnapshotLog.upsert(snapshot, into: portfolioSnapshots[key] ?? [], calendar: calendar)
+    }
+
     var lastSelectedTab: String = "Watchlist"
 
     static let supportedCurrencies = ["EUR", "USD", "GBP", "CHF", "JPY", "CAD", "AUD"]
+
+    /// Issue #10: how many decimals to show for a *market price*. Two decimals is
+    /// right for normal stocks, but forex pairs (e.g. CADUSD=X = 0.7119) and any
+    /// sub-dollar instrument (penny stocks, low-priced crypto) lose meaningful
+    /// precision at 2 decimals, so they get 4. Big forex crosses (e.g. USDJPY ≈ 149)
+    /// stay at 2 to avoid pointless trailing zeros.
+    nonisolated static func priceDecimals(symbol: String, price: Double) -> Int {
+        let isForex = symbol.uppercased().hasSuffix("=X")
+        let magnitude = abs(price)
+        if isForex { return magnitude >= 50 ? 2 : 4 }
+        if magnitude > 0 && magnitude < 1 { return 4 }
+        return 2
+    }
 
     /// Formats a plain number with a thousands grouping separator and locale-aware
     /// decimal separator, e.g. "1,234.56" (en) / "1.234,56" (it). Falls back to a
@@ -378,12 +443,16 @@ class StorageService: ObservableObject {
     func deletePortfolio(at offsets: IndexSet) {
         let removedIds = offsets.map { portfolios[$0].id.uuidString }
         portfolios.remove(atOffsets: offsets)
-        removedIds.forEach { portfolioNotifications[$0] = nil }
+        removedIds.forEach {
+            portfolioNotifications[$0] = nil
+            portfolioSnapshots[$0] = nil
+        }
     }
 
     func deletePortfolio(id: UUID) {
         portfolios.removeAll { $0.id == id }
         portfolioNotifications[id.uuidString] = nil
+        portfolioSnapshots[id.uuidString] = nil
     }
 
     func addHolding(to portfolioId: UUID, symbol: String, quantity: Double, avgPrice: Double, purchaseDate: Date? = nil, leverage: Double? = nil) {
@@ -419,7 +488,9 @@ class StorageService: ObservableObject {
         gainColorHex = ""
         lossColorHex = ""
         menuBarUseSystemColor = false
-        percentTwoDecimals = false
+        percentDecimals = 1
+        valueDecimals = -1
+        menuBarHidePercent = false
         tickerShowName = false
         advancedPositions = false
         watchlistSort = "manual"
@@ -488,12 +559,16 @@ class StorageService: ObservableObject {
         var show52WeekBar: Bool?
         var showAbsoluteChange: Bool?
         var portfolioNotifications: [String: [PortfolioNotification]]?
+        var portfolioSnapshots: [String: [PortfolioSnapshot]]?
         var discordWebhookURL: String?
         var discordEnabled: Bool?
         var gainColorHex: String?
         var lossColorHex: String?
         var menuBarUseSystemColor: Bool?
-        var percentTwoDecimals: Bool?
+        var percentTwoDecimals: Bool?   // legacy (pre-#10) — migrated on decode
+        var percentDecimals: Int?
+        var valueDecimals: Int?
+        var menuBarHidePercent: Bool?
         var tickerShowName: Bool?
         var watchlistSort: String?
         var symbolType: [String: String]?
@@ -512,7 +587,7 @@ class StorageService: ObservableObject {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: percentTwoDecimals, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, appLanguage: appLanguage, advancedPositions: advancedPositions)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, portfolioSnapshots: portfolioSnapshots, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: nil, percentDecimals: percentDecimals, valueDecimals: valueDecimals, menuBarHidePercent: menuBarHidePercent, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, appLanguage: appLanguage, advancedPositions: advancedPositions)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -541,12 +616,16 @@ class StorageService: ObservableObject {
             isinMap = decoded.isinMap ?? [:]
             alerts = decoded.alerts ?? []
             portfolioNotifications = decoded.portfolioNotifications ?? [:]
+            portfolioSnapshots = decoded.portfolioSnapshots ?? [:]
             discordWebhookURL = decoded.discordWebhookURL ?? ""
             discordEnabled = decoded.discordEnabled ?? false
             gainColorHex = decoded.gainColorHex ?? ""
             lossColorHex = decoded.lossColorHex ?? ""
             menuBarUseSystemColor = decoded.menuBarUseSystemColor ?? false
-            percentTwoDecimals = decoded.percentTwoDecimals ?? false
+            // #10: migrate the old on/off toggle (2 vs 1) to the free decimal count.
+            percentDecimals = decoded.percentDecimals ?? (decoded.percentTwoDecimals == true ? 2 : 1)
+            valueDecimals = decoded.valueDecimals ?? -1
+            menuBarHidePercent = decoded.menuBarHidePercent ?? false
             tickerShowName = decoded.tickerShowName ?? false
             advancedPositions = decoded.advancedPositions ?? false
             watchlistSort = decoded.watchlistSort ?? "manual"

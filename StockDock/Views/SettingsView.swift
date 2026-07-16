@@ -147,8 +147,33 @@ struct SettingsView: View {
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
 
-                    Toggle("Show percentages with 2 decimals", isOn: $storageService.percentTwoDecimals)
-                    Text("Applies to the menu bar, watchlist and portfolios (e.g. +2.34% instead of +2.3%).")
+                    HStack {
+                        Text("Percentage decimals")
+                        Spacer()
+                        Picker("", selection: $storageService.percentDecimals) {
+                            ForEach(0...4, id: \.self) { Text("\($0)").tag($0) }
+                        }
+                        .labelsHidden().pickerStyle(.menu).frame(width: 90)
+                    }
+                    Text("Digits after the decimal point in percentages (e.g. +2.34% with 2).")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+
+                    HStack {
+                        Text("Value decimals")
+                        Spacer()
+                        Picker("", selection: $storageService.valueDecimals) {
+                            Text("Auto").tag(-1)
+                            ForEach(0...4, id: \.self) { Text("\($0)").tag($0) }
+                        }
+                        .labelsHidden().pickerStyle(.menu).frame(width: 90)
+                    }
+                    Text("Prices & amounts. Auto keeps extra precision for forex / sub-dollar prices.")
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+
+                    Toggle("Hide percentage change", isOn: $storageService.menuBarHidePercent)
+                    Text("Show only price / value in the menu bar, without the % change.")
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
 
@@ -413,7 +438,7 @@ struct SettingsView: View {
 }
 
 /// A single alert row in Settings: enable/re-arm toggle, description and delete.
-private struct AlertRow: View {
+struct AlertRow: View {
     @EnvironmentObject var storageService: StorageService
     let alert: PriceAlert
 
@@ -461,7 +486,7 @@ private struct AlertRow: View {
 }
 
 /// A single portfolio-notification row in Settings: enable toggle, description and delete.
-private struct PortfolioNotifRow: View {
+struct PortfolioNotifRow: View {
     @EnvironmentObject var storageService: StorageService
     let portfolioId: UUID
     let notification: PortfolioNotification

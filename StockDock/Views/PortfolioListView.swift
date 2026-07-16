@@ -82,7 +82,7 @@ struct PortfolioListView: View {
                             Text("Total value")
                                 .font(.inter(10, relativeTo: .caption))
                                 .foregroundColor(.secondary)
-                            Text(StorageService.formatAmount(grandTotal, symbol: currSym))
+                            Text(StorageService.formatAmount(grandTotal, symbol: currSym, decimals: storageService.amountDecimals))
                                 .font(.inter(13, relativeTo: .body).monospacedDigit())
                                 .fontWeight(.bold)
                         }
@@ -92,12 +92,12 @@ struct PortfolioListView: View {
                                 .font(.inter(10, relativeTo: .caption))
                                 .foregroundColor(.secondary)
                             HStack(spacing: 2) {
-                                Text(StorageService.formatAmount(grandPnl, symbol: currSym, signed: true))
+                                Text(StorageService.formatAmount(grandPnl, symbol: currSym, decimals: storageService.amountDecimals, signed: true))
                                 Text(String(format: "(%.\(storageService.percentDecimals)f%%)", grandPnlPct))
                             }
                             .font(.inter(13, relativeTo: .body).monospacedDigit())
                             .fontWeight(.bold)
-                            .foregroundColor(grandPnl >= 0 ? .green : .red)
+                            .foregroundColor(grandPnl >= 0 ? DS.up : DS.down)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -330,7 +330,7 @@ struct PortfolioSection: View {
                     Text("Total value")
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
-                    Text(StorageService.formatAmount(totalValue, symbol: currSymbol))
+                    Text(StorageService.formatAmount(totalValue, symbol: currSymbol, decimals: storageService.amountDecimals))
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.semibold)
                 }
@@ -340,12 +340,12 @@ struct PortfolioSection: View {
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     HStack(spacing: 2) {
-                        Text(StorageService.formatAmount(totalPnl, symbol: currSymbol, signed: true))
+                        Text(StorageService.formatAmount(totalPnl, symbol: currSymbol, decimals: storageService.amountDecimals, signed: true))
                         Text(String(format: "(%.\(storageService.percentDecimals)f%%)", totalPnlPercent))
                     }
                     .font(.inter(13, relativeTo: .body).monospacedDigit())
                     .fontWeight(.semibold)
-                    .foregroundColor(totalPnl >= 0 ? .green : .red)
+                    .foregroundColor(totalPnl >= 0 ? DS.up : DS.down)
                 }
             }
             .padding(.vertical, 2)
@@ -470,7 +470,7 @@ struct HoldingRow: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 3)
                             .padding(.vertical, 1)
-                            .background(RoundedRectangle(cornerRadius: 2).fill(.orange))
+                            .background(RoundedRectangle(cornerRadius: 2).fill(DS.down))
                     }
                     if holding.effectiveLeverage != 1 {
                         Text("\(StorageService.formatNumber(holding.effectiveLeverage, decimals: holding.effectiveLeverage == holding.effectiveLeverage.rounded() ? 0 : 1))\u{00D7}")
@@ -478,7 +478,7 @@ struct HoldingRow: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 3)
                             .padding(.vertical, 1)
-                            .background(RoundedRectangle(cornerRadius: 2).fill(.blue))
+                            .background(RoundedRectangle(cornerRadius: 2).fill(DS.brand))
                     }
                 }
                 Text("\(formatQty(holding.quantity))\u{00D7}\(StorageService.formatNumber(holding.avgPrice, decimals: 2))")
@@ -498,7 +498,7 @@ struct HoldingRow: View {
 
                 // Col 2: Price + badge
                 HStack(spacing: 3) {
-                    Text("\(priceSymbol)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: 2))")
+                    Text("\(priceSymbol)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate)))")
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
                     if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
@@ -509,7 +509,7 @@ struct HoldingRow: View {
                             .padding(.vertical, 1)
                             .background(
                                 RoundedRectangle(cornerRadius: 2)
-                                    .fill(quote.marketState.hasPrefix("PRE") ? .orange : .purple)
+                                    .fill(quote.marketState.hasPrefix("PRE") ? DS.gold : DS.palette[3])
                             )
                     }
                 }
@@ -524,12 +524,12 @@ struct HoldingRow: View {
                 let pnlPct = abs(costBasis) >= 0.01 ? (pnl / abs(costBasis)) * 100 : 0
 
                 VStack(alignment: .trailing, spacing: 1) {
-                    Text(StorageService.formatAmount(marketVal, symbol: prefSymbol))
+                    Text(StorageService.formatAmount(marketVal, symbol: prefSymbol, decimals: storageService.amountDecimals))
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
-                    Text("\(StorageService.formatAmount(pnl, symbol: prefSymbol, signed: true)) (\(String(format: "%.\(storageService.percentDecimals)f%%", pnlPct)))")
+                    Text("\(StorageService.formatAmount(pnl, symbol: prefSymbol, decimals: storageService.amountDecimals, signed: true)) (\(String(format: "%.\(storageService.percentDecimals)f%%", pnlPct)))")
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
-                        .foregroundColor(pnl >= 0 ? .green : .red)
+                        .foregroundColor(pnl >= 0 ? DS.up : DS.down)
                 }
                 .frame(width: 120, alignment: .trailing)
             } else {

@@ -365,7 +365,7 @@ struct QuoteRow: View {
             // Col 2: Price + day range
             VStack(spacing: 1) {
                 HStack(spacing: 3) {
-                    Text("\(currSymbol)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate, decimals: 2))")
+                    Text("\(currSymbol)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate)))")
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
                     if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
@@ -376,12 +376,13 @@ struct QuoteRow: View {
                             .padding(.vertical, 1)
                             .background(
                                 RoundedRectangle(cornerRadius: 2)
-                                    .fill(quote.marketState.hasPrefix("PRE") ? .orange : .purple)
+                                    .fill(quote.marketState.hasPrefix("PRE") ? DS.gold : DS.palette[3])
                             )
                     }
                 }
                 if storageService.showDayRange, let high = quote.dayHigh, let low = quote.dayLow {
-                    Text("\(StorageService.formatNumber(low * priceRate, decimals: 2)) – \(StorageService.formatNumber(high * priceRate, decimals: 2))")
+                    let rangeDecimals = storageService.resolvedPriceDecimals(symbol: quote.symbol, price: low * priceRate)
+                    Text("\(StorageService.formatNumber(low * priceRate, decimals: rangeDecimals)) – \(StorageService.formatNumber(high * priceRate, decimals: rangeDecimals))")
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
                         .foregroundColor(.secondary)
                 }
@@ -409,18 +410,18 @@ struct QuoteRow: View {
                     Text(StorageService.formatAmount(quote.change * priceRate, symbol: currSymbol, signed: true))
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
-                        .foregroundColor(quote.isPositive ? .green : .red)
+                        .foregroundColor(quote.isPositive ? DS.up : DS.down)
                 }
                 Text(String(format: "%.\(storageService.percentDecimals)f%%", quote.changePercent))
                     .font(.inter(10, relativeTo: .caption).monospacedDigit())
-                    .foregroundColor(quote.isPositive ? .green : .red)
+                    .foregroundColor(quote.isPositive ? DS.up : DS.down)
 
                 if storageService.showExtendedHours,
                    let extChg = quote.extendedChange,
                    let extPct = quote.extendedChangePercent {
                     Text(String(format: "%+.2f (%.\(storageService.percentDecimals)f%%)", extChg * priceRate, extPct))
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
-                        .foregroundColor(extChg >= 0 ? .green.opacity(0.8) : .red.opacity(0.8))
+                        .foregroundColor(extChg >= 0 ? DS.up.opacity(0.8) : DS.down.opacity(0.8))
                 }
             }
             .frame(width: 120, alignment: .trailing)

@@ -82,6 +82,20 @@ StockDock/
 - **Save debounced**: le scritture su disco sono debounced a 100ms per non bloccare il main thread; save immediato alla chiusura dell'app; nessun save ridondante al caricamento iniziale
 - **Reactive subscriptions**: un observer Combine su `$portfolios` + `$watchlist` (debounce 500ms) aggiorna automaticamente le subscription WebSocket e triggera `refreshAll` dopo qualsiasi mutazione
 
+## Finestra desktop (app completa) — nuova in 1.9.0
+
+Oltre al popover della menu bar, StockDock ha una **finestra desktop vera** (1220×820, min 1000×680) aperta dal bottone **"Open"** (capsula smeraldo) nell'header del popover, o da `AppDelegate.showPortfolioWindow()`. È l'app in forma estesa: **stessi tab del popover** (Home / Watchlist / Portfolios / Settings), **stessi dati e stesse preferenze** sullo stesso `data.json` (`StockService`/`StorageService` condivisi) — una modifica in un posto si riflette istantaneamente nell'altro e nella menu bar. Convive col popover: apre passando ad `activationPolicy .regular` (icona nel Dock), torna `.accessory` alla chiusura.
+
+- **Design system "private banking"** (`Views/DesignSystem.swift`): palette carta calda + smeraldo sobrio, `premiumCard(elevated:)` (elevazione a 3 livelli), scala tipografica Inter (`DS.display/titleXL/figure/…`), componenti condivisi `PageScaffold`/`PageHeader`/`ScrollEdgeFade`/`Card`/`StatTile`/`ChangePill`/`Tag`/`BrandMark`/`NavRow` (pill di selezione scorrevole via `matchedGeometryEffect`)/`SegmentedRangePicker`/`RefreshButton`. Aspetto **chiaro pinnato** su finestra e popover (`NSAppearance(.aqua)`). Tutti i tab usano lo stesso `PageScaffold` → titolo, colonna (max 1120), gutter e sfondo identici (coerenza cross-tab).
+- **Chrome**: titlebar trasparente + `titleVisibility .hidden` + `fullSizeContentView`; nessuna toolbar di sistema (il "+" nuovo portafoglio/holding è nell'header "PORTFOLIOS" della sidebar); `isMovableByWindowBackground`.
+- **Scorciatoie**: ⌘1 Home · ⌘2 Watchlist · ⌘3 Portfolios · ⌘4 Settings · ⌘R Refresh · ⌘N New portfolio (bottoni invisibili in `PortfolioWindowView`).
+- **Overview** (`PortfolioOverview.swift`): hero full-bleed col grafico valore come sfondo della card + `SegmentedRangePicker` 1M/3M/6M/ALL + `contentTransition(.numericText())`; stat tiles; **Allocation** (donut con conteggio asset + legenda + strip diversificazione per tipo, hover evidenzia il settore); **movers** con gauge; **posizioni** con weight-bar e hover. Il grafico valore usa gli **snapshot reali** quando ≥2 giorni, altrimenti un **backfill "ESTIMATED"** (linea tratteggiata grigia) ricostruito da storico prezzi × posizioni correnti (`Models/PortfolioBackfill.swift`, puro+testato).
+- **Grafici prezzo reali** (`Views/PriceChartCard.swift`, `Models/PriceHistory.swift`): storico Yahoo v8 (1 anno daily, cache 1h) + intraday 5m per **1D** (cache 5min); range picker 1D/1M/3M/6M/1Y, tinta secondo la direzione del periodo, endpoint dot. Usato nel **dettaglio titolo** (`HoldingDetailView.swift`, con 52-week + tick "you bought here", Position facts, **Related news**, bottone alert) e nella **sheet simbolo** (doppio click su una riga watchlist → `SymbolDetailSheet.swift`).
+- **Watchlist wide** (`WatchlistWideView.swift`): `Table` nativa ordinabile (Symbol/Name/Price/Change/**Trend 1M** sparkline/52-week) dentro una card; **sparkline in un'unica richiesta** batch (`ensureSparklines`, endpoint Yahoo `spark` multi-simbolo). Doppio click o tasto destro → "View Chart".
+- **Home wide** (`HomeWideView.swift`): card news con lead **Featured** full-width + griglia; **Settings wide** (`SettingsWideView.swift`): card native a due colonne (non il Form di sistema), tint smeraldo.
+- **Localizzazione**: le stringhe della finestra sono nei 6 `Localizable.strings` (92 chiavi aggiunte in 1.9.0) insieme a quelle del popover.
+- **Affordance dev**: `SD_OPEN_WINDOW=1` apre la finestra all'avvio, `SD_OPEN_TAB=home|watchlist|settings` preseleziona un tab (per screenshot deterministici).
+
 ## Come buildare e avviare
 
 ### Da sorgente con Swift PM

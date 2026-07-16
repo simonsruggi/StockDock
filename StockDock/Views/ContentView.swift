@@ -35,6 +35,29 @@ private struct EditHoldingActionKey: EnvironmentKey {
     static let defaultValue = EditHoldingAction { _, _ in }
 }
 
+/// Injected by AppDelegate so the popover opens the desktop window by calling
+/// AppDelegate directly — no fragile `NSApp.delegate as? AppDelegate` cast that
+/// can silently fail in a SwiftUI app.
+private struct OpenWindowActionKey: EnvironmentKey {
+    static let defaultValue: () -> Void = {
+        NSLog("[StockDock] Open tapped but no openWindowAction was injected")
+    }
+}
+
+/// The per-portfolio actions (same as the sidebar right-click menu), injected by
+/// AppDelegate/PortfolioWindowView so the Overview header can offer them too.
+struct PortfolioActions {
+    var addHolding: (UUID) -> Void = { _ in }
+    var rename: (UUID, String) -> Void = { _, _ in }
+    var notifications: (UUID, String) -> Void = { _, _ in }
+    var export: (Portfolio) -> Void = { _ in }
+    var delete: (UUID) -> Void = { _ in }
+}
+
+private struct PortfolioActionsKey: EnvironmentKey {
+    static let defaultValue = PortfolioActions()
+}
+
 extension EnvironmentValues {
     var addHoldingAction: AddHoldingAction {
         get { self[AddHoldingActionKey.self] }
@@ -44,11 +67,20 @@ extension EnvironmentValues {
         get { self[EditHoldingActionKey.self] }
         set { self[EditHoldingActionKey.self] = newValue }
     }
+    var openWindowAction: () -> Void {
+        get { self[OpenWindowActionKey.self] }
+        set { self[OpenWindowActionKey.self] = newValue }
+    }
+    var portfolioActions: PortfolioActions {
+        get { self[PortfolioActionsKey.self] }
+        set { self[PortfolioActionsKey.self] = newValue }
+    }
 }
 
 struct ContentView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
+    @Environment(\.openWindowAction) private var openWindowAction
     @State private var selectedTab: Tab = .watchlist
     @State private var showSearch = false
     @State private var addHoldingPortfolioId: UUID?
@@ -85,10 +117,11 @@ struct ContentView: View {
         VStack(spacing: 0) {
             // Header
             HStack {
-                HStack(spacing: 4) {
+                HStack(spacing: 7) {
+                    BrandMark(size: 22)
                     Text("StockDock")
                         .font(.inter(13, weight: .bold, relativeTo: .headline))
-                        .fontWeight(.bold)
+                        .foregroundStyle(DS.ink)
                     Text(appVersion)
                         .font(.inter(10, weight: .medium, relativeTo: .caption2))
                         .foregroundColor(.secondary)
@@ -100,7 +133,7 @@ struct ContentView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 4)
                             .padding(.vertical, 1)
-                            .background(RoundedRectangle(cornerRadius: 3).fill(.orange))
+                            .background(RoundedRectangle(cornerRadius: 3).fill(DS.gold))
                     }
                 }
 
@@ -125,6 +158,23 @@ struct ContentView: View {
                 }
                 .buttonStyle(.borderless)
                 .disabled(stockService.isLoading)
+
+                // The clear way into the full desktop app.
+                Button(action: {
+                    NSLog("[StockDock] Open button tapped in popover")
+                    openWindowAction()
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "macwindow")
+                        Text("Open")
+                    }
+                    .font(.inter(11, weight: .semibold, relativeTo: .caption))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 9).padding(.vertical, 4)
+                    .background(Capsule().fill(DS.brand))
+                }
+                .buttonStyle(.plain)
+                .help("Open the full StockDock window")
 
                 Button(action: { NSApp.terminate(nil) }) {
                     Image(systemName: "power")
@@ -163,8 +213,9 @@ struct ContentView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(nsColor: .controlBackgroundColor))
+            .background(DS.ground)
         }
+        .tint(DS.brand)
         .environment(\.addHoldingAction, AddHoldingAction { portfolioId in
             addHoldingPortfolioId = portfolioId
         })
