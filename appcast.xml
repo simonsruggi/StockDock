@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.0</title>
-            <pubDate>Thu, 16 Jul 2026 12:02:50 +0200</pubDate>
-            <sparkle:version>23</sparkle:version>
-            <sparkle:shortVersionString>1.9.0</sparkle:shortVersionString>
+            <title>Version 1.9.1</title>
+            <pubDate>Thu, 16 Jul 2026 15:40:46 +0200</pubDate>
+            <sparkle:version>24</sparkle:version>
+            <sparkle:shortVersionString>1.9.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -18,23 +18,21 @@
     ul { padding-left: 20px; margin: 4px 0; }
     li { margin-bottom: 4px; }
 </style>
-<h3>New: the full desktop window</h3>
+<h3>Improved: a clearer watchlist</h3>
 <ul>
-    <li><b>Try the new desktop app</b> — StockDock now has a complete window, not just the menu-bar popover. Open the popover and click the <b>“Open”</b> button to try the new view: News, Watchlist, Portfolios and Settings in a spacious, redesigned interface. Everything stays in sync with the menu bar.</li>
+    <li><b>Every price now shows its own % move right below it</b> — the regular price carries today's change, the after-hours price carries the pre/post-market change. No more guessing which percentage belongs to which number.</li>
+    <li><b>The live session leads</b> — during pre/post-market the after-hours price and its % move come forward, while the previous close steps back to context. In regular hours it's the other way around, so what's moving <i>now</i> always reads first.</li>
+    <li><b>Sort by what you see</b> — clicking a column header sorts by that column's % move (not the raw after-hours price). Biggest movers on top.</li>
 </ul>
-<h3>Added</h3>
+<h3>Fixed</h3>
 <ul>
-    <li><b>Watchlist — Price &amp; After-hours side by side</b> — separate columns for the regular price and the pre/post-market price (with its own % move). Every column is sortable.</li>
-    <li><b>Search your news</b> — filter stories by headline, ticker or publisher.</li>
-    <li><b>Add to portfolio from a stock’s detail</b> — open any symbol and add it as a position in one click.</li>
-    <li><b>More price precision</b> — forex pairs and sub-dollar prices now show extra decimals (e.g. 0.7119 instead of 0.71).</li>
-    <li><b>Decimal controls</b> — choose how many decimals to show for percentages and for values, and a menu-bar option to hide the percentage entirely.</li>
+    <li><b>“Show extended hours” now works in the watchlist</b> — turning it off hides the after-hours column and shows only regular market values.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.0/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.1/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="LxNIQgq+OfuOSfYfye01J0S1OCZhJYf3ZPJFee082WNFjNdDvWFOsROhlCtmjfvUg+/5XhyIiKAa9J0mDahXDw=="
-                       length="9405345"/>
+                       sparkle:edSignature="iCZME0Tx5AUiL7DTK6pxNPzw7jb/OYMjocQXA+9RWH3bATxRfT4bQN3Gh9jDcLPCZfUO3/tggzKk9b8fQrltBg=="
+                       length="9408831"/>
         </item>
     </channel>
 </rss>
