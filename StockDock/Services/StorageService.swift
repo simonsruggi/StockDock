@@ -382,6 +382,23 @@ class StorageService: ObservableObject {
         }
     }
 
+    /// Orders rows by their pre/post-market % move (the meaningful figure during
+    /// extended hours), NOT by the raw extended-hours price. Rows without an
+    /// extended-hours quote (`nil` percent) always sink to the bottom, regardless
+    /// of sort direction. Descending puts the biggest movers first.
+    nonisolated static func sortedByExtendedPercent<Row>(
+        _ rows: [Row], ascending: Bool, percent: (Row) -> Double?
+    ) -> [Row] {
+        rows.sorted { a, b in
+            switch (percent(a), percent(b)) {
+            case let (x?, y?): return ascending ? x < y : x > y
+            case (_?, nil):    return true   // a has ext data, b doesn't → a first
+            case (nil, _?):    return false  // b has ext data → b first
+            case (nil, nil):   return false
+            }
+        }
+    }
+
     static func currencySymbol(for code: String) -> String {
         switch code {
         case "EUR": return "€"

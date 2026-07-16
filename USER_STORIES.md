@@ -17,6 +17,9 @@
 - [x] Search stocks by symbol, name or ISIN
 - [x] Add/remove stocks from the watchlist
 - [x] Current price, daily change %, extended hours prices
+- [x] Each price is paired with its own % move in the same cell (Price → today's %, After hrs → pre/post %), same baseline so they always agree
+- [x] Session-aware hierarchy: during pre/post-market the After-hrs price/% reads first (ink + coloured pill) and the regular price dims to context; during regular hours it's the reverse
+- [x] Column headers sort by the % you see — Price sorts by today's %, After hrs by the pre/post % move (never by the raw extended price)
 - [x] Local filter by symbol, name or ISIN
 - [x] Auto-sort by daily performance (best on top)
 - [x] PRE (orange) / POST (purple) badges for extended hours

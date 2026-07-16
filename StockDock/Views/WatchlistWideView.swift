@@ -8,7 +8,7 @@ struct WatchlistWideView: View {
     @EnvironmentObject var storageService: StorageService
     @Binding var showSearch: Bool
 
-    enum SortKey { case order, symbol, name, price, extPrice, changePercent }
+    enum SortKey { case order, symbol, name, changePercent, extChangePercent }
 
     @State private var filter = ""
     @State private var filterFocused = false
@@ -67,6 +67,14 @@ struct WatchlistWideView: View {
         return sorted.filter { $0.symbol.lowercased().contains(f) || $0.name.lowercased().contains(f) }
     }
 
+    /// True when any watchlist quote is trading pre/post-market. Drives the row
+    /// hierarchy: during extended hours the After-hrs price/% reads first and the
+    /// regular price dims to context; during regular hours it's the reverse.
+    private var extendedSession: Bool {
+        storageService.showExtendedHours &&
+        storageService.watchlist.contains { stockService.quotes[$0]?.isExtendedHours == true }
+    }
+
     private func sortedRows() -> [WatchRow] {
         let base = rows
         let asc = sortAsc
@@ -77,18 +85,14 @@ struct WatchlistWideView: View {
         case .order:         return asc ? base : base.reversed()
         case .symbol:        return by { $0.symbol }
         case .name:          return by { $0.name }
-        case .price:         return by { $0.price }
         case .changePercent: return by { $0.changePercent }
-        case .extPrice:
-            // Rows without an extended-hours price sort to the bottom either way.
-            return base.sorted { a, b in
-                switch (a.extPrice, b.extPrice) {
-                case let (x?, y?): return asc ? x < y : x > y
-                case (_?, nil):    return true
-                case (nil, _?):    return false
-                case (nil, nil):   return false
-                }
-            }
+        case .extChangePercent:
+            // The After-hrs column is hidden when Extended Hours is off, so its
+            // sort key would be stranded — fall back to the manual order.
+            guard storageService.showExtendedHours else { return asc ? base : base.reversed() }
+            // Sort by the pre/post-market % move, not the raw extended price.
+            // Rows without an extended-hours quote sink to the bottom either way.
+            return StorageService.sortedByExtendedPercent(base, ascending: asc) { $0.extChangePercent }
         }
     }
 
@@ -189,6 +193,8 @@ struct WatchlistWideView: View {
                 LazyVStack(spacing: 0) {
                     ForEach(Array(visibleRows.enumerated()), id: \.element.id) { idx, row in
                         WatchRowView(row: row,
+                                     showExtended: storageService.showExtendedHours,
+                                     extendedSession: extendedSession,
                                      percentDecimals: storageService.percentDecimals,
                                      valueDecimals: storageService.valueDecimals,
                                      onOpen: { detailSymbol = DetailTarget(symbol: row.symbol) },
@@ -207,9 +213,12 @@ struct WatchlistWideView: View {
         HStack(spacing: WCol.spacing) {
             headerCell("Symbol", .symbol, width: WCol.symbol, align: .leading)
             headerCell("Name", .name, width: nil, align: .leading)
-            headerCell("Price", .price, width: WCol.price, align: .trailing)
-            headerCell("After hrs", .extPrice, width: WCol.ext, align: .trailing)
-            headerCell("Change", .changePercent, width: WCol.change, align: .trailing)
+            headerCell("Price", .changePercent, width: WCol.price, align: .trailing,
+                       help: "Sort by today's % change")
+            if storageService.showExtendedHours {
+                headerCell("After hrs", .extChangePercent, width: WCol.ext, align: .trailing,
+                           help: "Sort by the pre/post-market % move")
+            }
             Text("Trend").font(DS.label).foregroundStyle(DS.inkTertiary).frame(width: WCol.trend)
             Text("52-week").font(DS.label).foregroundStyle(DS.inkTertiary).frame(width: WCol.range, alignment: .leading)
         }
@@ -217,7 +226,8 @@ struct WatchlistWideView: View {
     }
 
     @ViewBuilder
-    private func headerCell(_ title: String, _ key: SortKey, width: CGFloat?, align: Alignment) -> some View {
+    private func headerCell(_ title: String, _ key: SortKey, width: CGFloat?, align: Alignment,
+                            help: LocalizedStringKey = "") -> some View {
         Button { withAnimation(.easeOut(duration: 0.15)) { toggleSort(key) } } label: {
             HStack(spacing: 3) {
                 if align == .trailing { Spacer(minLength: 0) }
@@ -233,6 +243,7 @@ struct WatchlistWideView: View {
         }
         .buttonStyle(.plain)
         .frame(maxWidth: width == nil ? .infinity : nil, alignment: align)
+        .help(help)
     }
 
     @ViewBuilder
@@ -283,9 +294,8 @@ struct WatchlistWideView: View {
 /// File-scope `private` = visible to both `WatchlistWideView` and `WatchRowView`.
 private enum WCol {
     static let symbol: CGFloat = 128
-    static let price: CGFloat = 88
-    static let ext: CGFloat = 112
-    static let change: CGFloat = 104
+    static let price: CGFloat = 104
+    static let ext: CGFloat = 116
     static let trend: CGFloat = 56
     static let range: CGFloat = 100
     static let spacing: CGFloat = 12
@@ -294,6 +304,8 @@ private enum WCol {
 /// One custom watchlist row: hover tint, click-to-open, right-click actions.
 private struct WatchRowView<Menu: View>: View {
     let row: WatchlistWideView.WatchRow
+    let showExtended: Bool
+    let extendedSession: Bool
     let percentDecimals: Int
     let valueDecimals: Int
     let onOpen: () -> Void
@@ -303,6 +315,32 @@ private struct WatchRowView<Menu: View>: View {
     /// Price decimals honoring the manual override (Auto = smart per #10).
     private func priceDec(_ price: Double) -> Int {
         valueDecimals >= 0 ? valueDecimals : StorageService.priceDecimals(symbol: row.symbol, price: price)
+    }
+
+    /// A price stacked over its own % move (same baseline, so they always agree).
+    /// `emphasised` = the live session: the price goes ink-dark and the % becomes
+    /// a coloured pill. Otherwise both dim so the active session reads first.
+    @ViewBuilder
+    private func pairedCell(price: Double, pct: Double?, label: String?, emphasised: Bool) -> some View {
+        VStack(alignment: .trailing, spacing: 2) {
+            Text("\(StorageService.currencySymbol(for: row.currency))\(StorageService.formatNumber(price, decimals: priceDec(price)))")
+                .font(DS.figure)
+                .foregroundStyle(emphasised ? DS.ink : DS.inkTertiary)
+                .contentTransition(.numericText())
+            if let pct {
+                HStack(spacing: 4) {
+                    if let label, !label.isEmpty {
+                        Text(LocalizedStringKey(label)).font(DS.micro).foregroundStyle(DS.inkTertiary)
+                    }
+                    if emphasised {
+                        ChangePill(value: pct, text: String(format: "%+.\(percentDecimals)f%%", pct))
+                    } else {
+                        Text(String(format: "%+.\(percentDecimals)f%%", pct))
+                            .font(DS.micro).foregroundStyle(DS.pnlColor(pct).opacity(0.55))
+                    }
+                }
+            }
+        }
     }
 
     var body: some View {
@@ -324,54 +362,32 @@ private struct WatchRowView<Menu: View>: View {
                     .font(DS.body).foregroundStyle(DS.inkSecondary).lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                // Price
+                // Regular price + today's % move. Emphasised when the regular
+                // session is the live one; dims to context during extended hours.
                 Group {
                     if row.loaded {
-                        Text("\(StorageService.currencySymbol(for: row.currency))\(StorageService.formatNumber(row.price, decimals: priceDec(row.price)))")
-                            .font(DS.figure).foregroundStyle(DS.ink)
-                            .contentTransition(.numericText())
+                        pairedCell(price: row.price, pct: row.changePercent,
+                                   label: nil, emphasised: !extendedSession)
                     } else {
                         DSSpinner(size: 12)
                     }
                 }
                 .frame(width: WCol.price, alignment: .trailing)
 
-                // After-hours / pre-market price + its own % move
-                Group {
-                    if let ext = row.extPrice {
-                        VStack(alignment: .trailing, spacing: 1) {
-                            Text("\(StorageService.currencySymbol(for: row.currency))\(StorageService.formatNumber(ext, decimals: priceDec(ext)))")
-                                .font(DS.figure).foregroundStyle(DS.inkSecondary)
-                                .contentTransition(.numericText())
-                            HStack(spacing: 4) {
-                                Text(LocalizedStringKey(row.extLabel))
-                                    .font(DS.micro).foregroundStyle(DS.inkTertiary)
-                                if let p = row.extChangePercent {
-                                    Text(String(format: "%+.\(percentDecimals)f%%", p))
-                                        .font(DS.micro).foregroundStyle(DS.pnlColor(p))
-                                }
-                            }
+                // After-hours price + its pre/post % move. Only shown when the
+                // Extended Hours setting is on; emphasised during extended hours
+                // so the live move reads first.
+                if showExtended {
+                    Group {
+                        if let ext = row.extPrice {
+                            pairedCell(price: ext, pct: row.extChangePercent,
+                                       label: row.extLabel, emphasised: extendedSession)
+                        } else {
+                            Text("—").font(DS.figure).foregroundStyle(DS.inkTertiary)
                         }
-                    } else {
-                        Text("—").font(DS.figure).foregroundStyle(DS.inkTertiary)
                     }
+                    .frame(width: WCol.ext, alignment: .trailing)
                 }
-                .frame(width: WCol.ext, alignment: .trailing)
-
-                // Change
-                Group {
-                    if row.loaded {
-                        VStack(alignment: .trailing, spacing: 2) {
-                            ChangePill(value: row.changePercent,
-                                       text: String(format: "%+.\(percentDecimals)f%%", row.changePercent))
-                            Text(StorageService.formatAmount(row.change, symbol: StorageService.currencySymbol(for: row.currency), signed: true))
-                                .font(DS.micro).foregroundStyle(DS.inkTertiary)
-                        }
-                    } else {
-                        Text("—").font(DS.figure).foregroundStyle(DS.inkTertiary)
-                    }
-                }
-                .frame(width: WCol.change, alignment: .trailing)
 
                 // Trend sparkline
                 Sparkline(symbol: row.symbol).frame(width: WCol.trend)
