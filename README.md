@@ -32,11 +32,20 @@ brew install simonsruggi/tap/stockdock
 
 > ⭐️ **Using StockDock?** It's free and there's no tracking, so a GitHub star is the only way I know anyone's out there. If the app is useful to you, please [star the repo](https://github.com/simonsruggi/StockDock) — it takes a second and genuinely helps. And if you'd like to fuel development, you can [**❤️ sponsor me**](https://github.com/sponsors/simonsruggi) — every feature stays free for everyone.
 
+## 🆕 New in 1.9.0 — a full desktop app
+
+StockDock lives in your menu bar, but now it also opens into a complete desktop window. Click **Open** in the popover for your watchlist, portfolios, live charts, and news in one spacious view — everything stays in sync with the menu bar.
+
+<img src="screenshots/desktop.png" alt="StockDock desktop window — portfolio overview with value chart, P&L, allocation and movers" width="100%">
+
+Also new: separate **Price** and **After-hours** columns in the watchlist (each sortable), **news search** by headline or ticker, add-to-portfolio straight from a stock's detail, sharper **forex / sub-dollar** price precision, and adjustable decimal places for percentages and values.
+
 ## Why StockDock?
 
 - 🆓 **Truly free & open source** — no paid tiers, no premium lock, no subscription, ever.
 - 🔒 **Private by design** — no account, no login, no analytics, no telemetry. Your watchlist and portfolio never leave your Mac.
 - ⚡️ **Live in your menu bar** — real-time P&L and prices without opening a single browser tab.
+- 🖥️ **Full desktop app too** — open a spacious window for watchlist, portfolios, charts, and news whenever you want more room.
 - 🌍 **Multi-currency** — track holdings in mixed currencies and see totals converted to yours, with historical rates on your cost basis.
 - 🔔 **Alerts that reach you** — native macOS notifications plus optional Discord / Slack webhooks.
 - 🍎 **Native & lightweight** — pure SwiftUI, universal binary (Apple Silicon + Intel), auto-updating via Sparkle.
@@ -47,6 +56,12 @@ Stocks, ETFs, indices (S&P 500, NASDAQ…), crypto, and forex — anything with 
 
 ## Screenshots
 
+### Desktop window
+
+![Desktop window](screenshots/desktop.png)
+
+### Menu bar popover
+
 | Menu Bar | Watchlist | Portfolios | Settings |
 |---|---|---|---|
 | ![Menu Bar](screenshots/menubar.png) | ![Watchlist](screenshots/watchlist.png) | ![Portfolios](screenshots/portfolio.png) | ![Settings](screenshots/settings.png) |
@@ -54,7 +69,9 @@ Stocks, ETFs, indices (S&P 500, NASDAQ…), crypto, and forex — anything with 
 ## Features
 
 - **Menu Bar P&L** — See your portfolio performance at a glance, always visible
-- **Watchlist** — Track any stock by symbol, name, or ISIN with live prices and daily change
+- **Desktop Window** — Open a full app window from the menu bar: watchlist, portfolios, live charts, and news, all in sync
+- **Watchlist** — Track any stock by symbol, name, or ISIN with live prices and daily change, with separate Price and after-hours columns you can sort
+- **News Search** — Filter market news by headline, ticker, or publisher
 - **52-Week Range** — A range bar in the watchlist showing where the price sits between its yearly low and high
 - **Portfolios** — Create multiple portfolios with holdings, average cost, purchase date, and P&L
 - **Long & Short + Leverage** — Track short positions and leveraged holdings with correct P&L math (optional, off by default)
