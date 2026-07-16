@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.1</title>
-            <pubDate>Thu, 16 Jul 2026 15:40:46 +0200</pubDate>
-            <sparkle:version>24</sparkle:version>
-            <sparkle:shortVersionString>1.9.1</sparkle:shortVersionString>
+            <title>Version 1.9.2</title>
+            <pubDate>Thu, 16 Jul 2026 20:01:52 +0200</pubDate>
+            <sparkle:version>25</sparkle:version>
+            <sparkle:shortVersionString>1.9.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -18,21 +18,20 @@
     ul { padding-left: 20px; margin: 4px 0; }
     li { margin-bottom: 4px; }
 </style>
-<h3>Improved: a clearer watchlist</h3>
+<h3>Your app, your way</h3>
 <ul>
-    <li><b>Every price now shows its own % move right below it</b> — the regular price carries today's change, the after-hours price carries the pre/post-market change. No more guessing which percentage belongs to which number.</li>
-    <li><b>The live session leads</b> — during pre/post-market the after-hours price and its % move come forward, while the previous close steps back to context. In regular hours it's the other way around, so what's moving <i>now</i> always reads first.</li>
-    <li><b>Sort by what you see</b> — clicking a column header sorts by that column's % move (not the raw after-hours price). Biggest movers on top.</li>
+    <li><b>Dark mode is back</b> — Settings › Appearance now has a Theme control: follow the system, or force Light or Dark. No more being stuck on the bright theme.</li>
+    <li><b>Hide the News tab</b> — a new "Show News tab" switch removes the Home/News feed entirely. For the record, the feed never ran in the background: it only fetched while its tab was open, throttled, no battery or data drain when hidden.</li>
 </ul>
 <h3>Fixed</h3>
 <ul>
-    <li><b>“Show extended hours” now works in the watchlist</b> — turning it off hides the after-hours column and shows only regular market values.</li>
+    <li><b>Tab bar label</b> — the Settings tab no longer shows a stray "Portfolios" label next to it.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.1/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.2/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="iCZME0Tx5AUiL7DTK6pxNPzw7jb/OYMjocQXA+9RWH3bATxRfT4bQN3Gh9jDcLPCZfUO3/tggzKk9b8fQrltBg=="
-                       length="9408831"/>
+                       sparkle:edSignature="bGe5Q5Ux46W3/oMKBgPJvTEr0zCtdEYQD5eMc+Ge6I9mGvnMbdrIRSXSknEGLCeVGo2r1q6i4MFumVaEZRwsDg=="
+                       length="9455932"/>
         </item>
     </channel>
 </rss>
