@@ -10,29 +10,47 @@ struct SettingsView: View {
     @State private var showClearAlerts = false
     @State private var showClearPortfolioNotifs = false
 
+    // Collapsible category state — remembered across popover opens. General is
+    // open by default (theme/language live there); the rest start collapsed so
+    // the list is short and you drill into what you need.
+    @AppStorage("settings.group.general") private var groupGeneral = true
+    @AppStorage("settings.group.currency") private var groupCurrency = false
+    @AppStorage("settings.group.positions") private var groupPositions = false
+    @AppStorage("settings.group.watchlist") private var groupWatchlist = false
+    @AppStorage("settings.group.menubar") private var groupMenuBar = false
+    @AppStorage("settings.group.notifications") private var groupNotifications = false
+    @AppStorage("settings.group.about") private var groupAbout = false
+
+    /// Small secondary caption used throughout the settings list.
+    private func caption(_ text: String) -> some View {
+        Text(text)
+            .font(.inter(10, relativeTo: .caption))
+            .foregroundColor(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// Sub-section label inside a category (e.g. "Language" under "General").
+    private func subHeader(_ text: String) -> some View {
+        Text(text)
+            .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
+            .foregroundColor(.secondary)
+    }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                // MARK: - Language
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Language")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+            VStack(alignment: .leading, spacing: 4) {
+                // MARK: - General (language, appearance, font)
+                SettingsGroup(title: "General", icon: "gearshape", isExpanded: $groupGeneral) {
+                    subHeader("Language")
                     Picker("Language", selection: $storageService.appLanguage) {
                         ForEach(StorageService.supportedLanguages, id: \.code) { lang in
                             Text(lang.name).tag(lang.code)
                         }
                     }
                     .pickerStyle(.menu)
-                    Text("Choose the app's language. Default is English.")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                }
-                Divider()
+                    caption("Choose the app's language. Default is English.")
 
-                // MARK: - Appearance (issue #11)
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Appearance")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    subHeader("Appearance")
                     Picker("Theme", selection: Binding(
                         get: { storageService.appearanceMode },
                         set: { storageService.appearanceMode = $0 }
@@ -42,318 +60,12 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    Text("Follow the system, or force Light or Dark.")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-
+                    caption("Follow the system, or force Light or Dark.")
                     Toggle("Show News tab", isOn: $storageService.showNewsTab)
                         .toggleStyle(.switch)
-                    Text("The Home news feed is off by default when hidden — it only fetches while its tab is open (throttled, no background use).")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                }
-                Divider()
+                    caption("The Home news feed is off by default when hidden — it only fetches while its tab is open (throttled, no background use).")
 
-                // MARK: - Stock Price Currency
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Stock Price Currency")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    Picker("Price currency", selection: $storageService.stockPriceCurrency) {
-                        Text("Original").tag("")
-                        ForEach(StorageService.supportedCurrencies, id: \.self) { code in
-                            Text("\(StorageService.currencySymbol(for: code)) \(code)")
-                                .tag(code)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .onChange(of: storageService.stockPriceCurrency) {
-                        stockService.exchangeRates.removeAll()
-                        Task {
-                            await stockService.refreshAll(storageService: storageService)
-                        }
-                    }
-                    Text(storageService.stockPriceCurrency.isEmpty
-                         ? "Prices shown in their native currency"
-                         : "All prices converted to \(storageService.stockPriceCurrency)")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                }
-
-                Divider()
-
-                // MARK: - Portfolio Currency
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Portfolio Currency")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    Picker("Portfolio currency", selection: $storageService.preferredCurrency) {
-                        ForEach(StorageService.supportedCurrencies, id: \.self) { code in
-                            Text("\(StorageService.currencySymbol(for: code)) \(code)")
-                                .tag(code)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .onChange(of: storageService.preferredCurrency) {
-                        stockService.exchangeRates.removeAll()
-                        Task {
-                            await stockService.refreshAll(storageService: storageService)
-                        }
-                    }
-                    Text("Portfolio totals and P&L converted to \(storageService.preferredCurrency)")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                }
-
-                Divider()
-
-                // MARK: - Advanced Positions
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Advanced")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    Toggle("Enable short positions & leverage", isOn: $storageService.advancedPositions)
-                        .toggleStyle(.switch)
-                    Text("Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket.")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                }
-
-                Divider()
-
-                // MARK: - Extended Hours
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Market Hours")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    Toggle("Show extended hours (Pre/Post)", isOn: $storageService.showExtendedHours)
-                        .toggleStyle(.switch)
-                    Text("Show pre-market and after-hours prices")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                }
-
-                Divider()
-
-                // MARK: - Watchlist Display
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Watchlist Display")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    Toggle("Company name", isOn: $storageService.showCompanyName)
-                        .toggleStyle(.switch)
-                    Toggle("Day range (low – high)", isOn: $storageService.showDayRange)
-                        .toggleStyle(.switch)
-                    Toggle("52-week range bar", isOn: $storageService.show52WeekBar)
-                        .toggleStyle(.switch)
-                    Toggle("Absolute change value", isOn: $storageService.showAbsoluteChange)
-                        .toggleStyle(.switch)
-                    Text("Choose which details appear in each watchlist row")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                }
-
-                Divider()
-
-                // MARK: - Menu Bar Display
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Menu Bar Display")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    Picker("Display", selection: $storageService.menuBarDisplay) {
-                        Text("P&L (+321.09€)").tag("pnl")
-                        Text("P&L % (+2.3%)").tag("pnlPercent")
-                        Text("P&L + % (+321.09€ +2.3%)").tag("pnlFull")
-                        Text("Total Value (14396.67€)").tag("totalValue")
-                        Text("Best Stock (▲ AAPL +1.2%)").tag("bestStock")
-                        Text("Worst Stock (▼ TSLA -0.8%)").tag("worstStock")
-                        Text("Best & Worst").tag("bestWorst")
-                        Text("Portfolio (14396.67€ +1.2%)").tag("portfolioRecap")
-                        Text("Ticker (cycle watchlist)").tag("ticker")
-                        Text("Ticker + Portfolio (cycle)").tag("tickerPortfolio")
-                        Text("Icon Only").tag("icon")
-                    }
-                    .pickerStyle(.menu)
-                    Text("Choose what to show in the menu bar")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-
-                    HStack {
-                        Text("Percentage decimals")
-                        Spacer()
-                        Picker("", selection: $storageService.percentDecimals) {
-                            ForEach(0...4, id: \.self) { Text("\($0)").tag($0) }
-                        }
-                        .labelsHidden().pickerStyle(.menu).frame(width: 90)
-                    }
-                    Text("Digits after the decimal point in percentages (e.g. +2.34% with 2).")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-
-                    HStack {
-                        Text("Value decimals")
-                        Spacer()
-                        Picker("", selection: $storageService.valueDecimals) {
-                            Text("Auto").tag(-1)
-                            ForEach(0...4, id: \.self) { Text("\($0)").tag($0) }
-                        }
-                        .labelsHidden().pickerStyle(.menu).frame(width: 90)
-                    }
-                    Text("Prices & amounts. Auto keeps extra precision for forex / sub-dollar prices.")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-
-                    Toggle("Hide percentage change", isOn: $storageService.menuBarHidePercent)
-                    Text("Show only price / value in the menu bar, without the % change.")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-
-                    // Ticker-specific options (issue #8) — only relevant in ticker modes.
-                    if storageService.menuBarDisplay == "ticker" || storageService.menuBarDisplay == "tickerPortfolio" {
-                        Toggle("Show name instead of symbol", isOn: $storageService.tickerShowName)
-                        Text("Shows the readable name in the ticker (e.g. \"S&P 500\" instead of \"^GSPC\").")
-                            .font(.inter(10, relativeTo: .caption))
-                            .foregroundColor(.secondary)
-
-                        Picker("Ticker order", selection: $storageService.watchlistSort) {
-                            Text("As added").tag("manual")
-                            Text("By type (stocks, ETFs, indices…)").tag("type")
-                            Text("Alphabetical").tag("alpha")
-                        }
-                        .pickerStyle(.menu)
-                        Text("Order in which watchlist entries cycle in the menu bar.")
-                            .font(.inter(10, relativeTo: .caption))
-                            .foregroundColor(.secondary)
-                    }
-                }
-                Divider()
-
-                // MARK: - Menu Bar Colors
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Menu Bar Colors")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-
-                    Toggle("Use system text color", isOn: $storageService.menuBarUseSystemColor)
-                    Text("Always readable on any background. Up/down stays shown by + / − and ▲ ▼.")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-
-                    if !storageService.menuBarUseSystemColor {
-                        ColorPicker("Gain color", selection: Binding(
-                            get: { Color(nsColor: storageService.gainColor) },
-                            set: { storageService.gainColorHex = $0.hexString }
-                        ))
-                        ColorPicker("Loss color", selection: Binding(
-                            get: { Color(nsColor: storageService.lossColor) },
-                            set: { storageService.lossColorHex = $0.hexString }
-                        ))
-                        Button("Reset to default green/red") {
-                            storageService.gainColorHex = ""
-                            storageService.lossColorHex = ""
-                        }
-                        .font(.inter(10, relativeTo: .caption))
-                    }
-                }
-                Divider()
-
-                // MARK: - Notifications
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Notifications")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-
-                    // Channels (Discord / Slack webhook)
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Channels")
-                            .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
-                            .foregroundColor(.secondary)
-                        Toggle("Mirror notifications to a Discord/Slack webhook", isOn: $storageService.discordEnabled)
-                            .toggleStyle(.switch)
-                        TextField("https://discord.com/api/webhooks/… or hooks.slack.com/…", text: $storageService.discordWebhookURL)
-                            .textFieldStyle(.roundedBorder)
-                            .font(.inter(10, relativeTo: .caption))
-                            .disabled(!storageService.discordEnabled)
-                        let trimmed = storageService.discordWebhookURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                        if storageService.discordEnabled && !trimmed.isEmpty && !WebhookNotifier.isValid(trimmed) {
-                            Text("Not a valid Discord or Slack webhook URL (must be https).")
-                                .font(.inter(10, relativeTo: .caption))
-                                .foregroundColor(.red)
-                        } else {
-                            Text("Price alerts and portfolio notifications are also sent here.")
-                                .font(.inter(10, relativeTo: .caption))
-                                .foregroundColor(.secondary)
-                        }
-                        Button("Send test") {
-                            NotificationManager.shared.send(
-                                title: "StockDock test",
-                                body: "Webhook is working ✅",
-                                sentiment: .positive)
-                        }
-                        .controlSize(.small)
-                        .disabled(!storageService.discordEnabled || !WebhookNotifier.isValid(trimmed))
-                    }
-
-                    // Price alerts
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text("Price alerts")
-                                .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            if !storageService.alerts.isEmpty {
-                                Button(action: { showClearAlerts = true }) {
-                                    Text("Clear all")
-                                        .font(.inter(10, relativeTo: .caption))
-                                }
-                                .buttonStyle(.borderless)
-                                .foregroundColor(.red)
-                            }
-                        }
-                        if storageService.alerts.isEmpty {
-                            Text("No alerts. Right-click a stock in the watchlist to add one.")
-                                .font(.inter(10, relativeTo: .caption))
-                                .foregroundColor(.secondary)
-                        } else {
-                            ForEach(storageService.alerts) { alert in
-                                AlertRow(alert: alert)
-                            }
-                        }
-                    }
-
-                    // Portfolio notifications
-                    VStack(alignment: .leading, spacing: 6) {
-                        let withNotifs = storageService.portfolios.filter {
-                            !storageService.notifications(for: $0.id).isEmpty
-                        }
-                        HStack {
-                            Text("Portfolio notifications")
-                                .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            if !withNotifs.isEmpty {
-                                Button(action: { showClearPortfolioNotifs = true }) {
-                                    Text("Clear all")
-                                        .font(.inter(10, relativeTo: .caption))
-                                }
-                                .buttonStyle(.borderless)
-                                .foregroundColor(.red)
-                            }
-                        }
-                        if withNotifs.isEmpty {
-                            Text("None. Right-click a portfolio → “Notifications…” to add one.")
-                                .font(.inter(10, relativeTo: .caption))
-                                .foregroundColor(.secondary)
-                        } else {
-                            ForEach(withNotifs) { portfolio in
-                                Text(portfolio.name)
-                                    .font(.inter(10, weight: .medium, relativeTo: .caption))
-                                ForEach(storageService.notifications(for: portfolio.id)) { n in
-                                    PortfolioNotifRow(portfolioId: portfolio.id, notification: n)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Divider()
-
-                // MARK: - Font
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Font")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    subHeader("Font")
                     Picker("Font family", selection: $storageService.fontFamily) {
                         ForEach(FontRegistration.availableFonts, id: \.family) { font in
                             Text(font.label)
@@ -374,58 +86,268 @@ struct SettingsView: View {
                             .font(.inter(18, weight: .bold, relativeTo: .title2))
                             .foregroundColor(.secondary)
                     }
-                    Text("Size: \(storageService.fontSizeLevel)")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
+                    caption("Size: \(storageService.fontSizeLevel)")
                 }
 
-                Divider()
+                // MARK: - Currency
+                SettingsGroup(title: "Currency", icon: "eurosign.circle", isExpanded: $groupCurrency) {
+                    subHeader("Stock price currency")
+                    Picker("Price currency", selection: $storageService.stockPriceCurrency) {
+                        Text("Original").tag("")
+                        ForEach(StorageService.supportedCurrencies, id: \.self) { code in
+                            Text("\(StorageService.currencySymbol(for: code)) \(code)")
+                                .tag(code)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: storageService.stockPriceCurrency) {
+                        stockService.exchangeRates.removeAll()
+                        Task {
+                            await stockService.refreshAll(storageService: storageService)
+                        }
+                    }
+                    caption(storageService.stockPriceCurrency.isEmpty
+                            ? "Prices shown in their native currency"
+                            : "All prices converted to \(storageService.stockPriceCurrency)")
 
-                // MARK: - Updates
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Updates")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    subHeader("Portfolio currency")
+                    Picker("Portfolio currency", selection: $storageService.preferredCurrency) {
+                        ForEach(StorageService.supportedCurrencies, id: \.self) { code in
+                            Text("\(StorageService.currencySymbol(for: code)) \(code)")
+                                .tag(code)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: storageService.preferredCurrency) {
+                        stockService.exchangeRates.removeAll()
+                        Task {
+                            await stockService.refreshAll(storageService: storageService)
+                        }
+                    }
+                    caption("Portfolio totals and P&L converted to \(storageService.preferredCurrency)")
+                }
+
+                // MARK: - Positions & Market
+                SettingsGroup(title: "Positions & Market", icon: "chart.line.uptrend.xyaxis", isExpanded: $groupPositions) {
+                    Toggle("Enable short positions & leverage", isOn: $storageService.advancedPositions)
+                        .toggleStyle(.switch)
+                    caption("Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket.")
+
+                    Toggle("Show extended hours (Pre/Post)", isOn: $storageService.showExtendedHours)
+                        .toggleStyle(.switch)
+                    caption("Show pre-market and after-hours prices")
+                }
+
+                // MARK: - Watchlist Display
+                SettingsGroup(title: "Watchlist", icon: "list.bullet", isExpanded: $groupWatchlist) {
+                    Toggle("Company name", isOn: $storageService.showCompanyName)
+                        .toggleStyle(.switch)
+                    Toggle("Day range (low – high)", isOn: $storageService.showDayRange)
+                        .toggleStyle(.switch)
+                    Toggle("52-week range bar", isOn: $storageService.show52WeekBar)
+                        .toggleStyle(.switch)
+                    Toggle("Absolute change value", isOn: $storageService.showAbsoluteChange)
+                        .toggleStyle(.switch)
+                    caption("Choose which details appear in each watchlist row")
+                }
+
+                // MARK: - Menu Bar (display + colors)
+                SettingsGroup(title: "Menu Bar", icon: "menubar.rectangle", isExpanded: $groupMenuBar) {
+                    subHeader("Display")
+                    Picker("Display", selection: $storageService.menuBarDisplay) {
+                        Text("P&L (+321.09€)").tag("pnl")
+                        Text("P&L % (+2.3%)").tag("pnlPercent")
+                        Text("P&L + % (+321.09€ +2.3%)").tag("pnlFull")
+                        Text("Total Value (14396.67€)").tag("totalValue")
+                        Text("Best Stock (▲ AAPL +1.2%)").tag("bestStock")
+                        Text("Worst Stock (▼ TSLA -0.8%)").tag("worstStock")
+                        Text("Best & Worst").tag("bestWorst")
+                        Text("Portfolio (14396.67€ +1.2%)").tag("portfolioRecap")
+                        Text("Ticker (cycle watchlist)").tag("ticker")
+                        Text("Ticker + Portfolio (cycle)").tag("tickerPortfolio")
+                        Text("Icon Only").tag("icon")
+                    }
+                    .pickerStyle(.menu)
+                    caption("Choose what to show in the menu bar")
+
+                    HStack {
+                        Text("Percentage decimals")
+                        Spacer()
+                        Picker("", selection: $storageService.percentDecimals) {
+                            ForEach(0...4, id: \.self) { Text("\($0)").tag($0) }
+                        }
+                        .labelsHidden().pickerStyle(.menu).frame(width: 90)
+                    }
+                    caption("Digits after the decimal point in percentages (e.g. +2.34% with 2).")
+
+                    HStack {
+                        Text("Value decimals")
+                        Spacer()
+                        Picker("", selection: $storageService.valueDecimals) {
+                            Text("Auto").tag(-1)
+                            ForEach(0...4, id: \.self) { Text("\($0)").tag($0) }
+                        }
+                        .labelsHidden().pickerStyle(.menu).frame(width: 90)
+                    }
+                    caption("Prices & amounts. Auto keeps extra precision for forex / sub-dollar prices.")
+
+                    Toggle("Hide percentage change", isOn: $storageService.menuBarHidePercent)
+                    caption("Show only price / value in the menu bar, without the % change.")
+
+                    // Ticker-specific options (issue #8) — only relevant in ticker modes.
+                    if storageService.menuBarDisplay == "ticker" || storageService.menuBarDisplay == "tickerPortfolio" {
+                        Toggle("Show name instead of symbol", isOn: $storageService.tickerShowName)
+                        caption("Shows the readable name in the ticker (e.g. \"S&P 500\" instead of \"^GSPC\").")
+
+                        Picker("Ticker order", selection: $storageService.watchlistSort) {
+                            Text("As added").tag("manual")
+                            Text("By type (stocks, ETFs, indices…)").tag("type")
+                            Text("Alphabetical").tag("alpha")
+                        }
+                        .pickerStyle(.menu)
+                        caption("Order in which watchlist entries cycle in the menu bar.")
+                    }
+
+                    subHeader("Colors")
+                    Toggle("Use system text color", isOn: $storageService.menuBarUseSystemColor)
+                    caption("Always readable on any background. Up/down stays shown by + / − and ▲ ▼.")
+
+                    if !storageService.menuBarUseSystemColor {
+                        ColorPicker("Gain color", selection: Binding(
+                            get: { Color(nsColor: storageService.gainColor) },
+                            set: { storageService.gainColorHex = $0.hexString }
+                        ))
+                        ColorPicker("Loss color", selection: Binding(
+                            get: { Color(nsColor: storageService.lossColor) },
+                            set: { storageService.lossColorHex = $0.hexString }
+                        ))
+                        Button("Reset to default green/red") {
+                            storageService.gainColorHex = ""
+                            storageService.lossColorHex = ""
+                        }
+                        .font(.inter(10, relativeTo: .caption))
+                    }
+                }
+
+                // MARK: - Notifications
+                SettingsGroup(title: "Notifications", icon: "bell", isExpanded: $groupNotifications) {
+                    // Channels (Discord / Slack webhook)
+                    subHeader("Channels")
+                    Toggle("Mirror notifications to a Discord/Slack webhook", isOn: $storageService.discordEnabled)
+                        .toggleStyle(.switch)
+                    TextField("https://discord.com/api/webhooks/… or hooks.slack.com/…", text: $storageService.discordWebhookURL)
+                        .textFieldStyle(.roundedBorder)
+                        .font(.inter(10, relativeTo: .caption))
+                        .disabled(!storageService.discordEnabled)
+                    let trimmed = storageService.discordWebhookURL.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if storageService.discordEnabled && !trimmed.isEmpty && !WebhookNotifier.isValid(trimmed) {
+                        Text("Not a valid Discord or Slack webhook URL (must be https).")
+                            .font(.inter(10, relativeTo: .caption))
+                            .foregroundColor(.red)
+                    } else {
+                        caption("Price alerts and portfolio notifications are also sent here.")
+                    }
+                    Button("Send test") {
+                        NotificationManager.shared.send(
+                            title: "StockDock test",
+                            body: "Webhook is working ✅",
+                            sentiment: .positive)
+                    }
+                    .controlSize(.small)
+                    .disabled(!storageService.discordEnabled || !WebhookNotifier.isValid(trimmed))
+
+                    // Price alerts
+                    HStack {
+                        subHeader("Price alerts")
+                        Spacer()
+                        if !storageService.alerts.isEmpty {
+                            Button(action: { showClearAlerts = true }) {
+                                Text("Clear all")
+                                    .font(.inter(10, relativeTo: .caption))
+                            }
+                            .buttonStyle(.borderless)
+                            .foregroundColor(.red)
+                        }
+                    }
+                    if storageService.alerts.isEmpty {
+                        caption("No alerts. Right-click a stock in the watchlist to add one.")
+                    } else {
+                        ForEach(storageService.alerts) { alert in
+                            AlertRow(alert: alert)
+                        }
+                    }
+
+                    // Portfolio notifications
+                    let withNotifs = storageService.portfolios.filter {
+                        !storageService.notifications(for: $0.id).isEmpty
+                    }
+                    HStack {
+                        subHeader("Portfolio notifications")
+                        Spacer()
+                        if !withNotifs.isEmpty {
+                            Button(action: { showClearPortfolioNotifs = true }) {
+                                Text("Clear all")
+                                    .font(.inter(10, relativeTo: .caption))
+                            }
+                            .buttonStyle(.borderless)
+                            .foregroundColor(.red)
+                        }
+                    }
+                    if withNotifs.isEmpty {
+                        caption("None. Right-click a portfolio → “Notifications…” to add one.")
+                    } else {
+                        ForEach(withNotifs) { portfolio in
+                            Text(portfolio.name)
+                                .font(.inter(10, weight: .medium, relativeTo: .caption))
+                            ForEach(storageService.notifications(for: portfolio.id)) { n in
+                                PortfolioNotifRow(portfolioId: portfolio.id, notification: n)
+                            }
+                        }
+                    }
+                }
+
+                // MARK: - About & Data (updates, sponsor, reset)
+                SettingsGroup(title: "About & Data", icon: "info.circle", isExpanded: $groupAbout) {
+                    subHeader("Updates")
                     Button("Check for Updates...") {
                         NSApp.setActivationPolicy(.regular)
                         NSApp.activate(ignoringOtherApps: true)
                         updaterViewModel.checkForUpdates()
                     }
                     .disabled(!updaterViewModel.canCheckForUpdates)
-                }
 
-                Divider()
-
-                // MARK: - Support / Sponsor
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Enjoying StockDock?")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
-                    Text("StockDock is free and open source — and always will be. If it's useful to you, you can sponsor its development. Every feature stays free for everyone.")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                    Button {
-                        if let url = URL(string: "https://github.com/sponsors/simonsruggi") {
-                            NSWorkspace.shared.open(url)
+                    subHeader("Enjoying StockDock?")
+                    caption("StockDock is free and open source — and always will be. If you'd like to support me, you can become a sponsor, or simply star the repo. Both help, and every feature stays free for everyone.")
+                    HStack(spacing: 8) {
+                        Button {
+                            if let url = URL(string: "https://github.com/sponsors/simonsruggi") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        } label: {
+                            Label("Become a Sponsor", systemImage: "heart.fill")
                         }
-                    } label: {
-                        Label("Become a Sponsor", systemImage: "heart.fill")
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .tint(.pink)
+
+                        Button {
+                            if let url = URL(string: "https://github.com/simonsruggi/StockDock") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        } label: {
+                            Label("Star on GitHub", systemImage: "star.fill")
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.small)
+                        .tint(.yellow)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.small)
-                    .tint(.pink)
-                }
 
-                Divider()
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Reset")
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    subHeader("Reset")
                     Button("Reset to Default Settings") {
                         showResetAlert = true
                     }
                     .foregroundColor(.red)
-                    Text("This will not erase your portfolios or watchlist")
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
+                    caption("This will not erase your portfolios or watchlist")
                 }
             }
             .padding(16)
@@ -460,6 +382,53 @@ struct SettingsView: View {
         }
     }
 
+}
+
+/// A collapsible settings category: a tappable header (icon + title + chevron)
+/// that expands to reveal its controls. Keeps the (long) settings list short —
+/// you drill into the category you need. Expansion state is owned by the caller
+/// (persisted via @AppStorage) so it survives popover reopenings.
+struct SettingsGroup<Content: View>: View {
+    let title: String
+    let icon: String
+    @Binding var isExpanded: Bool
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.22)) { isExpanded.toggle() }
+            } label: {
+                HStack(spacing: 9) {
+                    Image(systemName: icon)
+                        .font(.inter(11, relativeTo: .caption))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 16)
+                    Text(title)
+                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.inter(10, weight: .semibold, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                        .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                }
+                .contentShape(Rectangle())
+                .padding(.vertical, 9)
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    content()
+                }
+                .padding(.leading, 25)
+                .padding(.bottom, 10)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            Divider()
+        }
+    }
 }
 
 /// A single alert row in Settings: enable/re-arm toggle, description and delete.

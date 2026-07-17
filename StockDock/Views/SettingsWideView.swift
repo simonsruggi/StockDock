@@ -313,19 +313,35 @@ struct SettingsWideView: View {
             }
             SettingDivider()
             SettingRow("StockDock is free and open source",
-                       caption: "If it's useful to you, you can sponsor its development") {
-                Button {
-                    if let url = URL(string: "https://github.com/sponsors/simonsruggi") { NSWorkspace.shared.open(url) }
-                } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "heart.fill").font(.system(size: 9))
-                        Text("Sponsor").font(.inter(11.5, weight: .semibold, relativeTo: .caption))
+                       caption: "If you'd like to support me, become a sponsor — or simply star the repo. Both help, and every feature stays free.") {
+                HStack(spacing: 8) {
+                    Button {
+                        if let url = URL(string: "https://github.com/sponsors/simonsruggi") { NSWorkspace.shared.open(url) }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "heart.fill").font(.system(size: 9))
+                            Text("Sponsor").font(.inter(11.5, weight: .semibold, relativeTo: .caption)).lineLimit(1)
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12).padding(.vertical, 5)
+                        .background(Capsule().fill(Color(red: 0.86, green: 0.30, blue: 0.46)))
                     }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 12).padding(.vertical, 5)
-                    .background(Capsule().fill(Color(red: 0.86, green: 0.30, blue: 0.46)))
+                    .buttonStyle(.plain)
+
+                    Button {
+                        if let url = URL(string: "https://github.com/simonsruggi/StockDock") { NSWorkspace.shared.open(url) }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: "star.fill").font(.system(size: 9))
+                            Text("Star").font(.inter(11.5, weight: .semibold, relativeTo: .caption)).lineLimit(1)
+                        }
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12).padding(.vertical, 5)
+                        .background(Capsule().fill(Color(red: 0.92, green: 0.70, blue: 0.15)))
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
+                .fixedSize()
             }
             SettingDivider()
             SettingRow("Reset", caption: "Portfolios and watchlist are not affected") {

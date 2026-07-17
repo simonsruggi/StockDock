@@ -39,6 +39,16 @@ struct PortfolioOverview: View {
             case .all: return nil
             }
         }
+        /// Suffix for the hero pill, describing the span it measures.
+        var changeLabel: String {
+            switch self {
+            case .day: return "today"
+            case .week: return "past 7d"
+            case .month: return "past 1M"
+            case .year: return "past 1Y"
+            case .all: return "all-time"
+            }
+        }
     }
     @State private var chartRange: ChartRange = .all
     @State private var hoveredSlice: String?
@@ -211,38 +221,19 @@ struct PortfolioOverview: View {
         // recomputed 5× (badge, picker, chart points, chart dash), which showed
         // up as lag when switching portfolios (each switch rebuilds this view).
         let ds = displaySeries
-        return ZStack(alignment: .topLeading) {
-            // Chart layer — full bleed, occupying the bottom of the card.
-            VStack(spacing: 0) {
-                Spacer(minLength: 88)
-                heroChart(ds)
-            }
-
-            // Scrim: keep the value/P&L text readable when the curve rises into it.
-            LinearGradient(colors: [DS.card, DS.card.opacity(0.92), DS.card.opacity(0.0)],
-                           startPoint: .top, endPoint: .init(x: 0.5, y: 0.55))
-                .allowsHitTesting(false)
-
-            // Content overlay.
+        // Pill reflects the SELECTED range: change across the drawn curve. When
+        // the curve is too sparse to span a period (e.g. day one), fall back to
+        // the day-over-day figure so the pill is never empty.
+        let periodValue = PortfolioPeriodChange.value(ds.points) ?? dayChangeValue
+        let periodPercent = PortfolioPeriodChange.percent(ds.points) ?? dayChangePercent
+        let periodLabel = PortfolioPeriodChange.percent(ds.points) != nil ? chartRange.changeLabel : "today"
+        // Header sits ABOVE the chart (not over it) so the curve can never rise
+        // behind the value/pill text — on 24H the peak often lands top-left, right
+        // where the text is, and no Y-domain trick can avoid that overlap.
+        return VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        SectionLabel("\(title) value")
-                        Text(StorageService.formatAmount(totalValue, symbol: currencySymbol, decimals: storageService.amountDecimals))
-                            .font(DS.display).tracking(-0.5)
-                            .foregroundStyle(DS.ink)
-                            .contentTransition(.numericText())
-                            .animation(.spring(response: 0.5, dampingFraction: 0.9), value: totalValue)
-                        HStack(spacing: 10) {
-                            ChangePill(value: dayChangeValue,
-                                       text: String(format: "%+.\(decimals)f%% today", dayChangePercent))
-                            Text(String(format: "%@ (%+.\(decimals)f%%) all-time",
-                                        StorageService.formatAmount(totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
-                                        totalPnlPercent))
-                                .font(DS.caption.monospacedDigit())
-                                .foregroundStyle(DS.pnlColor(totalPnl))
-                        }
-                    }
+                    SectionLabel("\(title) value")
                     Spacer()
                     HStack(spacing: 10) {
                         if ds.isEstimated, !ds.points.isEmpty {
@@ -255,10 +246,29 @@ struct PortfolioOverview: View {
                         if !ds.points.isEmpty { rangePicker }
                     }
                 }
+                Text(StorageService.formatAmount(totalValue, symbol: currencySymbol, decimals: storageService.amountDecimals))
+                    .font(DS.display).tracking(-0.5)
+                    .foregroundStyle(DS.ink)
+                    .contentTransition(.numericText())
+                    .animation(.spring(response: 0.5, dampingFraction: 0.9), value: totalValue)
+                HStack(spacing: 10) {
+                    ChangePill(value: periodValue,
+                               text: String(format: "%+.\(decimals)f%% %@", periodPercent, periodLabel))
+                    Text(String(format: "%@ (%+.\(decimals)f%%) all-time",
+                                StorageService.formatAmount(totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
+                                totalPnlPercent))
+                        .font(DS.caption.monospacedDigit())
+                        .foregroundStyle(DS.pnlColor(totalPnl))
+                }
             }
-            .padding(24)
+            .padding(.horizontal, 24)
+            .padding(.top, 22)
+            .padding(.bottom, 14)
+
+            heroChart(ds)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(height: 260)
+        .frame(height: 300)
         .frame(maxWidth: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .premiumCard()
@@ -293,8 +303,8 @@ struct PortfolioOverview: View {
     private func valueDomain(_ points: [ValuePoint]) -> ClosedRange<Double> {
         let vals = points.map(\.value)
         guard let lo = vals.min(), let hi = vals.max(), hi > lo else { return 0...1 }
-        let pad = (hi - lo) * 0.15
-        return (lo - pad)...(hi + pad)
+        let span = hi - lo
+        return (lo - span * 0.10)...(hi + span * 0.14)
     }
 
     /// X-axis tick label formatted for the selected period.
@@ -392,8 +402,12 @@ struct PortfolioOverview: View {
             }
             .chartLegend(.hidden)
             .chartOverlay { proxy in valueCrosshair(proxy, points: points, tint: tint) }
+            // Morph marks in place when async data lands (avoids a hard "pop" as
+            // intraday/history loads after a range switch).
+            .animation(.easeInOut(duration: 0.4), value: points)
+            // Range switch replaces the chart; crossfade it rather than cut.
             .id(chartRange)
-            .transition(.opacity.animation(.easeInOut(duration: 0.28)))
+            .transition(.opacity.animation(.easeInOut(duration: 0.4)))
         } else {
             ZStack {
                 DS.cardAlt.opacity(0.6)
