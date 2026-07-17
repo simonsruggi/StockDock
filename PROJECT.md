@@ -141,3 +141,7 @@ L'app non compare nel Dock (`.accessory` policy): l'icona appare nella menu bar 
 - **Requisiti**: Xcode 15+ e macOS 14 Sonoma o successivo
 - **Firma/Entitlements**: `StockDock.entitlements` presente nella root per eventuali accessi di rete
 - **Release / What's New**: `./release.sh <versione> <build>` builda, firma, notarizza, aggiorna `appcast.xml`, crea la GitHub release e aggiorna il cask Homebrew. Le note "What's New" mostrate da Sparkle vanno scritte in `release-notes/<versione>.html` (HTML), che lo script inietta nel `<description>` dell'appcast
+
+## TODO / Idee
+
+- **DMG per download manuale**: aggiungere uno step a `release.sh` che genera un `.dmg` notarizzato (finestra drag-to-Applications, preferibilmente con `create-dmg`) e lo allega come asset extra alla GitHub Release, per gli utenti non tecnici. Sparkle continua a usare lo `.zip` per gli auto-update (l'appcast resta invariato); il DMG va firmato + notarizzato + stapled a parte, altrimenti Gatekeeper lo blocca. Il link "Download" del README/sito punterebbe al DMG.
