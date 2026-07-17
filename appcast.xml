@@ -6,10 +6,10 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.2</title>
-            <pubDate>Thu, 16 Jul 2026 20:01:52 +0200</pubDate>
-            <sparkle:version>25</sparkle:version>
-            <sparkle:shortVersionString>1.9.2</sparkle:shortVersionString>
+            <title>Version 1.9.3</title>
+            <pubDate>Fri, 17 Jul 2026 11:56:02 +0200</pubDate>
+            <sparkle:version>26</sparkle:version>
+            <sparkle:shortVersionString>1.9.3</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
 <style>
@@ -18,20 +18,22 @@
     ul { padding-left: 20px; margin: 4px 0; }
     li { margin-bottom: 4px; }
 </style>
-<h3>Your app, your way</h3>
+<h3>Portfolio chart</h3>
 <ul>
-    <li><b>Dark mode is back</b> — Settings › Appearance now has a Theme control: follow the system, or force Light or Dark. No more being stuck on the bright theme.</li>
-    <li><b>Hide the News tab</b> — a new "Show News tab" switch removes the Home/News feed entirely. For the record, the feed never ran in the background: it only fetched while its tab was open, throttled, no battery or data drain when hidden.</li>
+    <li><b>Change now follows the selected period</b> — the percentage next to your portfolio value updates with the range you pick (24H, 7D, 1M, 1Y, All) instead of always showing the day's move.</li>
+    <li><b>No more text over the curve</b> — the value and change now sit above the chart, so the line never hides behind them, on any period.</li>
+    <li><b>Smoother transitions</b> — switching periods crossfades and the curve settles in gently as data loads.</li>
 </ul>
-<h3>Fixed</h3>
+<h3>Settings, tidied up</h3>
 <ul>
-    <li><b>Tab bar label</b> — the Settings tab no longer shows a stray "Portfolios" label next to it.</li>
+    <li><b>Collapsible categories</b> — the menu bar Settings are grouped (General, Currency, Positions &amp; Market, Watchlist, Menu Bar, Notifications, About) and each section expands only when you need it.</li>
+    <li><b>Support options</b> — you can now star the repo on GitHub as well as sponsor. StockDock stays free and open source.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.2/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.3/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="bGe5Q5Ux46W3/oMKBgPJvTEr0zCtdEYQD5eMc+Ge6I9mGvnMbdrIRSXSknEGLCeVGo2r1q6i4MFumVaEZRwsDg=="
-                       length="9455932"/>
+                       sparkle:edSignature="qadLq+5xE6iOvJMjdk4M+N1ggJ/Mj0WlV1s2a4QfPYC6eaiNJIRTrVVh6tQJXh7hXDY7AbG9toiOUVGyYZymDA=="
+                       length="9477272"/>
         </item>
     </channel>
 </rss>
