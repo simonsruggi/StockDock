@@ -60,11 +60,19 @@ Stocks, ETFs, indices (S&P 500, NASDAQ…), crypto, and forex — anything with 
 
 ![Desktop window](screenshots/desktop.png)
 
-### Menu bar popover
+### In the menu bar
 
-| Menu Bar | Watchlist | Portfolios | Settings |
-|---|---|---|---|
-| ![Menu Bar](screenshots/menubar.png) | ![Watchlist](screenshots/watchlist.png) | ![Portfolios](screenshots/portfolio.png) | ![Settings](screenshots/settings.png) |
+![Menu Bar](screenshots/menubar.png)
+
+### The popover — watchlist, portfolios & settings
+
+<div align="center">
+<img src="screenshots/demo.gif" alt="StockDock menu bar popover cycling through the watchlist, portfolio P&L and settings" width="440">
+</div>
+
+| Watchlist | Portfolios | Settings |
+|---|---|---|
+| ![Watchlist](screenshots/watchlist.png) | ![Portfolios](screenshots/portfolio.png) | ![Settings](screenshots/settings.png) |
 
 ## Features
 
