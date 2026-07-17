@@ -37,12 +37,26 @@ enum DS {
     // MARK: Accents
     /// Brand emerald — selection, links, the mark.
     static let brand = Color(red: 0.110, green: 0.451, blue: 0.369)
-    /// Gains — sober emerald.
-    static let up = Color(red: 0.129, green: 0.522, blue: 0.400)
-    /// Losses — muted terracotta.
-    static let down = Color(red: 0.761, green: 0.290, blue: 0.267)
-    static let upSoft = up.opacity(0.10)
-    static let downSoft = down.opacity(0.10)
+    /// Gains — sober emerald (default when no custom gain color is set).
+    static let upDefault = Color(red: 0.129, green: 0.522, blue: 0.400)
+    /// Losses — muted terracotta (default when no custom loss color is set).
+    static let downDefault = Color(red: 0.761, green: 0.290, blue: 0.267)
+
+    /// Gain color used across the whole app. Honors the user's custom gain color
+    /// (Settings → Colors) when set, otherwise the emerald default. Views that
+    /// show P&L observe StorageService, so changing the color re-renders them.
+    @MainActor static var up: Color {
+        let s = StorageService.shared
+        return s.gainColorHex.isEmpty ? upDefault : Color(nsColor: s.gainColor)
+    }
+    /// Loss color used across the whole app. Custom loss color when set, else the
+    /// terracotta default.
+    @MainActor static var down: Color {
+        let s = StorageService.shared
+        return s.lossColorHex.isEmpty ? downDefault : Color(nsColor: s.lossColor)
+    }
+    @MainActor static var upSoft: Color { up.opacity(0.10) }
+    @MainActor static var downSoft: Color { down.opacity(0.10) }
     /// The one reserved luxury accent: FEATURED label and concentration warnings.
     static let gold = Color(red: 0.722, green: 0.573, blue: 0.247)
 
@@ -58,7 +72,7 @@ enum DS {
         Color(red: 0.50, green: 0.52, blue: 0.56),
     ]
 
-    static func pnlColor(_ v: Double) -> Color { v >= 0 ? up : down }
+    @MainActor static func pnlColor(_ v: Double) -> Color { v >= 0 ? up : down }
 
     // MARK: Type scale (Inter everywhere; tracking applied at call sites on ≥24pt)
     /// Hero value only. Pair with `.tracking(-0.5)`.

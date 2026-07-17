@@ -152,34 +152,32 @@ struct SettingsWideView: View {
                 }
             }
             SettingDivider()
-            SettingToggle("Use system text color",
-                          caption: "Always readable; direction stays in + / − and ▲ ▼",
-                          isOn: $storageService.menuBarUseSystemColor)
-            if !storageService.menuBarUseSystemColor {
-                SettingDivider()
-                SettingRow("Gain color") {
-                    DSColorWell(color: Binding(
-                        get: { Color(nsColor: storageService.gainColor) },
-                        set: { storageService.gainColorHex = $0.hexString }))
-                }
-                SettingDivider()
-                SettingRow("Loss color") {
-                    DSColorWell(color: Binding(
-                        get: { Color(nsColor: storageService.lossColor) },
-                        set: { storageService.lossColorHex = $0.hexString }))
-                }
-                SettingDivider()
-                HStack {
-                    Spacer()
-                    Button("Reset to default green/red") {
-                        storageService.gainColorHex = ""; storageService.lossColorHex = ""
-                    }
-                    .buttonStyle(.plain)
-                    .font(.inter(11, weight: .medium, relativeTo: .caption))
-                    .foregroundStyle(DS.brand)
-                }
-                .padding(.vertical, 6)
+            SettingRow("Gain color", caption: "Applies across the whole app — menu bar, watchlist and portfolios") {
+                DSColorWell(color: Binding(
+                    get: { Color(nsColor: storageService.gainColor) },
+                    set: { storageService.gainColorHex = $0.hexString }))
             }
+            SettingDivider()
+            SettingRow("Loss color") {
+                DSColorWell(color: Binding(
+                    get: { Color(nsColor: storageService.lossColor) },
+                    set: { storageService.lossColorHex = $0.hexString }))
+            }
+            SettingDivider()
+            HStack {
+                Spacer()
+                Button("Reset to default green/red") {
+                    storageService.gainColorHex = ""; storageService.lossColorHex = ""
+                }
+                .buttonStyle(.plain)
+                .font(.inter(11, weight: .medium, relativeTo: .caption))
+                .foregroundStyle(DS.brand)
+            }
+            .padding(.vertical, 6)
+            SettingDivider()
+            SettingToggle("Use system color in the menu bar",
+                          caption: "Keeps menu bar text readable on any wallpaper; doesn't affect in-app colors",
+                          isOn: $storageService.menuBarUseSystemColor)
         }
     }
 

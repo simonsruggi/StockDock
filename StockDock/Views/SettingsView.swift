@@ -209,24 +209,23 @@ struct SettingsView: View {
                     }
 
                     subHeader("Colors")
-                    Toggle("Use system text color", isOn: $storageService.menuBarUseSystemColor)
-                    caption("Always readable on any background. Up/down stays shown by + / − and ▲ ▼.")
-
-                    if !storageService.menuBarUseSystemColor {
-                        ColorPicker("Gain color", selection: Binding(
-                            get: { Color(nsColor: storageService.gainColor) },
-                            set: { storageService.gainColorHex = $0.hexString }
-                        ))
-                        ColorPicker("Loss color", selection: Binding(
-                            get: { Color(nsColor: storageService.lossColor) },
-                            set: { storageService.lossColorHex = $0.hexString }
-                        ))
-                        Button("Reset to default green/red") {
-                            storageService.gainColorHex = ""
-                            storageService.lossColorHex = ""
-                        }
-                        .font(.inter(10, relativeTo: .caption))
+                    ColorPicker("Gain color", selection: Binding(
+                        get: { Color(nsColor: storageService.gainColor) },
+                        set: { storageService.gainColorHex = $0.hexString }
+                    ))
+                    ColorPicker("Loss color", selection: Binding(
+                        get: { Color(nsColor: storageService.lossColor) },
+                        set: { storageService.lossColorHex = $0.hexString }
+                    ))
+                    Button("Reset to default green/red") {
+                        storageService.gainColorHex = ""
+                        storageService.lossColorHex = ""
                     }
+                    .font(.inter(10, relativeTo: .caption))
+                    caption("Gain/loss colors apply across the whole app — menu bar, watchlist and portfolios.")
+
+                    Toggle("Use system color in the menu bar", isOn: $storageService.menuBarUseSystemColor)
+                    caption("Keeps the menu bar text readable on any wallpaper (direction still shown by + / − and ▲ ▼). Doesn't affect in-app colors.")
                 }
 
                 // MARK: - Notifications
