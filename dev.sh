@@ -66,4 +66,8 @@ EOF
 codesign --deep --sign - --force "$APP" 2>/dev/null
 
 echo "Launching StockDock DEV..."
-open "$APP"
+# Launch the binary directly with SD_OPEN_WINDOW so the Portfolio window opens
+# automatically on every rebuild (the menu-bar app otherwise starts window-less).
+pkill -f "StockDock-Dev.app/Contents/MacOS/StockDock" 2>/dev/null || true
+sleep 0.5
+SD_OPEN_WINDOW=1 "$APP/Contents/MacOS/StockDock" >/dev/null 2>&1 &

@@ -161,7 +161,17 @@ struct PortfolioOverview: View {
     private var displaySeries: (points: [ValuePoint], isEstimated: Bool) {
         switch chartRange {
         case .day:
-            return (valueSeries(from: stockService.intradayHistory), true)
+            var pts = valueSeries(from: stockService.intradayHistory)
+            // Anchor the 24H curve at the PREVIOUS CLOSE (value − today's change),
+            // so it reflects the real day: intraday history starts at the session
+            // low/open, which made a down day look "up" (curve rising from the
+            // low) and contradicted the −x% today figure. Now the curve starts at
+            // yesterday's close and its end-vs-start span == the day change.
+            if let first = pts.first {
+                let prevCloseValue = totalValue - dayChangeValue
+                pts.insert(ValuePoint(date: first.date.addingTimeInterval(-60), value: prevCloseValue), at: 0)
+            }
+            return (pts, true)
         case .week:
             return (valueSeries(from: stockService.intradayWeek), true)
         default:
