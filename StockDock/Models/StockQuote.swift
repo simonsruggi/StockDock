@@ -101,6 +101,17 @@ struct StockQuote: Identifiable, Codable {
         extendedHours ? effectivePrice : price
     }
 
+    /// Day change per share CONSISTENT with `displayPrice(extendedHours:)` — i.e.
+    /// from the previous regular close to the price actually shown. With extended
+    /// hours on and pre/post data present it adds the extended move, so a
+    /// portfolio valued at the extended price and its "today" figure agree
+    /// (otherwise the value reflects the after-hours pop while "today" only sees
+    /// the regular session, giving opposite signs).
+    func effectiveChange(extendedHours: Bool) -> Double {
+        guard extendedHours, isExtendedHours, let ext = extendedChange else { return change }
+        return change + ext
+    }
+
     var marketStateLabel: String {
         switch marketState {
         case "PRE": return "Pre"

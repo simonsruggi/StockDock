@@ -15,6 +15,32 @@ final class StockQuoteTests: XCTestCase {
         XCTAssertEqual(quote(price: 50, high: 150, low: 50).fiftyTwoWeekPosition, 0.0)
     }
 
+    // MARK: - effectiveChange (extended-hours-aware day change)
+
+    private func postMarketQuote(regularChange: Double, postChange: Double) -> StockQuote {
+        // Regular session down `regularChange`, then post-market up `postChange`.
+        StockQuote(symbol: "MU", name: "Micron", price: 100, change: regularChange, changePercent: 0,
+                   currency: "USD", marketState: "POST", dayHigh: nil, dayLow: nil,
+                   fiftyTwoWeekHigh: nil, fiftyTwoWeekLow: nil,
+                   preMarketPrice: nil, preMarketChange: nil, preMarketChangePercent: nil,
+                   postMarketPrice: 100 + postChange, postMarketChange: postChange, postMarketChangePercent: nil)
+    }
+
+    /// Reproduces the reported bug: value uses the after-hours price (up) but the
+    /// day change ignored it (down). With extended hours on, the change must
+    /// include the post-market move so TODAY agrees in sign with the value.
+    func testEffectiveChangeIncludesExtendedWhenEnabled() {
+        let q = postMarketQuote(regularChange: -0.5, postChange: 5.0)   // -0.5 regular, +5 post
+        XCTAssertEqual(q.effectiveChange(extendedHours: true), 4.5, accuracy: 1e-9)   // net UP
+        XCTAssertEqual(q.effectiveChange(extendedHours: false), -0.5, accuracy: 1e-9) // regular only
+    }
+
+    func testEffectiveChangeRegularSessionUnaffected() {
+        let q = quote(price: 100, high: nil, low: nil)  // REGULAR, no extended
+        XCTAssertEqual(q.effectiveChange(extendedHours: true), q.change, accuracy: 1e-9)
+        XCTAssertEqual(q.effectiveChange(extendedHours: false), q.change, accuracy: 1e-9)
+    }
+
     func testPositionAtHighIsOne() {
         XCTAssertEqual(quote(price: 150, high: 150, low: 50).fiftyTwoWeekPosition, 1.0)
     }
