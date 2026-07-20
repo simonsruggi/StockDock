@@ -225,14 +225,28 @@ struct PortfolioOverview: View {
         // the curve is too sparse to span a period (e.g. day one), fall back to
         // the day-over-day figure so the pill is never empty.
         //
-        // EXCEPTION — 24H: "today" must be the real regular-session day change
-        // (the same figure as the TODAY stat), never the span of the ESTIMATED
-        // intraday curve. That span starts at the curve's low, not the previous
-        // close, so it could read "+4.0% today" while the day is actually down.
+        // EXCEPTIONS — the pill must never show the span of the ESTIMATED curve
+        // as a real return:
+        //  • 24H → the real regular-session day change (same as the TODAY stat).
+        //    The curve span starts at the intraday low, not the previous close,
+        //    so it could read "+4.0% today" while the day is actually down.
+        //  • All → the real all-time P&L (current value vs cost basis). The "All"
+        //    curve starts at the reconstruction origin (current positions at old,
+        //    tiny prices), so its span is a huge bogus "+2202% all-time" instead
+        //    of the actual return.
+        // Bounded windows (7D/1M/1Y) keep the curve span — there's no better
+        // figure and the "past N" label makes the estimate honest.
         let useRealDay = chartRange == .day
-        let periodValue = useRealDay ? dayChangeValue : (PortfolioPeriodChange.value(ds.points) ?? dayChangeValue)
-        let periodPercent = useRealDay ? dayChangePercent : (PortfolioPeriodChange.percent(ds.points) ?? dayChangePercent)
-        let periodLabel = useRealDay ? "today" : (PortfolioPeriodChange.percent(ds.points) != nil ? chartRange.changeLabel : "today")
+        let useRealAllTime = chartRange == .all
+        let periodValue = useRealDay ? dayChangeValue
+            : useRealAllTime ? totalPnl
+            : (PortfolioPeriodChange.value(ds.points) ?? dayChangeValue)
+        let periodPercent = useRealDay ? dayChangePercent
+            : useRealAllTime ? totalPnlPercent
+            : (PortfolioPeriodChange.percent(ds.points) ?? dayChangePercent)
+        let periodLabel = useRealDay ? "today"
+            : useRealAllTime ? "all-time"
+            : (PortfolioPeriodChange.percent(ds.points) != nil ? chartRange.changeLabel : "today")
         // Header sits ABOVE the chart (not over it) so the curve can never rise
         // behind the value/pill text — on 24H the peak often lands top-left, right
         // where the text is, and no Y-domain trick can avoid that overlap.
@@ -260,11 +274,15 @@ struct PortfolioOverview: View {
                 HStack(spacing: 10) {
                     ChangePill(value: periodValue,
                                text: String(format: "%+.\(decimals)f%% %@", periodPercent, periodLabel))
-                    Text(String(format: "%@ (%+.\(decimals)f%%) all-time",
-                                StorageService.formatAmount(totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
-                                totalPnlPercent))
-                        .font(DS.caption.monospacedDigit())
-                        .foregroundStyle(DS.pnlColor(totalPnl))
+                    // The all-time figure alongside — hidden on the All range,
+                    // where the pill already shows exactly this (no duplicate).
+                    if !useRealAllTime {
+                        Text(String(format: "%@ (%+.\(decimals)f%%) all-time",
+                                    StorageService.formatAmount(totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
+                                    totalPnlPercent))
+                            .font(DS.caption.monospacedDigit())
+                            .foregroundStyle(DS.pnlColor(totalPnl))
+                    }
                 }
             }
             .padding(.horizontal, 24)
