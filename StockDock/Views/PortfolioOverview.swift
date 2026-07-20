@@ -224,9 +224,15 @@ struct PortfolioOverview: View {
         // Pill reflects the SELECTED range: change across the drawn curve. When
         // the curve is too sparse to span a period (e.g. day one), fall back to
         // the day-over-day figure so the pill is never empty.
-        let periodValue = PortfolioPeriodChange.value(ds.points) ?? dayChangeValue
-        let periodPercent = PortfolioPeriodChange.percent(ds.points) ?? dayChangePercent
-        let periodLabel = PortfolioPeriodChange.percent(ds.points) != nil ? chartRange.changeLabel : "today"
+        //
+        // EXCEPTION — 24H: "today" must be the real regular-session day change
+        // (the same figure as the TODAY stat), never the span of the ESTIMATED
+        // intraday curve. That span starts at the curve's low, not the previous
+        // close, so it could read "+4.0% today" while the day is actually down.
+        let useRealDay = chartRange == .day
+        let periodValue = useRealDay ? dayChangeValue : (PortfolioPeriodChange.value(ds.points) ?? dayChangeValue)
+        let periodPercent = useRealDay ? dayChangePercent : (PortfolioPeriodChange.percent(ds.points) ?? dayChangePercent)
+        let periodLabel = useRealDay ? "today" : (PortfolioPeriodChange.percent(ds.points) != nil ? chartRange.changeLabel : "today")
         // Header sits ABOVE the chart (not over it) so the curve can never rise
         // behind the value/pill text — on 24H the peak often lands top-left, right
         // where the text is, and no Y-domain trick can avoid that overlap.
