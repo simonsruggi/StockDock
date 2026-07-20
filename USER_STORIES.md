@@ -48,7 +48,7 @@
 - [x] Automatic reconnection with exponential backoff (2s, 4s, 8s... max 120s)
 - [x] Watchdog: no ticks for 60s → reconnect
 - [x] Heartbeat every 15s to keep the connection alive
-- [x] REST polling every 5 min as fallback for exchange rates
+- [x] REST polling every 60s as fallback for exchange rates (also revives a silently-dead WebSocket)
 - [x] After portfolio/watchlist change, WebSocket subscriptions updated within 500ms
 - [x] Ticks buffered and flushed 1x/sec to avoid excessive rendering
 - [x] Batch quote parsing is resilient: a single delisted/suspended ticker (returned without a price) is skipped instead of failing the whole v7 batch and dropping every symbol's live quote — pure `StockService.parseV7Response`, covered by `Tests/V7QuoteParsingTests.swift` (bugcheck 2026-07-13)
@@ -165,7 +165,7 @@
 - [x] Also listed and manageable (toggle / delete) under Settings → Notifications → Portfolio notifications, grouped by portfolio
 - [x] Four modes: daily move ≥ %, daily move ≥ amount, daily summary, value milestone
 - [x] Defaults: ±1% / ±250 (preferred currency) / milestone every 10,000 / summary after 22:00
-- [x] Daily % / amount fire only on genuinely NEW extremes via per-direction high-water marks (`lastStepUp`/`lastStepDown`): going up notifies each new step, but retracing, hovering at a boundary, or oscillating across zero stays silent; reset each calendar day
+- [x] Daily % / amount fire at most once per direction per calendar day: the first time the move crosses the threshold up fires once, the first time it crosses down fires once, then silence until the next day — retracing, hovering at a boundary, or oscillating across zero never re-fires (per-direction high-water marks `lastStepUp`/`lastStepDown`, verified by `PortfolioAlertEvaluatorTests`)
 - [x] Milestone primes silently on first observation (no spurious "reached X" on setup), then fires only on a new high or new low — bouncing around a milestone boundary does not re-notify
 - [x] Daily summary fires once per day after the configured hour: value + today's P&L + top mover
 - [x] Day change computed from the regular-session per-share change × quantity × FX rate (preferred currency)
