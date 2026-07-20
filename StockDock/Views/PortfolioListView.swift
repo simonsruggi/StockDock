@@ -202,57 +202,12 @@ struct PortfolioListView: View {
     }
 
     private func exportPortfolios(_ portfolios: [Portfolio]) {
-        guard let data = storageService.exportPortfolios(portfolios) else { return }
-        let panel = NSSavePanel()
-        panel.allowedContentTypes = [.json]
-        let name = portfolios.count == 1 ? portfolios[0].name : "StockDock Portfolios"
-        panel.nameFieldStringValue = "\(name).json"
-        panel.title = "Export Portfolios"
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
-        panel.begin { response in
-            defer {
-                Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: 500_000_000)
-                    NSApp.setActivationPolicy(.accessory)
-                }
-            }
-            guard response == .OK, let url = panel.url else { return }
-            try? data.write(to: url, options: .atomic)
-        }
+        PortfolioIO.exportAll(portfolios, storageService: storageService, restoreActivationPolicy: true)
     }
 
     private func importPortfolios() {
-        let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.json]
-        panel.allowsMultipleSelection = false
-        panel.title = "Import Portfolios"
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
-        panel.begin { response in
-            defer {
-                Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: 500_000_000)
-                    NSApp.setActivationPolicy(.accessory)
-                }
-            }
-            guard response == .OK, let url = panel.url else { return }
-            guard let data = try? Data(contentsOf: url) else {
-                Task { @MainActor in self.importAlert = "Could not read file." }
-                return
-            }
-            Task { @MainActor in
-                guard let imported = self.storageService.importPortfolios(from: data) else {
-                    self.importAlert = "Invalid file format."
-                    return
-                }
-                if imported.isEmpty {
-                    self.importAlert = "No portfolios found in file."
-                    return
-                }
-                self.storageService.mergeImportedPortfolios(imported)
-                self.importAlert = "Imported \(imported.count) portfolio\(imported.count == 1 ? "" : "s")."
-            }
+        PortfolioIO.importInto(storageService, restoreActivationPolicy: true) { message in
+            self.importAlert = message
         }
     }
 
@@ -274,23 +229,7 @@ struct PortfolioSection: View {
     @State private var showNotifications = false
 
     private func exportSingle() {
-        guard let data = storageService.exportPortfolios([portfolio]) else { return }
-        let panel = NSSavePanel()
-        panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = "\(portfolio.name).json"
-        panel.title = "Export Portfolio"
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
-        panel.begin { response in
-            defer {
-                Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: 500_000_000)
-                    NSApp.setActivationPolicy(.accessory)
-                }
-            }
-            guard response == .OK, let url = panel.url else { return }
-            try? data.write(to: url, options: .atomic)
-        }
+        PortfolioIO.exportAll([portfolio], storageService: storageService, restoreActivationPolicy: true)
     }
 
     private var currSymbol: String {

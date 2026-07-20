@@ -336,35 +336,15 @@ struct PortfolioWindowView: View {
     // MARK: - Import / Export (reuses StorageService JSON logic)
 
     private func exportPortfolios(_ portfolios: [Portfolio]) {
-        guard let data = storageService.exportPortfolios(portfolios) else { return }
-        let panel = NSSavePanel()
-        panel.allowedContentTypes = [.json]
-        panel.nameFieldStringValue = (portfolios.count == 1 ? portfolios[0].name : "StockDock Portfolios") + ".json"
-        panel.title = "Export Portfolios"
-        panel.begin { response in
-            guard response == .OK, let url = panel.url else { return }
-            try? data.write(to: url, options: .atomic)
-        }
+        // This window keeps the app `.regular` for its own lifetime (see
+        // `AppDelegate.bringWindowFront`/`windowWillClose`), so the panel
+        // never needs the accessory<->regular activation-policy dance.
+        PortfolioIO.exportAll(portfolios, storageService: storageService, restoreActivationPolicy: false)
     }
 
     private func importPortfolios() {
-        let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.json]
-        panel.allowsMultipleSelection = false
-        panel.title = "Import Portfolios"
-        panel.begin { response in
-            guard response == .OK, let url = panel.url else { return }
-            guard let data = try? Data(contentsOf: url) else {
-                Task { @MainActor in importAlert = "Could not read file." }; return
-            }
-            Task { @MainActor in
-                guard let imported = storageService.importPortfolios(from: data) else {
-                    importAlert = "Invalid file format."; return
-                }
-                guard !imported.isEmpty else { importAlert = "No portfolios found in file."; return }
-                storageService.mergeImportedPortfolios(imported)
-                importAlert = "Imported \(imported.count) portfolio\(imported.count == 1 ? "" : "s")."
-            }
+        PortfolioIO.importInto(storageService, restoreActivationPolicy: false) { message in
+            importAlert = message
         }
     }
 
