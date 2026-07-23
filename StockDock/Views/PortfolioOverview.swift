@@ -712,7 +712,8 @@ struct PortfolioOverview: View {
                 }
                 .navigationDestination(for: UUID.self) { id in
                     if let h = holdings.first(where: { $0.id == id }) {
-                        HoldingDetailView(holding: h.holding, quote: h.quote, value: h.value, cost: h.cost,
+                        HoldingDetailView(portfolioId: h.portfolioId, holding: h.holding, quote: h.quote,
+                                          value: h.value, cost: h.cost,
                                           weight: abs(totalValue) >= 0.01 ? abs(h.value) / abs(totalValue) * 100 : 0)
                     }
                 }

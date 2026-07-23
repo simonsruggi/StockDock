@@ -8,6 +8,8 @@ import Charts
 struct HoldingDetailView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
+    @Environment(\.editHoldingAction) private var editHoldingAction
+    let portfolioId: UUID
     let holding: Holding
     let quote: StockQuote
     let value: Double
@@ -39,6 +41,11 @@ struct HoldingDetailView: View {
                     Tag(text: "\(StorageService.formatNumber(holding.effectiveLeverage, decimals: holding.effectiveLeverage == holding.effectiveLeverage.rounded() ? 0 : 1))×",
                         color: DS.brand)
                 }
+                Button { editHoldingAction.perform(portfolioId, holding) } label: {
+                    Image(systemName: "pencil").font(.system(size: 12, weight: .medium)).foregroundStyle(DS.inkSecondary)
+                }
+                .buttonStyle(.plain)
+                .help("Edit this holding")
                 Button { showAlert = true } label: {
                     Image(systemName: "bell").font(.system(size: 12, weight: .medium)).foregroundStyle(DS.inkSecondary)
                 }
