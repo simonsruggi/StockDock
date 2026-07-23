@@ -218,3 +218,10 @@
 - [x] Settings → "Enjoying StockDock?" section: copy clarifying the app is free & open source forever, with a pink "Become a Sponsor" button
 - [x] Opens `https://github.com/sponsors/simonsruggi` in the browser
 - [x] All strings localized across the 6 supported languages
+
+## US-23: Global average buy price per stock
+**As a** user, **I want** to see, in the portfolios list, each stock's average buy price aggregated across all my portfolios **so that** I know my true blended cost without averaging positions by hand.
+
+- [x] Under the grand-total "Total value / P&L" header in `PortfolioListView`, a per-symbol block shows `avg <price>` and the price return % (green/positive, red/negative)
+- [x] `globalPositions` computes a quantity-weighted average buy price across every portfolio (`Σ qty·avgPrice / Σ qty`), guarding zero/near-zero quantity; short positions flip the return sign
+- [x] Average shown in the stock's own price currency; rows sorted by market value (preferred currency)

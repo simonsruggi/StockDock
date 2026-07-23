@@ -103,6 +103,35 @@ struct PortfolioListView: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
 
+                    // Per-symbol average buy price, aggregated across ALL portfolios,
+                    // with the price return vs. that average.
+                    let globals = globalPositions
+                    if !globals.isEmpty {
+                        Divider()
+                        VStack(spacing: 4) {
+                            ForEach(globals) { p in
+                                HStack(spacing: 8) {
+                                    Text(p.symbol)
+                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                        .fontWeight(.semibold)
+                                        .frame(width: 62, alignment: .leading)
+                                    Text("avg \(StorageService.formatAmount(p.avgPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.avgPrice)))")
+                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                    Spacer()
+                                    Text(String(format: "%+.\(storageService.percentDecimals)f%%", p.pct))
+                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                        .fontWeight(.medium)
+                                        .foregroundColor(p.pct >= 0 ? DS.up : DS.down)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 6)
+                    }
+
                     Divider()
                 }
 
@@ -199,6 +228,41 @@ struct PortfolioListView: View {
                 return sum + holding.costBasisLocal * rate
             }
         }
+    }
+
+    private struct GlobalPosition: Identifiable {
+        let id: String            // symbol
+        let avgPrice: Double      // weighted avg buy price, in the price currency
+        let priceSymbol: String
+        let pct: Double           // price return vs. avg (position-direction aware)
+        let value: Double         // market value (preferred currency), for sorting
+        var symbol: String { id }
+    }
+
+    /// Per-symbol weighted-average buy price across ALL portfolios, with the
+    /// current price return vs. that average. Sorted by market value.
+    private var globalPositions: [GlobalPosition] {
+        var qty: [String: Double] = [:]
+        var qtyPrice: [String: Double] = [:]
+        for portfolio in storageService.portfolios {
+            for h in portfolio.holdings {
+                qty[h.symbol, default: 0] += h.quantity
+                qtyPrice[h.symbol, default: 0] += h.quantity * h.avgPrice
+            }
+        }
+        return qty.compactMap { symbol, q -> GlobalPosition? in
+            guard abs(q) >= 1e-9, let quote = stockService.quotes[symbol] else { return nil }
+            let avg = qtyPrice[symbol, default: 0] / q
+            let price = quote.displayPrice(extendedHours: storageService.showExtendedHours)
+            let rawPct = abs(avg) >= 1e-6 ? (price / avg - 1) * 100 : 0
+            // A short position gains when the price falls, so flip the sign.
+            let pct = q >= 0 ? rawPct : -rawPct
+            let priceCurr = storageService.stockPriceCurrency
+            let priceSymbol = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
+            let value = abs(price * q) * stockService.rate(from: quote.currency)
+            return GlobalPosition(id: symbol, avgPrice: avg, priceSymbol: priceSymbol, pct: pct, value: value)
+        }
+        .sorted { $0.value > $1.value }
     }
 
     private func exportPortfolios(_ portfolios: [Portfolio]) {
