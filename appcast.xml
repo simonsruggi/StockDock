@@ -6,23 +6,21 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.5</title>
-            <pubDate>Mon, 20 Jul 2026 15:16:09 +0200</pubDate>
-            <sparkle:version>28</sparkle:version>
-            <sparkle:shortVersionString>1.9.5</sparkle:shortVersionString>
+            <title>Version 1.9.6</title>
+            <pubDate>Thu, 23 Jul 2026 15:51:22 +0200</pubDate>
+            <sparkle:version>29</sparkle:version>
+            <sparkle:shortVersionString>1.9.6</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Portfolio performance — fixed</h2>
+<h2>Edit a holding from its detail page</h2>
 <ul>
-    <li><strong>"Today" now counts pre/post-market.</strong> The portfolio value already used the extended-hours price, but the daily change only looked at the regular session — so on a gap day the value could be up while "today" showed down. They now share the same baseline and always agree.</li>
-    <li><strong>Accurate performance pills.</strong> The header pill now shows the real figure for each range: <em>today</em> on 24H (matching the TODAY stat), and your true <em>all-time</em> P&amp;L on All (no more inflated numbers from the reconstructed curve).</li>
-    <li><strong>Cleaner 24H chart.</strong> The intraday curve is pinned to your live portfolio value, so it no longer ends below the headline total.</li>
+    <li><strong>Edit button where you expect it.</strong> Open any position from a portfolio and there's now a pencil in the header — tap it to edit shares, price, date, or leverage. Previously editing was only reachable by right-clicking the row, so it was easy to miss.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.5/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.6/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="N/LMzSwiL0HkCTXvpsDPi5QhAOcF3tGU5XawxTq9Nk9+x8/OUbaPYBhPxhmrWqifVd1f3gXixS007oa9NqefCw=="
-                       length="9467062"/>
+                       sparkle:edSignature="u3R3YDFiu0gheDuTdhMheOl/wmsBQxMQig3Hzm1AS3tucnI32el65VXDBOiz6WHbrsMR5z/ROyinCA73Pc3bDQ=="
+                       length="9469351"/>
         </item>
     </channel>
 </rss>
