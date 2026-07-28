@@ -225,3 +225,4 @@
 - [x] Under the grand-total "Total value / P&L" header in `PortfolioListView`, a per-symbol block shows `avg <price>` and the price return % (green/positive, red/negative)
 - [x] `globalPositions` computes a quantity-weighted average buy price across every portfolio (`Σ qty·avgPrice / Σ qty`), guarding zero/near-zero quantity; short positions flip the return sign
 - [x] Average shown in the stock's own price currency; rows sorted by market value (preferred currency)
+- [x] Next to `avg <price>` the row also shows `now <current price>` (same currency, live quote, extended-hours aware) so the cost and the market price are readable side by side

@@ -120,6 +120,11 @@ struct PortfolioListView: View {
                                         .foregroundColor(.secondary)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.7)
+                                    Text("now \(StorageService.formatAmount(p.currentPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.currentPrice)))")
+                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                        .foregroundColor(.primary)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
                                     Spacer()
                                     Text(String(format: "%+.\(storageService.percentDecimals)f%%", p.pct))
                                         .font(.inter(11, relativeTo: .caption).monospacedDigit())
@@ -233,6 +238,7 @@ struct PortfolioListView: View {
     private struct GlobalPosition: Identifiable {
         let id: String            // symbol
         let avgPrice: Double      // weighted avg buy price, in the price currency
+        let currentPrice: Double  // latest quote price, same currency as avgPrice
         let priceSymbol: String
         let pct: Double           // price return vs. avg (position-direction aware)
         let value: Double         // market value (preferred currency), for sorting
@@ -260,7 +266,7 @@ struct PortfolioListView: View {
             let priceCurr = storageService.stockPriceCurrency
             let priceSymbol = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
             let value = abs(price * q) * stockService.rate(from: quote.currency)
-            return GlobalPosition(id: symbol, avgPrice: avg, priceSymbol: priceSymbol, pct: pct, value: value)
+            return GlobalPosition(id: symbol, avgPrice: avg, currentPrice: price, priceSymbol: priceSymbol, pct: pct, value: value)
         }
         .sorted { $0.value > $1.value }
     }
