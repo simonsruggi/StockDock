@@ -119,7 +119,8 @@ struct PriceChartCard: View {
                         .tracking(-0.4)
                         .foregroundStyle(DS.ink)
                         .contentTransition(.numericText())
-                        .animation(.spring(response: 0.5, dampingFraction: 0.9), value: quote.displayPrice(extendedHours: storageService.showExtendedHours))
+                        // Price-driven: must settle between 1s tick flushes (see DS.tick).
+                        .animation(DS.tick, value: quote.displayPrice(extendedHours: storageService.showExtendedHours))
                     HStack(spacing: 8) {
                         ChangePill(value: quote.change,
                                    text: String(format: "%+.\(storageService.percentDecimals)f%% today", quote.changePercent))

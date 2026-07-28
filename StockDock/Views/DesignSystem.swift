@@ -105,6 +105,17 @@ enum DS {
     /// Clearance under the transparent titlebar (traffic lights).
     static let titlebarClearance: CGFloat = 52
 
+    // MARK: Motion
+    /// Animation for anything driven by the live price feed.
+    ///
+    /// Ticks are flushed once per second, so a price animation MUST finish well
+    /// inside that second. Springs (response 0.4–0.5) settle in ~1s, which left
+    /// SwiftUI interpolating without interruption — and because these values sit
+    /// inside shadowed cards, every interpolated frame re-rasterized a gaussian
+    /// blur on the CPU (vImage), pinning the app near 70% CPU all session.
+    /// Keep any price-driven animation at or below this duration.
+    static let tick: Animation = .easeOut(duration: 0.18)
+
     private static func dynamic(light: NSColor, dark: NSColor) -> Color {
         Color(nsColor: .init(name: nil) { $0.isDarkMode ? dark : light })
     }
@@ -285,7 +296,11 @@ struct StatTile: View {
                 .font(DS.figureLG)
                 .foregroundStyle(valueTint)
                 .contentTransition(.numericText())
-                .animation(.spring(response: 0.45, dampingFraction: 0.9), value: value)
+                // Short, NOT a spring: live prices flush once per second, and a
+                // spring at response 0.45 settles in ~1s — so the tile animated
+                // continuously, and every frame re-rasterized the card's shadow
+                // blur on the CPU. `DS.tick` finishes well inside the tick gap.
+                .animation(DS.tick, value: value)
                 .lineLimit(1).minimumScaleFactor(0.6)
             // Always reserve the caption line so every tile is the same height.
             Text(caption ?? " ")
@@ -319,7 +334,8 @@ struct ChangePill: View {
         .foregroundStyle(DS.pnlColor(value))
         .padding(.horizontal, 8).padding(.vertical, 4)
         .background(Capsule().fill(value >= 0 ? DS.upSoft : DS.downSoft))
-        .animation(.spring(response: 0.4, dampingFraction: 0.9), value: text)
+        // See StatTile: price-driven, so it must settle between ticks.
+        .animation(DS.tick, value: text)
     }
 }
 

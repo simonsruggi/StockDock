@@ -73,6 +73,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// REST polling: quotes + exchange rates as WSS fallback
     private static let restPollingInterval: TimeInterval = 60
 
+    /// How often buffered ticks are published to the UI.
+    ///
+    /// Publishing a tick invalidates every view observing `StockService`, so each
+    /// flush costs a full layout + rasterization pass over the open window —
+    /// roughly 300ms of CPU with the Portfolio window up. At one flush a second
+    /// that pinned the app around 60-70% CPU for the whole session.
+    ///
+    /// So: one second while the user is actually looking at StockDock, and a much
+    /// lazier cadence when they're in another app. Ticks keep arriving and are
+    /// still coalesced per symbol either way — only the *publish* rate changes, so
+    /// nothing is lost, it just lands in bigger batches. Alerts and the menu-bar
+    /// title update on flush too, which is why the background figure stays modest
+    /// rather than being switched off entirely.
+    private static let tickFlushActive: TimeInterval = 1.0
+    private static let tickFlushBackground: TimeInterval = 5.0
+
+    /// Live only while a window is on screen: with everything closed the app is a
+    /// menu-bar title, and the ticker timer already drives that at its own pace.
+    private var tickFlushInterval: TimeInterval {
+        NSApp.isActive ? Self.tickFlushActive : Self.tickFlushBackground
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         FontRegistration.registerFonts()
 
@@ -137,6 +159,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self, selector: #selector(handlePopoverClosed),
             name: .popoverDidClose, object: nil)
 
+        // Coming back to the app publishes whatever arrived while it was in the
+        // background right away, so the first glance is never up to
+        // `tickFlushBackground` stale.
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(handleDidBecomeActive),
+            name: NSApplication.didBecomeActiveNotification, object: nil)
+
         // Observe StorageService changes (portfolio edits, display mode, currency, etc.)
         storageServiceObserver = storageService.objectWillChange.sink { [weak self] _ in
             Task { @MainActor in
@@ -194,10 +223,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         webSocketService.connect(symbols: Array(symbols))
     }
 
-    /// Flush buffered ticks max once per second to avoid @Published spam
+    /// Flush buffered ticks at `tickFlushInterval` to avoid @Published spam
     private func scheduleTickFlush() {
         guard tickBatchTimer == nil else { return }
-        tickBatchTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
+        tickBatchTimer = Timer.scheduledTimer(withTimeInterval: tickFlushInterval, repeats: false) { [weak self] _ in
             Task { @MainActor in
                 guard let self else { return }
                 self.tickBatchTimer = nil
@@ -522,6 +551,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         updateMenuBarTitle()
         // Update WSS subscriptions in case symbols changed
         webSocketService.updateSymbols(Array(collectSymbols()))
+    }
+
+    /// Publish anything buffered under the background cadence immediately, and
+    /// let the next batch be scheduled at the (now active) 1s interval.
+    @objc private func handleDidBecomeActive() {
+        tickBatchTimer?.invalidate()
+        tickBatchTimer = nil
+        flushTicks()
     }
 
     @objc func togglePopover() {

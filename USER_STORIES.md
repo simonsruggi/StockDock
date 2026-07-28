@@ -226,3 +226,12 @@
 - [x] `globalPositions` computes a quantity-weighted average buy price across every portfolio (`Σ qty·avgPrice / Σ qty`), guarding zero/near-zero quantity; short positions flip the return sign
 - [x] Average shown in the stock's own price currency; rows sorted by market value (preferred currency)
 - [x] Next to `avg <price>` the row also shows `now <current price>` (same currency, live quote, extended-hours aware) so the cost and the market price are readable side by side
+
+## US-24: Low CPU footprint
+**As a** user, **I want** StockDock to stay cheap to run while it's open all day **so that** it doesn't heat up the Mac or slow down the apps I'm actually working in.
+
+- [x] Price-driven animations use a single short token (`DS.tick`, 0.18s) instead of springs that outlasted the 1s tick cadence and kept SwiftUI interpolating — and therefore re-rasterizing shadow blurs on the CPU — without ever going idle
+- [x] `PortfolioOverview` values positions once per render via `Derived` (holdings, totals, day change, allocation, type breakdown) instead of recomputing the flatMap/compactMap/sort on each of ~12 reads per frame
+- [x] The hero value chart animates on the point *count*, not the point array: on the 24H range the last point is re-pinned to the live total every tick, which re-animated every mark once a second
+- [x] Tick publishing adapts to focus: 1s while the app is active, 5s otherwise, with an immediate flush on `didBecomeActive` so returning to the app is never stale
+- [x] Measured with `sample` + `top`: Portfolio window open went from ~60-70% CPU sustained to ~0.1% in the background (~30-35% while frontmost); window closed was and stays ~0.5%

@@ -80,8 +80,39 @@ struct PortfolioOverview: View {
     private var currencySymbol: String { StorageService.currencySymbol(for: storageService.preferredCurrency) }
     private var decimals: Int { storageService.percentDecimals }
 
-    private var holdings: [ValuedHolding] {
-        portfolios.flatMap { portfolio in
+    /// Everything derived from positions × quotes, computed ONCE per render.
+    ///
+    /// These used to be computed properties. Each read re-ran the whole
+    /// flatMap/compactMap/sort — and `body` reads them roughly a dozen times
+    /// (caption, hero, stat row, allocation, movers, type strip, positions).
+    /// At 60fps that was a dozen full re-valuations per frame; `holdings` was
+    /// the single hottest symbol of our own code in the CPU profile.
+    private struct Derived {
+        var holdings: [ValuedHolding] = []
+        var totalValue: Double = 0
+        var totalCost: Double = 0
+        var dayChangeValue: Double = 0
+        var allocation: [AllocationSlice] = []
+        var typeBreakdown: [(label: String, fraction: Double)] = []
+
+        var totalPnl: Double { totalValue - totalCost }
+        var totalPnlPercent: Double { abs(totalCost) >= 0.01 ? (totalPnl / abs(totalCost)) * 100 : 0 }
+        var dayChangePercent: Double {
+            let base = totalValue - dayChangeValue
+            return abs(base) >= 0.01 ? (dayChangeValue / abs(base)) * 100 : 0
+        }
+        var topSymbol: String? { allocation.first?.symbol }
+        var topWeight: Double { (allocation.first?.fraction ?? 0) * 100 }
+
+        func color(for symbol: String) -> Color {
+            let idx = allocation.firstIndex { $0.symbol == symbol } ?? 0
+            return DS.palette[idx % DS.palette.count]
+        }
+    }
+
+    private var derived: Derived {
+        var d = Derived()
+        d.holdings = portfolios.flatMap { portfolio in
             portfolio.holdings.compactMap { holding -> ValuedHolding? in
                 guard let quote = stockService.quotes[holding.symbol] else { return nil }
                 let price = quote.displayPrice(extendedHours: storageService.showExtendedHours)
@@ -93,24 +124,31 @@ struct PortfolioOverview: View {
             }
         }
         .sorted { abs($0.value) > abs($1.value) }
-    }
 
-    private var totalValue: Double { holdings.reduce(0) { $0 + $1.value } }
-    private var totalCost: Double { holdings.reduce(0) { $0 + $1.cost } }
-    private var totalPnl: Double { totalValue - totalCost }
-    private var totalPnlPercent: Double { abs(totalCost) >= 0.01 ? (totalPnl / abs(totalCost)) * 100 : 0 }
-
-    private var dayChangeValue: Double {
-        holdings.reduce(0) { sum, h in
+        var absTotal: Double = 0
+        var bySymbol: [String: Double] = [:]
+        var byType: [String: Double] = [:]
+        for h in d.holdings {
+            d.totalValue += h.value
+            d.totalCost += h.cost
             // Use the change consistent with the price the value is computed at
             // (extended-hours-aware), so TODAY can't disagree in sign with the value.
             let change = h.quote.effectiveChange(extendedHours: storageService.showExtendedHours)
-            return sum + change * h.holding.quantity * h.holding.effectiveLeverage * stockService.rate(from: h.quote.currency)
+            d.dayChangeValue += change * h.holding.quantity * h.holding.effectiveLeverage * stockService.rate(from: h.quote.currency)
+
+            let weight = abs(h.value)
+            absTotal += weight
+            bySymbol[h.symbol, default: 0] += weight
+            byType[Self.typeLabel(h.type), default: 0] += weight
         }
-    }
-    private var dayChangePercent: Double {
-        let base = totalValue - dayChangeValue
-        return abs(base) >= 0.01 ? (dayChangeValue / abs(base)) * 100 : 0
+
+        if absTotal >= 0.01 {
+            d.allocation = bySymbol
+                .map { AllocationSlice(id: $0.key, symbol: $0.key, value: $0.value, fraction: $0.value / absTotal) }
+                .sorted { $0.value > $1.value }
+            d.typeBreakdown = byType.map { ($0.key, $0.value / absTotal) }.sorted { $0.1 > $1.1 }
+        }
+        return d
     }
 
     /// Snapshot series for the scope, merged by day when aggregating portfolios.
@@ -161,7 +199,7 @@ struct PortfolioOverview: View {
     /// The curve actually drawn. 24H/7D use intraday-estimated value (the daily
     /// snapshots have no intraday resolution); 1M+ prefer real snapshots once
     /// they're as dense as the daily estimate. `isEstimated` drives the badge.
-    private var displaySeries: (points: [ValuePoint], isEstimated: Bool) {
+    private func displaySeries(totalValue: Double) -> (points: [ValuePoint], isEstimated: Bool) {
         switch chartRange {
         case .day:
             // Intraday value path. The reconstructed bars can lag the live quote
@@ -187,7 +225,9 @@ struct PortfolioOverview: View {
     private var symbols: [String] { Array(Set(portfolios.flatMap { $0.holdings.map(\.symbol) })) }
 
     var body: some View {
-        PageScaffold(title, caption: "\(holdings.count) positions · \(storageService.preferredCurrency)") {
+        // Valued ONCE per render, then threaded into every section (see `Derived`).
+        let d = derived
+        return PageScaffold(title, caption: "\(d.holdings.count) positions · \(storageService.preferredCurrency)") {
             HStack(spacing: 12) {
                 portfolioMenu
                 RefreshButton(isLoading: stockService.isLoading) {
@@ -198,13 +238,13 @@ struct PortfolioOverview: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: DS.gap) {
-                        heroCard
-                        statRow
+                        heroCard(d)
+                        statRow(d)
                         HStack(alignment: .top, spacing: DS.gap) {
-                            allocationCard.frame(maxWidth: .infinity)
-                            moversCard(proxy: proxy).frame(width: 340)
+                            allocationCard(d).frame(maxWidth: .infinity)
+                            moversCard(proxy: proxy, d).frame(width: 340)
                         }
-                        positionsCard.id("positions")
+                        positionsCard(d).id("positions")
                     }
                     .pageColumn()
                     .padding(.top, 4)
@@ -227,11 +267,11 @@ struct PortfolioOverview: View {
 
     // MARK: - Hero (chart as the ground of the card)
 
-    private var heroCard: some View {
+    private func heroCard(_ d: Derived) -> some View {
         // Compute the (expensive) value series ONCE per render — it was being
         // recomputed 5× (badge, picker, chart points, chart dash), which showed
         // up as lag when switching portfolios (each switch rebuilds this view).
-        let ds = displaySeries
+        let ds = displaySeries(totalValue: d.totalValue)
         // Pill reflects the SELECTED range: change across the drawn curve. When
         // the curve is too sparse to span a period (e.g. day one), fall back to
         // the day-over-day figure so the pill is never empty.
@@ -243,12 +283,12 @@ struct PortfolioOverview: View {
         // "+2202%"). 7D/1M/1Y → the curve span over that bounded window.
         let useRealDay = chartRange == .day
         let useRealAllTime = chartRange == .all
-        let periodValue = useRealDay ? dayChangeValue
-            : useRealAllTime ? totalPnl
-            : (PortfolioPeriodChange.value(ds.points) ?? dayChangeValue)
-        let periodPercent = useRealDay ? dayChangePercent
-            : useRealAllTime ? totalPnlPercent
-            : (PortfolioPeriodChange.percent(ds.points) ?? dayChangePercent)
+        let periodValue = useRealDay ? d.dayChangeValue
+            : useRealAllTime ? d.totalPnl
+            : (PortfolioPeriodChange.value(ds.points) ?? d.dayChangeValue)
+        let periodPercent = useRealDay ? d.dayChangePercent
+            : useRealAllTime ? d.totalPnlPercent
+            : (PortfolioPeriodChange.percent(ds.points) ?? d.dayChangePercent)
         let periodLabel = useRealDay ? "today"
             : useRealAllTime ? "all-time"
             : (PortfolioPeriodChange.percent(ds.points) != nil ? chartRange.changeLabel : "today")
@@ -271,11 +311,12 @@ struct PortfolioOverview: View {
                         if !ds.points.isEmpty { rangePicker }
                     }
                 }
-                Text(StorageService.formatAmount(totalValue, symbol: currencySymbol, decimals: storageService.amountDecimals))
+                Text(StorageService.formatAmount(d.totalValue, symbol: currencySymbol, decimals: storageService.amountDecimals))
                     .font(DS.display).tracking(-0.5)
                     .foregroundStyle(DS.ink)
                     .contentTransition(.numericText())
-                    .animation(.spring(response: 0.5, dampingFraction: 0.9), value: totalValue)
+                    // Price-driven: must settle between 1s tick flushes (see DS.tick).
+                    .animation(DS.tick, value: d.totalValue)
                 HStack(spacing: 10) {
                     ChangePill(value: periodValue,
                                text: String(format: "%+.\(decimals)f%% %@", periodPercent, periodLabel))
@@ -283,10 +324,10 @@ struct PortfolioOverview: View {
                     // where the pill already shows exactly this (no duplicate).
                     if !useRealAllTime {
                         Text(String(format: "%@ (%+.\(decimals)f%%) all-time",
-                                    StorageService.formatAmount(totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
-                                    totalPnlPercent))
+                                    StorageService.formatAmount(d.totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
+                                    d.totalPnlPercent))
                             .font(DS.caption.monospacedDigit())
-                            .foregroundStyle(DS.pnlColor(totalPnl))
+                            .foregroundStyle(DS.pnlColor(d.totalPnl))
                     }
                 }
             }
@@ -433,7 +474,14 @@ struct PortfolioOverview: View {
             .chartOverlay { proxy in valueCrosshair(proxy, points: points, tint: tint) }
             // Morph marks in place when async data lands (avoids a hard "pop" as
             // intraday/history loads after a range switch).
-            .animation(.easeInOut(duration: 0.4), value: points)
+            //
+            // Keyed on the point COUNT, not the array: on the 24H range the last
+            // point is re-pinned to the live total every tick (see displaySeries),
+            // so `value: points` re-ran a 0.4s animation of every mark once a
+            // second — and compared the whole array on every render besides. The
+            // count still changes exactly when new bars arrive, which is the case
+            // this animation exists for.
+            .animation(.easeInOut(duration: 0.4), value: points.count)
             // Range switch replaces the chart; crossfade it rather than cut.
             .id(chartRange)
             .transition(.opacity.animation(.easeInOut(duration: 0.4)))
@@ -455,32 +503,29 @@ struct PortfolioOverview: View {
 
     // MARK: - Stats
 
-    private var statRow: some View {
+    private func statRow(_ d: Derived) -> some View {
         HStack(spacing: 12) {
             StatTile(label: "Total P&L",
-                     value: StorageService.formatAmount(totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
-                     caption: String(format: "%+.\(decimals)f%% on cost", totalPnlPercent),
-                     captionTint: DS.pnlColor(totalPnl), valueTint: DS.pnlColor(totalPnl),
+                     value: StorageService.formatAmount(d.totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
+                     caption: String(format: "%+.\(decimals)f%% on cost", d.totalPnlPercent),
+                     captionTint: DS.pnlColor(d.totalPnl), valueTint: DS.pnlColor(d.totalPnl),
                      help: "Total profit/loss vs your cost basis")
             StatTile(label: "Today",
-                     value: StorageService.formatAmount(dayChangeValue, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
-                     caption: String(format: "%+.\(decimals)f%%", dayChangePercent),
-                     captionTint: DS.pnlColor(dayChangeValue), valueTint: DS.pnlColor(dayChangeValue),
+                     value: StorageService.formatAmount(d.dayChangeValue, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
+                     caption: String(format: "%+.\(decimals)f%%", d.dayChangePercent),
+                     captionTint: DS.pnlColor(d.dayChangeValue), valueTint: DS.pnlColor(d.dayChangeValue),
                      help: "Change since the previous close")
             StatTile(label: "Invested",
-                     value: StorageService.formatAmount(totalCost, symbol: currencySymbol, decimals: storageService.amountDecimals),
-                     caption: "\(holdings.count) holdings",
+                     value: StorageService.formatAmount(d.totalCost, symbol: currencySymbol, decimals: storageService.amountDecimals),
+                     caption: "\(d.holdings.count) holdings",
                      help: "Total amount invested (cost basis)")
             StatTile(label: "Concentration",
-                     value: String(format: "%.1f%%", topWeight),
-                     caption: topSymbol.map { topWeight > 40 ? "high · top \($0)" : "top · \($0)" } ?? "—",
-                     captionTint: topWeight > 40 ? DS.gold : DS.inkTertiary,
+                     value: String(format: "%.1f%%", d.topWeight),
+                     caption: d.topSymbol.map { d.topWeight > 40 ? "high · top \($0)" : "top · \($0)" } ?? "—",
+                     captionTint: d.topWeight > 40 ? DS.gold : DS.inkTertiary,
                      help: "Weight of your largest position — a diversification risk gauge")
         }
     }
-
-    private var topSymbol: String? { allocation.first?.symbol }
-    private var topWeight: Double { (allocation.first?.fraction ?? 0) * 100 }
 
     // MARK: - Allocation (donut + legend + type strip)
 
@@ -490,42 +535,33 @@ struct PortfolioOverview: View {
         let value: Double
         let fraction: Double
     }
-    private var allocation: [AllocationSlice] {
-        let total = holdings.reduce(0) { $0 + abs($1.value) }
-        guard total >= 0.01 else { return [] }
-        var bySymbol: [String: Double] = [:]
-        for h in holdings { bySymbol[h.symbol, default: 0] += abs(h.value) }
-        return bySymbol.map { AllocationSlice(id: $0.key, symbol: $0.key, value: $0.value, fraction: $0.value / total) }
-            .sorted { $0.value > $1.value }
-    }
-
-    private var allocationCard: some View {
+    private func allocationCard(_ d: Derived) -> some View {
         Card(title: "Allocation") {
-            if allocation.isEmpty {
+            if d.allocation.isEmpty {
                 emptyLine
             } else {
                 VStack(spacing: 16) {
                     HStack(spacing: 20) {
                         ZStack {
-                            Chart(allocation) { slice in
+                            Chart(d.allocation) { slice in
                                 SectorMark(angle: .value("Value", slice.value),
                                            innerRadius: .ratio(0.64), angularInset: 2)
                                     .cornerRadius(3)
-                                    .foregroundStyle(color(for: slice.symbol))
+                                    .foregroundStyle(d.color(for: slice.symbol))
                                     .opacity(hoveredSlice == nil || hoveredSlice == slice.symbol ? 1 : 0.35)
                             }
                             .chartLegend(.hidden)
                             VStack(spacing: 1) {
-                                Text("\(allocation.count)").font(DS.figureLG).foregroundStyle(DS.ink)
+                                Text("\(d.allocation.count)").font(DS.figureLG).foregroundStyle(DS.ink)
                                 SectionLabel("Assets")
                             }
                         }
                         .frame(width: 136, height: 136)
 
                         VStack(alignment: .leading, spacing: 9) {
-                            ForEach(allocation.prefix(6)) { slice in
+                            ForEach(d.allocation.prefix(6)) { slice in
                                 HStack(spacing: 9) {
-                                    RoundedRectangle(cornerRadius: 2.5).fill(color(for: slice.symbol)).frame(width: 9, height: 9)
+                                    RoundedRectangle(cornerRadius: 2.5).fill(d.color(for: slice.symbol)).frame(width: 9, height: 9)
                                     Text(slice.symbol).font(DS.figure).foregroundStyle(DS.ink)
                                     Spacer()
                                     Text(String(format: "%.1f%%", slice.fraction * 100))
@@ -538,17 +574,18 @@ struct PortfolioOverview: View {
                         .frame(maxWidth: .infinity)
                     }
 
-                    if !typeBreakdown.isEmpty {
+                    if !d.typeBreakdown.isEmpty {
                         Divider().overlay(DS.hairline)
-                        typeStrip
+                        typeStrip(d)
                     }
                 }
             }
         }
     }
 
-    private var typeStrip: some View {
-        VStack(alignment: .leading, spacing: 8) {
+    private func typeStrip(_ d: Derived) -> some View {
+        let typeBreakdown = d.typeBreakdown
+        return VStack(alignment: .leading, spacing: 8) {
             GeometryReader { geo in
                 HStack(spacing: 2) {
                     ForEach(Array(typeBreakdown.enumerated()), id: \.element.label) { idx, row in
@@ -573,17 +610,12 @@ struct PortfolioOverview: View {
         }
     }
 
-    private func color(for symbol: String) -> Color {
-        let idx = allocation.firstIndex { $0.symbol == symbol } ?? 0
-        return DS.palette[idx % DS.palette.count]
-    }
-
     // MARK: - Movers
 
-    private func moversCard(proxy: ScrollViewProxy) -> some View {
+    private func moversCard(proxy: ScrollViewProxy, _ d: Derived) -> some View {
         Card(title: "Today's movers") {
             var seen = Set<String>()
-            let movers = holdings.filter { seen.insert($0.symbol).inserted }
+            let movers = d.holdings.filter { seen.insert($0.symbol).inserted }
                 .sorted { abs($0.dayChangePercent) > abs($1.dayChangePercent) }
             let maxAbs = movers.map { abs($0.dayChangePercent) }.max() ?? 1
             if movers.isEmpty {
@@ -618,7 +650,7 @@ struct PortfolioOverview: View {
                             Divider().overlay(DS.hairline.opacity(0.6)).padding(.horizontal, 8)
                         }
                     }
-                    if holdings.count > 5 {
+                    if d.holdings.count > 5 {
                         Button {
                             withAnimation(.easeOut(duration: 0.3)) { proxy.scrollTo("positions", anchor: .top) }
                         } label: {
@@ -636,13 +668,6 @@ struct PortfolioOverview: View {
 
     // MARK: - Diversification data
 
-    private var typeBreakdown: [(label: String, fraction: Double)] {
-        let total = holdings.reduce(0) { $0 + abs($1.value) }
-        guard total >= 0.01 else { return [] }
-        var byType: [String: Double] = [:]
-        for h in holdings { byType[Self.typeLabel(h.type), default: 0] += abs(h.value) }
-        return byType.map { ($0.key, $0.value / total) }.sorted { $0.1 > $1.1 }
-    }
     private static func typeLabel(_ type: String) -> String {
         switch type.uppercased() {
         case "EQUITY": return "Stocks"
@@ -659,14 +684,14 @@ struct PortfolioOverview: View {
 
     // MARK: - Positions
 
-    private var positionsCard: some View {
+    private func positionsCard(_ d: Derived) -> some View {
         VStack(alignment: .leading, spacing: 13) {
             HStack {
                 SectionLabel("Positions")
                 Spacer()
                 addHoldingButton
             }
-            if holdings.isEmpty {
+            if d.holdings.isEmpty {
                 VStack(spacing: 10) {
                     Text("No holdings yet").font(DS.bodyStrong).foregroundStyle(DS.ink)
                     Text("Add your first position to start tracking value and P&L.")
@@ -689,11 +714,11 @@ struct PortfolioOverview: View {
                     .tracking(0.8).textCase(.uppercase)
                     .padding(.bottom, 12)
                     Divider().overlay(DS.hairline)
-                    ForEach(holdings) { h in
+                    ForEach(d.holdings) { h in
                         NavigationLink(value: h.id) {
                             PositionRow(h: h, currencySymbol: currencySymbol,
-                                        weight: abs(totalValue) >= 0.01 ? abs(h.value) / abs(totalValue) * 100 : 0,
-                                        topWeight: topWeight,
+                                        weight: abs(d.totalValue) >= 0.01 ? abs(h.value) / abs(d.totalValue) * 100 : 0,
+                                        topWeight: d.topWeight,
                                         decimals: decimals,
                                         valueDecimals: storageService.valueDecimals)
                         }
@@ -705,16 +730,16 @@ struct PortfolioOverview: View {
                                 storageService.removeHolding(from: h.portfolioId, holdingId: h.holding.id)
                             } label: { Label("Delete", systemImage: "trash") }
                         }
-                        if h.id != holdings.last?.id {
+                        if h.id != d.holdings.last?.id {
                             Divider().overlay(DS.hairline.opacity(0.6)).padding(.horizontal, 8)
                         }
                     }
                 }
                 .navigationDestination(for: UUID.self) { id in
-                    if let h = holdings.first(where: { $0.id == id }) {
+                    if let h = d.holdings.first(where: { $0.id == id }) {
                         HoldingDetailView(portfolioId: h.portfolioId, holding: h.holding, quote: h.quote,
                                           value: h.value, cost: h.cost,
-                                          weight: abs(totalValue) >= 0.01 ? abs(h.value) / abs(totalValue) * 100 : 0)
+                                          weight: abs(d.totalValue) >= 0.01 ? abs(h.value) / abs(d.totalValue) * 100 : 0)
                     }
                 }
             }

@@ -1,0 +1,8 @@
+<h2>Much lighter on your Mac</h2>
+<ul>
+    <li><strong>Idle CPU use is down to near zero.</strong> With the Portfolio window open, StockDock used to sit around 60-70% CPU for as long as the market was open — enough to warm up the machine and slow everything else down. In the background it now measures about 0.1%.</li>
+    <li><strong>Live prices no longer animate non-stop.</strong> Price-driven animations were slower to settle than the once-a-second price feed, so the app was redrawing continuously and never went idle. They are now short and snappy, and finish between updates.</li>
+    <li><strong>The Portfolio window does far less work per update.</strong> Positions are valued once per refresh instead of a dozen times, and the value chart no longer re-animates every mark on every tick.</li>
+    <li><strong>Updates slow down when you're in another app.</strong> Prices refresh once a second while you're looking at StockDock, and less often when you're not — bringing the app back to the front shows the latest figures immediately.</li>
+</ul>
+<p>No feature or visual changes: everything looks and behaves exactly as before, it just costs a fraction of the CPU.</p>
