@@ -6,22 +6,25 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.8</title>
-            <pubDate>Tue, 28 Jul 2026 10:29:47 +0200</pubDate>
-            <sparkle:version>31</sparkle:version>
-            <sparkle:shortVersionString>1.9.8</sparkle:shortVersionString>
+            <title>Version 1.9.9</title>
+            <pubDate>Wed, 29 Jul 2026 01:16:57 +0200</pubDate>
+            <sparkle:version>32</sparkle:version>
+            <sparkle:shortVersionString>1.9.9</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Current price next to your average buy price</h2>
+<h2>Much lighter on your Mac</h2>
 <ul>
-    <li><strong>Cost and market price side by side.</strong> Each line of the per-stock average buy price block now shows the live price too — <em>avg</em> is what you paid, <em>now</em> is what it trades at — so you can read your entry and the market in one glance, without opening the position.</li>
-    <li><strong>Same currency, same precision.</strong> The current price uses the stock's own price currency and follows your extended-hours setting, exactly like the rest of the app.</li>
+    <li><strong>Idle CPU use is down to near zero.</strong> With the Portfolio window open, StockDock used to sit around 60-70% CPU for as long as the market was open — enough to warm up the machine and slow everything else down. In the background it now measures about 0.1%.</li>
+    <li><strong>Live prices no longer animate non-stop.</strong> Price-driven animations were slower to settle than the once-a-second price feed, so the app was redrawing continuously and never went idle. They are now short and snappy, and finish between updates.</li>
+    <li><strong>The Portfolio window does far less work per update.</strong> Positions are valued once per refresh instead of a dozen times, and the value chart no longer re-animates every mark on every tick.</li>
+    <li><strong>Updates slow down when you're in another app.</strong> Prices refresh once a second while you're looking at StockDock, and less often when you're not — bringing the app back to the front shows the latest figures immediately.</li>
 </ul>
+<p>No feature or visual changes: everything looks and behaves exactly as before, it just costs a fraction of the CPU.</p>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.8/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.9/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="l+/GIF3AJFiZZDuCUsOh5+ngZbwUt46alF+87BJymQwmh+nedrImJakVcqOPUOBve8lcaFzjhe1L5sE2p/VHBw=="
-                       length="9602174"/>
+                       sparkle:edSignature="xMTfFyg2DiPi2hKejBm5zQtpqPsivNrleogGgCdjCm9oAb3Bb1lvip2ME8vntmdxSYhre3F8oYqKL5n3esgnBA=="
+                       length="9596755"/>
         </item>
     </channel>
 </rss>
