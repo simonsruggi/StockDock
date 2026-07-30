@@ -6,25 +6,25 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.9</title>
-            <pubDate>Wed, 29 Jul 2026 01:16:57 +0200</pubDate>
-            <sparkle:version>32</sparkle:version>
-            <sparkle:shortVersionString>1.9.9</sparkle:shortVersionString>
+            <title>Version 1.9.10</title>
+            <pubDate>Thu, 30 Jul 2026 16:12:05 +0200</pubDate>
+            <sparkle:version>33</sparkle:version>
+            <sparkle:shortVersionString>1.9.10</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Much lighter on your Mac</h2>
+<h2>The value chart starts when you actually bought</h2>
 <ul>
-    <li><strong>Idle CPU use is down to near zero.</strong> With the Portfolio window open, StockDock used to sit around 60-70% CPU for as long as the market was open — enough to warm up the machine and slow everything else down. In the background it now measures about 0.1%.</li>
-    <li><strong>Live prices no longer animate non-stop.</strong> Price-driven animations were slower to settle than the once-a-second price feed, so the app was redrawing continuously and never went idle. They are now short and snappy, and finish between updates.</li>
-    <li><strong>The Portfolio window does far less work per update.</strong> Positions are valued once per refresh instead of a dozen times, and the value chart no longer re-animates every mark on every tick.</li>
-    <li><strong>Updates slow down when you're in another app.</strong> Prices refresh once a second while you're looking at StockDock, and less often when you're not — bringing the app back to the front shows the latest figures immediately.</li>
+    <li><strong>"All" no longer invents decades of history.</strong> The estimated portfolio curve was reconstructed from each stock's full price history, so a position opened this year could be charted all the way back to the 1990s or 2000s — whenever that symbol first traded. It now starts at your oldest purchase.</li>
+    <li><strong>Each position joins the curve on its own purchase date.</strong> The chart steps up as you actually built the portfolio, instead of pretending you always held today's shares. Holdings saved without a purchase date are unchanged.</li>
+    <li><strong>A finer curve on "All".</strong> With a realistic window, the range now draws the daily series when your oldest purchase fits inside it, rather than a handful of monthly steps.</li>
+    <li><strong>Clearer dates on the axis.</strong> Labels follow the period actually drawn, and the year is spelled out in full — "Jan 05" could be read as the 5th of January rather than January 2005.</li>
 </ul>
-<p>No feature or visual changes: everything looks and behaves exactly as before, it just costs a fraction of the CPU.</p>
+<p>Your figures are unaffected: total P&amp;L, invested amount and the all-time percentage have always come from your real cost and current value, never from the estimated curve. Only the shape of the chart was wrong.</p>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.9/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.10/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="xMTfFyg2DiPi2hKejBm5zQtpqPsivNrleogGgCdjCm9oAb3Bb1lvip2ME8vntmdxSYhre3F8oYqKL5n3esgnBA=="
-                       length="9596755"/>
+                       sparkle:edSignature="TRtmY8WbkAtsRCQuSaVHkhveKjPXc0qAEolaOFJVIfBQAWRYJjglEVomC8Hlvk8CJx20m5FW0AorAIpBU5hGBg=="
+                       length="9605970"/>
         </item>
     </channel>
 </rss>
