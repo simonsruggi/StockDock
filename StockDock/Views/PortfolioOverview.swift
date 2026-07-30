@@ -185,9 +185,23 @@ struct PortfolioOverview: View {
         return PortfolioBackfill.series(holdings: hs, historyBySymbol: hist, rateBySymbol: rate)
     }
 
-    /// Daily estimate (2y) for 1M/1Y; monthly full history for "All".
+    /// Oldest purchase across the shown portfolios — where the estimated curve
+    /// starts (nil when no holding records a date, i.e. legacy/imported lots).
+    private var ownedSince: Date? {
+        portfolios.flatMap { $0.holdings }.compactMap(\.purchaseDate).min()
+    }
+
+    /// Daily estimate (2y) for 1M/1Y. "All" needs the monthly max-history only when
+    /// the portfolio actually predates the daily window — since the curve now starts
+    /// at the oldest purchase, a portfolio built this year would otherwise be drawn
+    /// as a handful of monthly steps.
     private var estimatedSeries: [ValuePoint] {
-        valueSeries(from: chartRange == .all ? stockService.priceHistoryMax : stockService.priceHistory)
+        guard chartRange == .all else { return valueSeries(from: stockService.priceHistory) }
+        let dailyStart = Calendar.current.date(byAdding: .year, value: -2, to: Date())
+        if let since = ownedSince, let dailyStart, since >= dailyStart {
+            return valueSeries(from: stockService.priceHistory)
+        }
+        return valueSeries(from: stockService.priceHistoryMax)
     }
     private var estimatedFiltered: [ValuePoint] {
         guard let days = chartRange.days,
@@ -378,12 +392,18 @@ struct PortfolioOverview: View {
     }
 
     /// X-axis tick label formatted for the selected period.
-    private func xAxisLabel(_ date: Date) -> String {
+    /// `span` is the drawn curve's own duration: since the estimate now starts at the
+    /// oldest purchase, "All" can cover a single month, where four "lug 2026" ticks
+    /// say nothing. Under a year it falls back to day+month.
+    private func xAxisLabel(_ date: Date, span: TimeInterval) -> String {
         switch chartRange {
         case .day: return date.formatted(.dateTime.hour().minute())
         case .week: return date.formatted(.dateTime.weekday(.abbreviated))
         case .month: return date.formatted(.dateTime.day().month(.abbreviated))
-        case .year, .all: return date.formatted(.dateTime.month(.abbreviated).year(.twoDigits))
+        case .year, .all:
+            guard span >= 365 * 86400 else { return date.formatted(.dateTime.day().month(.abbreviated)) }
+            // Four-digit year: "gen 05" reads as the 5th of January, not January 2005.
+            return date.formatted(.dateTime.month(.abbreviated).year())
         }
     }
 
@@ -435,6 +455,7 @@ struct PortfolioOverview: View {
             // terracotta when down. Estimated state is shown by the dash only.
             let periodUp = (points.last?.value ?? 0) >= (points.first?.value ?? 0)
             let tint = periodUp ? DS.up : DS.down
+            let span = (points.last?.date.timeIntervalSince(points.first?.date ?? .distantPast)) ?? 0
             Chart {
                 ForEach(points) { p in
                     AreaMark(x: .value("Day", p.date), y: .value("Value", p.value))
@@ -466,7 +487,7 @@ struct PortfolioOverview: View {
             .chartXAxis {
                 AxisMarks(values: .automatic(desiredCount: 4)) { value in
                     if let d = value.as(Date.self) {
-                        AxisValueLabel { Text(xAxisLabel(d)).font(DS.micro).foregroundStyle(DS.inkTertiary) }
+                        AxisValueLabel { Text(xAxisLabel(d, span: span)).font(DS.micro).foregroundStyle(DS.inkTertiary) }
                     }
                 }
             }

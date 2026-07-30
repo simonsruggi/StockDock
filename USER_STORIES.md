@@ -235,3 +235,13 @@
 - [x] The hero value chart animates on the point *count*, not the point array: on the 24H range the last point is re-pinned to the live total every tick, which re-animated every mark once a second
 - [x] Tick publishing adapts to focus: 1s while the app is active, 5s otherwise, with an immediate flush on `didBecomeActive` so returning to the app is never stale
 - [x] Measured with `sample` + `top`: Portfolio window open went from ~60-70% CPU sustained to ~0.1% in the background (~30-35% while frontmost); window closed was and stays ~0.5%
+
+## US-25: The estimated value curve starts when I bought
+**As a** user, **I want** the "All" chart to cover the life of my portfolio **so that** it doesn't claim a history I never had.
+
+- [x] The estimated curve starts at the oldest `purchaseDate` across the shown portfolios, not at the earliest quote Yahoo happens to have (a 2026 position was drawn from 2005)
+- [x] Each position contributes only from its own purchase date, so the curve steps up as the portfolio was actually built
+- [x] Holdings with no purchase date (imported, or saved before the field existed) keep the old behaviour: valued across the whole window
+- [x] "All" uses the daily 2y history when the oldest purchase fits inside it, falling back to the monthly `range=max` series only for portfolios that really predate it — a portfolio built this year is a curve, not six monthly steps
+- [x] X-axis labels follow the drawn span, not the selected range: `6 lug` under a year, four-digit `gen 2005` above (`gen 05` read as the 5th of January)
+- [x] Totals are untouched: TOTAL P&L, INVESTED and the all-time pill come from real cost/value, never from the estimated curve

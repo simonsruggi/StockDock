@@ -11,9 +11,9 @@ struct ValuePoint: Identifiable, Equatable {
 /// history times the *current* position — so the Overview chart shows a trend on
 /// day one, before real daily snapshots accumulate.
 ///
-/// This is explicitly an estimate (labelled as such in the UI): it assumes the
-/// current holdings were held over the whole window and uses the current FX rate.
-/// Real snapshots, once present, take precedence.
+/// This is explicitly an estimate (labelled as such in the UI): it assumes each
+/// position was held at its current size since its purchase date, and uses the
+/// current FX rate. Real snapshots, once present, take precedence.
 enum PortfolioBackfill {
     static func series(holdings: [Holding],
                        historyBySymbol: [String: [PricePoint]],
@@ -32,11 +32,25 @@ enum PortfolioBackfill {
         for holding in holdings.dropFirst() {
             commonDates.formIntersection(Set(closeBySymbol[holding.symbol]?.keys ?? [:].keys))
         }
+
+        // Each position counts only from the day it was bought, and the curve as a
+        // whole starts at the oldest purchase. Without this, "All" projects today's
+        // share counts back to the earliest quote Yahoo has and draws a portfolio
+        // decades older than it is (a 2026 position charted from 2005).
+        // Holdings with no purchase date (imported, or saved before the field
+        // existed) keep the old behaviour: valued across the whole window.
+        let ownedFrom: [UUID: Date] = holdings.reduce(into: [:]) { acc, holding in
+            if let date = holding.purchaseDate { acc[holding.id] = Calendar.current.startOfDay(for: date) }
+        }
+        if let start = ownedFrom.values.min() {
+            commonDates = commonDates.filter { $0 >= start }
+        }
         guard !commonDates.isEmpty else { return [] }
 
         return commonDates.sorted().map { date in
             var total = 0.0
             for holding in holdings {
+                if let from = ownedFrom[holding.id], date < from { continue }
                 let close = closeBySymbol[holding.symbol]?[date] ?? 0
                 let rate = rateBySymbol[holding.symbol] ?? 1
                 total += close * holding.quantity * holding.effectiveLeverage * rate
