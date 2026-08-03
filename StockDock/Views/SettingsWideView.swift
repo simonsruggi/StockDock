@@ -114,6 +114,7 @@ struct SettingsWideView: View {
             SettingRow("Display") {
                 DSPicker(options: [
                     ("pnl", "P&L (+321.09€)"),
+                    ("dailyPnl", "Daily P&L (+321.09€)"),
                     ("pnlPercent", "P&L % (+2.3%)"),
                     ("pnlFull", "P&L + %"),
                     ("totalValue", "Total value"),

@@ -134,7 +134,7 @@ struct PortfolioOverview: View {
             // Use the change consistent with the price the value is computed at
             // (extended-hours-aware), so TODAY can't disagree in sign with the value.
             let change = h.quote.effectiveChange(extendedHours: storageService.showExtendedHours)
-            d.dayChangeValue += change * h.holding.quantity * h.holding.effectiveLeverage * stockService.rate(from: h.quote.currency)
+            d.dayChangeValue += h.holding.dailyPnl(priceChange: change) * stockService.rate(from: h.quote.currency)
 
             let weight = abs(h.value)
             absTotal += weight

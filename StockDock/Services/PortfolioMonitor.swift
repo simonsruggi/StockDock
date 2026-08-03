@@ -149,7 +149,7 @@ final class PortfolioMonitor {
             // signed quantity and leverage so shorts and levered lots contribute
             // correctly.
             let exposure = holding.quantity * holding.effectiveLeverage
-            let contribution = exposure * quote.change * rate
+            let contribution = holding.dailyPnl(priceChange: quote.change) * rate
             let prevClose = quote.price - quote.change
             m.totalValue += value
             m.dayChange += contribution

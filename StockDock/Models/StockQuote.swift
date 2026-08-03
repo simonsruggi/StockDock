@@ -178,6 +178,10 @@ struct Holding: Identifiable, Codable {
         (currentPrice - avgPrice) * quantity * effectiveLeverage
     }
 
+    func dailyPnl(priceChange: Double) -> Double {
+        priceChange * quantity * effectiveLeverage
+    }
+
     func pnlPercent(currentPrice: Double) -> Double {
         guard avgPrice > 0 else { return 0 }
         // Exposure-relative return: a short gains when the price falls, so flip

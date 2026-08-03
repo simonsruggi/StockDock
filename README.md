@@ -206,6 +206,7 @@ Click the gear icon tab to configure:
 | Option | Example |
 |---|---|
 | P&L | `P&L +321.09€` |
+| Daily P&L | `Daily P&L +42.10€` |
 | P&L % | `P&L +2.3%` |
 | P&L + % | `+321.09€ (+2.3%)` |
 | Total Value | `14396.67€` |

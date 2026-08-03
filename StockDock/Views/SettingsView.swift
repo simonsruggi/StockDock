@@ -156,6 +156,7 @@ struct SettingsView: View {
                     subHeader("Display")
                     Picker("Display", selection: $storageService.menuBarDisplay) {
                         Text("P&L (+321.09€)").tag("pnl")
+                        Text("Daily P&L (+321.09€)").tag("dailyPnl")
                         Text("P&L % (+2.3%)").tag("pnlPercent")
                         Text("P&L + % (+321.09€ +2.3%)").tag("pnlFull")
                         Text("Total Value (14396.67€)").tag("totalValue")
