@@ -8,6 +8,12 @@ BUNDLE_ID="com.simone.stockdock"
 SIGNING_IDENTITY="Developer ID Application: Simone Ruggiero (M6TP9DBCVL)"
 ENTITLEMENTS="StockDock.entitlements"
 NOTARY_PROFILE="notarytool"
+# Fallback when the keychain profile can't be used (a non-interactive shell
+# cannot unlock the login keychain, so `notarytool store-credentials` and
+# `--keychain-profile` both fail): submit with the App Store Connect API key.
+ASC_KEY_ID="XHZXNVR66X"
+ASC_ISSUER_ID="2305f531-8fc2-4f06-b925-ebcc8ef21e0f"
+ASC_KEY_PATH="$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
 SPARKLE_SIGN=".build/artifacts/sparkle/Sparkle/bin/sign_update"
 APPCAST="appcast.xml"
 PLIST="StockDock/Info.plist"
@@ -155,9 +161,20 @@ info "Created $ZIP_NAME (${ZIP_SIZE} bytes)"
 # --- Step 5: Notarize ---
 step 5 "Notarize"
 
-xcrun notarytool submit "$ZIP_NAME" \
-    --keychain-profile "$NOTARY_PROFILE" \
-    --wait
+if xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null 2>&1; then
+    xcrun notarytool submit "$ZIP_NAME" \
+        --keychain-profile "$NOTARY_PROFILE" \
+        --wait
+elif [[ -f "$ASC_KEY_PATH" ]]; then
+    warn "Keychain profile '$NOTARY_PROFILE' unavailable — using the App Store Connect API key"
+    xcrun notarytool submit "$ZIP_NAME" \
+        --key "$ASC_KEY_PATH" \
+        --key-id "$ASC_KEY_ID" \
+        --issuer "$ASC_ISSUER_ID" \
+        --wait
+else
+    fail "No notarization credentials: neither the '$NOTARY_PROFILE' keychain profile nor $ASC_KEY_PATH"
+fi
 
 info "Notarization accepted"
 
