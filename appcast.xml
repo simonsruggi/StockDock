@@ -6,25 +6,23 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.10</title>
-            <pubDate>Thu, 30 Jul 2026 16:12:05 +0200</pubDate>
-            <sparkle:version>33</sparkle:version>
-            <sparkle:shortVersionString>1.9.10</sparkle:shortVersionString>
+            <title>Version 1.9.11</title>
+            <pubDate>Mon, 03 Aug 2026 21:55:09 +0200</pubDate>
+            <sparkle:version>34</sparkle:version>
+            <sparkle:shortVersionString>1.9.11</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>The value chart starts when you actually bought</h2>
+<h2>Today's P&amp;L in the menu bar</h2>
 <ul>
-    <li><strong>"All" no longer invents decades of history.</strong> The estimated portfolio curve was reconstructed from each stock's full price history, so a position opened this year could be charted all the way back to the 1990s or 2000s — whenever that symbol first traded. It now starts at your oldest purchase.</li>
-    <li><strong>Each position joins the curve on its own purchase date.</strong> The chart steps up as you actually built the portfolio, instead of pretending you always held today's shares. Holdings saved without a purchase date are unchanged.</li>
-    <li><strong>A finer curve on "All".</strong> With a realistic window, the range now draws the daily series when your oldest purchase fits inside it, rather than a handful of monthly steps.</li>
-    <li><strong>Clearer dates on the axis.</strong> Labels follow the period actually drawn, and the year is spelled out in full — "Jan 05" could be read as the 5th of January rather than January 2005.</li>
+    <li><strong>A new "Daily P&amp;L" display option.</strong> The menu bar could show your total P&amp;L, its percentage or the portfolio value — but not the one figure you check most during the session: how much you are up or down <em>today</em>. Pick it under Settings &rarr; Display.</li>
+    <li><strong>It counts what your positions really are.</strong> The daily figure converts every holding into your preferred currency, follows short positions in the right direction, applies leverage, and uses the extended-hours price when you have extended hours turned on — exactly like the Portfolio window's TODAY row.</li>
 </ul>
-<p>Your figures are unaffected: total P&amp;L, invested amount and the all-time percentage have always come from your real cost and current value, never from the estimated curve. Only the shape of the chart was wrong.</p>
+<p>With thanks to <a href="https://github.com/JeromeSiau">Jérôme Siau</a>, who contributed this feature.</p>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.10/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.11/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="TRtmY8WbkAtsRCQuSaVHkhveKjPXc0qAEolaOFJVIfBQAWRYJjglEVomC8Hlvk8CJx20m5FW0AorAIpBU5hGBg=="
-                       length="9605970"/>
+                       sparkle:edSignature="SagC1h63Lf4bim5C8m5i75sfv8OxKTUu3C5R25VZ2PPHS5yuLCWGHMcwhsB0IECA8yG7q0PNEat9Fa5M144uBg=="
+                       length="9607096"/>
         </item>
     </channel>
 </rss>
