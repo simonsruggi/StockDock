@@ -414,12 +414,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Compute portfolio stats
         var totalValue = 0.0
         var totalCost = 0.0
+        var dailyPnl = 0.0
         for portfolio in storageService.portfolios {
             for holding in portfolio.holdings {
                 if let quote = stockService.quotes[holding.symbol] {
                     let rate = stockService.rate(from: quote.currency)
                     let displayPrice = quote.displayPrice(extendedHours: storageService.showExtendedHours)
                     totalValue += holding.marketValue(currentPrice: displayPrice) * rate
+                    dailyPnl += holding.dailyPnl(priceChange: quote.effectiveChange(extendedHours: storageService.showExtendedHours)) * rate
                     let costRate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
                     totalCost += (holding.avgPrice * holding.quantity) * costRate
                 }
@@ -444,6 +446,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let downColor: NSColor = storageService.menuBarUseSystemColor ? .labelColor : storageService.lossColor
 
         switch displayMode {
+        case "dailyPnl":
+            title = " Daily P&L \(StorageService.formatAmount(dailyPnl, symbol: currSymbol, decimals: storageService.amountDecimals, signed: true))"
+            color = dailyPnl >= 0 ? upColor : downColor
+
         case "totalValue":
             title = " \(StorageService.formatAmount(totalValue, symbol: currSymbol, decimals: storageService.amountDecimals))"
             color = totalPnl >= 0 ? upColor : downColor

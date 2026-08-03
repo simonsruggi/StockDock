@@ -71,6 +71,11 @@ final class ShortLeverageTests: XCTestCase {
         XCTAssertEqual(h.pnlPercent(currentPrice: 90), 10, accuracy: 1e-9)
     }
 
+    func testDailyPnlRespectsDirectionAndLeverage() {
+        XCTAssertEqual(holding(qty: 10, avg: 100, leverage: 2).dailyPnl(priceChange: 3), 60, accuracy: 1e-9)
+        XCTAssertEqual(holding(qty: -10, avg: 100, leverage: 2).dailyPnl(priceChange: 3), -60, accuracy: 1e-9)
+    }
+
     // MARK: - Edge cases
 
     func testZeroAvgPriceGivesZeroPercent() {
