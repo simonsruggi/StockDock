@@ -25,8 +25,17 @@ struct PriceChartCard: View {
         /// 24H uses the 5-minute intraday feed; the rest use daily closes.
         var isIntraday: Bool { self == .day }
     }
+    /// #14: seeded from the last range the user picked (see `restoreRange`), so
+    /// the chart opens where they left it instead of always on 1M.
     @State private var chartRange: ChartRange = .month
     @State private var hoverPoint: PricePoint?
+
+    /// Applies the remembered range, if there is a valid one stored.
+    private func restoreRange() {
+        if let saved = ChartRange(rawValue: storageService.lastSymbolChartRange) {
+            chartRange = saved
+        }
+    }
 
     private var priceSymbol: String { StorageService.currencySymbol(for: quote.currency) }
 
@@ -149,6 +158,10 @@ struct PriceChartCard: View {
 
     private var rangePicker: some View {
         SegmentedRangePicker(options: ChartRange.allCases, label: \.rawValue, selection: $chartRange)
+            .onAppear(perform: restoreRange)
+            .onChange(of: chartRange) { _, new in
+                storageService.lastSymbolChartRange = new.rawValue
+            }
     }
 
     @ViewBuilder private var chart: some View {

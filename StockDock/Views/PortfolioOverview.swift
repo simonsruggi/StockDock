@@ -50,7 +50,16 @@ struct PortfolioOverview: View {
             }
         }
     }
+    /// #14: seeded from the last range the user picked (see `restoreRange`), so
+    /// the chart opens where they left it instead of always on All.
     @State private var chartRange: ChartRange = .all
+    /// Applies the remembered range, if there is a valid one stored.
+    private func restoreRange() {
+        if let saved = ChartRange(rawValue: storageService.lastPortfolioChartRange) {
+            chartRange = saved
+        }
+    }
+
     @State private var hoveredSlice: String?
     @State private var hoverPoint: ValuePoint?
 
@@ -65,7 +74,9 @@ struct PortfolioOverview: View {
 
     private var portfolios: [Portfolio] {
         switch scope {
-        case .all: return storageService.portfolios
+        // #14: the combined view shows only what counts toward the total; opening
+        // an excluded portfolio directly still shows it in full.
+        case .all: return storageService.countedPortfolios
         case .portfolio(let id): return storageService.portfolios.filter { $0.id == id }
         }
     }
@@ -360,6 +371,10 @@ struct PortfolioOverview: View {
 
     private var rangePicker: some View {
         SegmentedRangePicker(options: ChartRange.allCases, label: \.rawValue, selection: $chartRange)
+            .onAppear(perform: restoreRange)
+            .onChange(of: chartRange) { _, new in
+                storageService.lastPortfolioChartRange = new.rawValue
+            }
     }
 
     /// The same actions as the sidebar right-click, as a header "⋯" menu — shown
@@ -837,7 +852,11 @@ private struct PositionRow: View {
                         Text(h.symbol).font(DS.figure).foregroundStyle(DS.ink)
                         if h.holding.isShort { Tag(text: "S", color: DS.down) }
                     }
-                    Text(h.name).font(DS.micro).foregroundStyle(DS.inkTertiary).lineLimit(1)
+                    // #14: the share count belongs on the row people actually look
+                    // at — until now it only existed in the compact list and the
+                    // holding detail. Shares lead; the name fills what's left.
+                    Text("\(StorageService.formatQuantity(h.holding.quantity)) sh · \(h.name)")
+                        .font(DS.micro).foregroundStyle(DS.inkTertiary).lineLimit(1)
                 }
             }
             .frame(width: 168, alignment: .leading)

@@ -24,6 +24,8 @@ struct WatchlistWideView: View {
         let id: String
         let order: Int
         let symbol: String
+        /// #12: user-chosen display name, "" when unset.
+        let alias: String
         let name: String
         let currency: String
         let price: Double            // regular market price
@@ -39,6 +41,7 @@ struct WatchlistWideView: View {
     struct AlertTarget: Identifiable { let symbol: String; var id: String { symbol } }
     struct DetailTarget: Identifiable { let symbol: String; var id: String { symbol } }
     @State private var detailSymbol: DetailTarget?
+    @State private var renameSymbol: AlertTarget?
 
     private var rows: [WatchRow] {
         storageService.watchlist.enumerated().map { index, symbol in
@@ -47,6 +50,7 @@ struct WatchlistWideView: View {
             let ext: Double? = q.flatMap { $0.isExtendedHours ? $0.effectivePrice * rate : nil }
             return WatchRow(
                 id: symbol, order: index, symbol: symbol,
+                alias: storageService.alias(for: symbol),
                 name: q?.name ?? "",
                 currency: (storageService.stockPriceCurrency.isEmpty ? q?.currency : storageService.stockPriceCurrency) ?? "",
                 price: (q?.price ?? 0) * rate,
@@ -133,6 +137,11 @@ struct WatchlistWideView: View {
         .sheet(item: $alertSymbol) { t in
             PriceAlertSheet(symbol: t.symbol) { alertSymbol = nil }
                 .environmentObject(stockService).environmentObject(storageService)
+        }
+        .sheet(item: $renameSymbol) { t in
+            RenameSymbolSheet(symbol: t.symbol,
+                              currentAlias: storageService.alias(for: t.symbol)) { renameSymbol = nil }
+                .environmentObject(storageService)
         }
         .sheet(item: $detailSymbol) { t in
             SymbolDetailSheet(symbol: t.symbol, onAddToPortfolio: { pid in
@@ -257,6 +266,7 @@ struct WatchlistWideView: View {
             } label: { Label("Add to Portfolio", systemImage: "plus.rectangle.on.folder") }
         }
         Button { alertSymbol = AlertTarget(symbol: row.symbol) } label: { Label("Set Price Alert…", systemImage: "bell") }
+        Button { renameSymbol = AlertTarget(symbol: row.symbol) } label: { Label("Rename…", systemImage: "pencil") }
         if let idx = storageService.watchlist.firstIndex(of: row.symbol) {
             Divider()
             Button { move(row.symbol, by: -1) } label: { Label("Move Up", systemImage: "arrow.up") }
@@ -312,6 +322,13 @@ private struct WatchRowView<Menu: View>: View {
     @ViewBuilder let menu: () -> Menu
     @State private var hover = false
 
+    /// What the Name column shows: the company name, prefixed with the real
+    /// ticker when the user renamed the symbol.
+    private var nameColumn: String {
+        let base = row.name.isEmpty ? "—" : row.name
+        return row.alias.isEmpty ? base : "\(row.symbol) · \(base)"
+    }
+
     /// Price decimals honoring the manual override (Auto = smart per #10).
     private func priceDec(_ price: Double) -> Int {
         valueDecimals >= 0 ? valueDecimals : StorageService.priceDecimals(symbol: row.symbol, price: price)
@@ -353,12 +370,14 @@ private struct WatchRowView<Menu: View>: View {
                         .overlay(Text(row.symbol.prefix(2))
                             .font(.inter(9.5, weight: .bold, relativeTo: .caption2))
                             .foregroundStyle(DS.brand))
-                    Text(row.symbol).font(DS.figure).foregroundStyle(DS.ink)
+                    Text(row.alias.isEmpty ? row.symbol : row.alias)
+                        .font(DS.figure).foregroundStyle(DS.ink).lineLimit(1)
                 }
                 .frame(width: WCol.symbol, alignment: .leading)
 
-                // Name
-                Text(row.name.isEmpty ? "—" : row.name)
+                // Name — prefixed with the real ticker when a custom name is set,
+                // so renaming never hides what the row actually tracks.
+                Text(nameColumn)
                     .font(DS.body).foregroundStyle(DS.inkSecondary).lineLimit(1)
                     .frame(maxWidth: .infinity, alignment: .leading)
 

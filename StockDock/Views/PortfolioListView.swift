@@ -215,8 +215,10 @@ struct PortfolioListView: View {
         }
     }
 
+    // #14: grand totals and the cross-portfolio position list count only the
+    // portfolios the user hasn't excluded.
     private var grandTotalValue: Double {
-        storageService.portfolios.reduce(0) { total, portfolio in
+        storageService.countedPortfolios.reduce(0) { total, portfolio in
             total + portfolio.holdings.reduce(0) { sum, holding in
                 guard let quote = stockService.quotes[holding.symbol] else { return sum }
                 let rate = stockService.rate(from: quote.currency)
@@ -226,7 +228,7 @@ struct PortfolioListView: View {
     }
 
     private var grandTotalCost: Double {
-        storageService.portfolios.reduce(0) { total, portfolio in
+        storageService.countedPortfolios.reduce(0) { total, portfolio in
             total + portfolio.holdings.reduce(0) { sum, holding in
                 guard let quote = stockService.quotes[holding.symbol] else { return sum }
                 let rate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
@@ -250,7 +252,7 @@ struct PortfolioListView: View {
     private var globalPositions: [GlobalPosition] {
         var qty: [String: Double] = [:]
         var qtyPrice: [String: Double] = [:]
-        for portfolio in storageService.portfolios {
+        for portfolio in storageService.countedPortfolios {
             for h in portfolio.holdings {
                 qty[h.symbol, default: 0] += h.quantity
                 qtyPrice[h.symbol, default: 0] += h.quantity * h.avgPrice
@@ -405,6 +407,14 @@ struct PortfolioSection: View {
                 HStack {
                     Text(portfolio.name)
                         .font(.inter(13, weight: .bold, relativeTo: .headline))
+                        // #14: excluded portfolios read as present-but-not-counted.
+                        .foregroundColor(portfolio.isExcludedFromTotal ? .secondary : .primary)
+                    if portfolio.isExcludedFromTotal {
+                        Image(systemName: "briefcase.badge.minus")
+                            .font(.inter(10, relativeTo: .caption))
+                            .foregroundColor(.secondary)
+                            .help("Not counted in the total")
+                    }
                     Spacer()
                 }
                 .contentShape(Rectangle())
@@ -422,6 +432,12 @@ struct PortfolioSection: View {
                     }
                     Button(action: exportSingle) {
                         Label("Export", systemImage: "square.and.arrow.up")
+                    }
+                    Toggle(isOn: Binding(
+                        get: { !portfolio.isExcludedFromTotal },
+                        set: { storageService.setExcludedFromTotal(!$0, id: portfolio.id) }
+                    )) {
+                        Label("Count in Total", systemImage: "sum")
                     }
                     Divider()
                     Button(role: .destructive) {

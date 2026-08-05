@@ -158,6 +158,35 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    /// Issue #12: maps symbol → user-chosen display name, for symbols whose ticker
+    /// is unreadable in the menu bar ("CAD/USD" → "CAD", "^GSPC" → "S&P"). Empty
+    /// or whitespace-only values are never stored — the entry is removed instead,
+    /// so `alias(for:)` falling back to the symbol is the single "no alias" path.
+    @Published var symbolAlias: [String: String] = [:] {
+        didSet { scheduleSave() }
+    }
+
+    /// Sets or clears a symbol's custom display name. Passing an empty/blank name
+    /// clears it.
+    func setAlias(_ name: String, for symbol: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            symbolAlias.removeValue(forKey: symbol)
+        } else {
+            symbolAlias[symbol] = trimmed
+        }
+    }
+
+    /// The user's custom name for a symbol, or "" when unset.
+    func alias(for symbol: String) -> String { symbolAlias[symbol] ?? "" }
+
+    /// What to show for a symbol: the custom name if set, otherwise `fallback`
+    /// (the quote name or the raw symbol, depending on the caller's preference).
+    func displayLabel(for symbol: String, fallback: String) -> String {
+        let custom = alias(for: symbol)
+        return custom.isEmpty ? fallback : custom
+    }
+
     /// Records a symbol's asset class. Ignores empty values and no-ops when
     /// unchanged so it doesn't churn the save loop on every price refresh.
     func setType(_ type: String, for symbol: String) {
@@ -303,6 +332,17 @@ class StorageService: ObservableObject {
 
     var lastSelectedTab: String = "Watchlist"
 
+    /// Issue #14: the chart range last picked by the user, restored next time
+    /// instead of snapping back to a hard-coded default. Kept per chart kind
+    /// because the useful default differs (a position vs the whole portfolio).
+    /// Raw `ChartRange` values; "" or an unknown value = the view's own default.
+    var lastSymbolChartRange: String = "" {
+        didSet { scheduleSave() }
+    }
+    var lastPortfolioChartRange: String = "" {
+        didSet { scheduleSave() }
+    }
+
     static let supportedCurrencies = ["EUR", "USD", "GBP", "CHF", "JPY", "CAD", "AUD"]
 
     /// Issue #10: how many decimals to show for a *market price*. Two decimals is
@@ -316,6 +356,12 @@ class StorageService: ObservableObject {
         if isForex { return magnitude >= 50 ? 2 : 4 }
         if magnitude > 0 && magnitude < 1 { return 4 }
         return 2
+    }
+
+    /// Formats a share count: whole numbers stay whole ("12"), fractional shares
+    /// keep two decimals ("12.50"). Negative = a short position, kept signed.
+    nonisolated static func formatQuantity(_ qty: Double) -> String {
+        qty == qty.rounded(.down) ? String(format: "%.0f", qty) : String(format: "%.2f", qty)
     }
 
     /// Formats a plain number with a thousands grouping separator and locale-aware
@@ -475,6 +521,22 @@ class StorageService: ObservableObject {
         portfolios[index].name = name
     }
 
+    /// Issue #14: the portfolios that make up every *combined* figure — the menu
+    /// bar, "All Portfolios", the window's footer total.
+    ///
+    /// This is deliberately the single place the filter lives. The aggregation
+    /// used to be open-coded in five files, and the menu bar disagreeing with the
+    /// window about the total is exactly the bug that split would produce.
+    var countedPortfolios: [Portfolio] {
+        portfolios.filter { !$0.isExcludedFromTotal }
+    }
+
+    /// Includes/excludes a portfolio from the combined total.
+    func setExcludedFromTotal(_ excluded: Bool, id: UUID) {
+        guard let index = portfolios.firstIndex(where: { $0.id == id }) else { return }
+        portfolios[index].excludedFromTotal = excluded ? true : nil
+    }
+
     func deletePortfolio(at offsets: IndexSet) {
         let removedIds = offsets.map { portfolios[$0].id.uuidString }
         portfolios.remove(atOffsets: offsets)
@@ -609,10 +671,13 @@ class StorageService: ObservableObject {
         var tickerShowName: Bool?
         var watchlistSort: String?
         var symbolType: [String: String]?
+        var symbolAlias: [String: String]?
         var appLanguage: String?
         var advancedPositions: Bool?
         var appearanceRaw: String?
         var showNewsTab: Bool?
+        var lastSymbolChartRange: String?
+        var lastPortfolioChartRange: String?
     }
 
     private func scheduleSave() {
@@ -626,7 +691,7 @@ class StorageService: ObservableObject {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, portfolioSnapshots: portfolioSnapshots, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: nil, percentDecimals: percentDecimals, valueDecimals: valueDecimals, menuBarHidePercent: menuBarHidePercent, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, appLanguage: appLanguage, advancedPositions: advancedPositions, appearanceRaw: appearanceRaw, showNewsTab: showNewsTab)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, portfolioSnapshots: portfolioSnapshots, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: nil, percentDecimals: percentDecimals, valueDecimals: valueDecimals, menuBarHidePercent: menuBarHidePercent, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, symbolAlias: symbolAlias, appLanguage: appLanguage, advancedPositions: advancedPositions, appearanceRaw: appearanceRaw, showNewsTab: showNewsTab, lastSymbolChartRange: lastSymbolChartRange, lastPortfolioChartRange: lastPortfolioChartRange)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -669,6 +734,7 @@ class StorageService: ObservableObject {
             advancedPositions = decoded.advancedPositions ?? false
             watchlistSort = decoded.watchlistSort ?? "manual"
             symbolType = decoded.symbolType ?? [:]
+            symbolAlias = decoded.symbolAlias ?? [:]
             appLanguage = decoded.appLanguage ?? "en"
             showCompanyName = decoded.showCompanyName ?? true
             showDayRange = decoded.showDayRange ?? true
@@ -678,6 +744,8 @@ class StorageService: ObservableObject {
             fontFamily = decoded.fontFamily ?? "Inter Variable"
             appearanceRaw = decoded.appearanceRaw ?? AppearanceMode.default.rawValue
             showNewsTab = decoded.showNewsTab ?? true
+            lastSymbolChartRange = decoded.lastSymbolChartRange ?? ""
+            lastPortfolioChartRange = decoded.lastPortfolioChartRange ?? ""
             FontRegistration.familyName = fontFamily
             FontRegistration.sizeOffset = CGFloat(fontSizeLevel - 9)
         } catch {

@@ -158,15 +158,24 @@ struct PortfolioWindowView: View {
 
                     portfoliosHeader
                     NavRow(icon: "square.grid.2x2", title: "All Portfolios",
-                           trailing: trailingPercent(for: storageService.portfolios),
-                           trailingTint: DS.pnlColor(aggregatePnlPercent(for: storageService.portfolios)),
+                           trailing: trailingPercent(for: storageService.countedPortfolios),
+                           trailingTint: DS.pnlColor(aggregatePnlPercent(for: storageService.countedPortfolios)),
                            helpText: "Combined view of every portfolio  ⌘3",
                            selected: selection == .portfoliosAll, namespace: navNamespace) { selection = .portfoliosAll }
                     ForEach(storageService.portfolios) { portfolio in
-                        NavRow(icon: "briefcase", title: portfolio.name,
+                        NavRow(icon: portfolio.isExcludedFromTotal ? "briefcase.badge.minus" : "briefcase",
+                               title: portfolio.name,
                                trailing: trailingPercent(for: [portfolio]),
-                               trailingTint: DS.pnlColor(aggregatePnlPercent(for: [portfolio])),
-                               helpText: "Open “\(portfolio.name)” · right-click for rename, notifications, export",
+                               // #14: an excluded portfolio keeps its figure but
+                               // loses the gain/loss tint — grey reads as "this
+                               // isn't in your total" without inventing a colour.
+                               trailingTint: portfolio.isExcludedFromTotal
+                                   ? DS.inkTertiary
+                                   : DS.pnlColor(aggregatePnlPercent(for: [portfolio])),
+                               helpText: portfolio.isExcludedFromTotal
+                                   ? "“\(portfolio.name)” · not counted in the total"
+                                   : "Open “\(portfolio.name)” · right-click for rename, notifications, export",
+                               dimmed: portfolio.isExcludedFromTotal,
                                selected: selection == .portfolio(portfolio.id), namespace: navNamespace) {
                             selection = .portfolio(portfolio.id)
                         }
@@ -179,6 +188,15 @@ struct PortfolioWindowView: View {
                             }
                             Button { notifTarget = PortfolioRef(id: portfolio.id, name: portfolio.name) } label: {
                                 Label("Notifications…", systemImage: "bell")
+                            }
+                            // #14: a checked toggle, not a "disable" button —
+                            // excluding changes what the total counts, it doesn't
+                            // stop the portfolio from tracking.
+                            Toggle(isOn: Binding(
+                                get: { !portfolio.isExcludedFromTotal },
+                                set: { storageService.setExcludedFromTotal(!$0, id: portfolio.id) }
+                            )) {
+                                Label("Count in Total", systemImage: "sum")
                             }
                             Button { exportPortfolios([portfolio]) } label: {
                                 Label("Export…", systemImage: "square.and.arrow.up")
@@ -198,8 +216,8 @@ struct PortfolioWindowView: View {
             NavRow(icon: "gearshape", title: "Settings", helpText: "Preferences (shared with the menu bar)  ⌘4",
                    selected: selection == .settings, namespace: navNamespace) { selection = .settings }
                 .padding(.horizontal, 12).padding(.top, 4).padding(.bottom, 6)
-            TotalFooter(value: aggregateValue(for: storageService.portfolios),
-                        cost: aggregateCost(for: storageService.portfolios),
+            TotalFooter(value: aggregateValue(for: storageService.countedPortfolios),
+                        cost: aggregateCost(for: storageService.countedPortfolios),
                         currency: storageService.preferredCurrency,
                         decimals: storageService.amountDecimals)
             quitRow

@@ -382,7 +382,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let isIndex = StorageService.isIndex(symbol: quote.symbol, type: storageService.type(for: quote.symbol))
         let sym = isIndex ? "" : StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
         // #8.2: prefer the readable name when the user opted in and it's available.
-        let label = (storageService.tickerShowName && !quote.name.isEmpty) ? quote.name : quote.symbol
+        // #12: a custom name, if the user set one, wins over both — it was chosen
+        // precisely because neither the ticker nor Yahoo's name reads well up here.
+        let fallback = (storageService.tickerShowName && !quote.name.isEmpty) ? quote.name : quote.symbol
+        let label = storageService.displayLabel(for: quote.symbol, fallback: fallback)
         let sign = quote.changePercent >= 0 ? "+" : ""
         let priceValue = quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate
         let price = StorageService.formatNumber(priceValue, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: priceValue))
@@ -415,7 +418,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         var totalValue = 0.0
         var totalCost = 0.0
         var dailyPnl = 0.0
-        for portfolio in storageService.portfolios {
+        // #14: excluded portfolios never reach the menu bar figure.
+        for portfolio in storageService.countedPortfolios {
             for holding in portfolio.holdings {
                 if let quote = stockService.quotes[holding.symbol] {
                     let rate = stockService.rate(from: quote.currency)
@@ -468,7 +472,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         case "bestStock":
             if let best = bestStock {
                 let sign = best.changePercent >= 0 ? "+" : ""
-                title = " \(best.symbol) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", best.changePercent))%"
+                title = " \(storageService.displayLabel(for: best.symbol, fallback: best.symbol)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", best.changePercent))%"
                 color = best.changePercent >= 0 ? upColor : downColor
             } else {
                 title = " --"
@@ -478,7 +482,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         case "worstStock":
             if let worst = worstStock {
                 let sign = worst.changePercent >= 0 ? "+" : ""
-                title = " \(worst.symbol) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", worst.changePercent))%"
+                title = " \(storageService.displayLabel(for: worst.symbol, fallback: worst.symbol)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", worst.changePercent))%"
                 color = worst.changePercent >= 0 ? upColor : downColor
             } else {
                 title = " --"
@@ -489,11 +493,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             if let best = bestStock, let worst = worstStock, best.symbol != worst.symbol {
                 let bSign = best.changePercent >= 0 ? "+" : ""
                 let wSign = worst.changePercent >= 0 ? "+" : ""
-                title = " ▲\(best.symbol) \(bSign)\(String(format: "%.\(storageService.percentDecimals)f", best.changePercent))%  ▼\(worst.symbol) \(wSign)\(String(format: "%.\(storageService.percentDecimals)f", worst.changePercent))%"
+                title = " ▲\(storageService.displayLabel(for: best.symbol, fallback: best.symbol)) \(bSign)\(String(format: "%.\(storageService.percentDecimals)f", best.changePercent))%  ▼\(storageService.displayLabel(for: worst.symbol, fallback: worst.symbol)) \(wSign)\(String(format: "%.\(storageService.percentDecimals)f", worst.changePercent))%"
                 color = .labelColor
             } else if let best = bestStock {
                 let sign = best.changePercent >= 0 ? "+" : ""
-                title = " \(best.symbol) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", best.changePercent))%"
+                title = " \(storageService.displayLabel(for: best.symbol, fallback: best.symbol)) \(sign)\(String(format: "%.\(storageService.percentDecimals)f", best.changePercent))%"
                 color = best.changePercent >= 0 ? upColor : downColor
             } else {
                 title = " --"
@@ -520,7 +524,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         case "tickerPortfolio":
             // Issue #7.3: cycle through the watchlist AND a portfolio recap slide.
             let symbols = StorageService.tickerOrder(storageService.watchlist, mode: storageService.watchlistSort, types: storageService.symbolType)
-            let hasPortfolio = storageService.portfolios.contains { !$0.holdings.isEmpty }
+            // #14: counted only — otherwise a user whose sole portfolio is excluded
+            // would cycle an empty "0.00 +0.0%" recap slide.
+            let hasPortfolio = storageService.countedPortfolios.contains { !$0.holdings.isEmpty }
             let slideCount = symbols.count + (hasPortfolio ? 1 : 0)
             if slideCount == 0 {
                 title = " --"

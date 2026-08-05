@@ -34,6 +34,8 @@
 - [x] Total portfolio value, P&L and P&L %
 - [x] Per holding: market value, P&L and P&L %
 - [x] Filter portfolios by name or symbol
+- [x] A portfolio can be kept out of the combined total (right-click → "Count in Total"), for paper/fantasy portfolios — see US-26
+- [x] The positions list shows the share count next to the company name, not just in the holding detail (issue #14)
 
 ## US-04: Quick Add from Watchlist to Portfolio
 **As a** user, **I want** to quickly add a stock from the watchlist to a portfolio **so that** I don't have to retype the symbol.
@@ -245,3 +247,30 @@
 - [x] "All" uses the daily 2y history when the oldest purchase fits inside it, falling back to the monthly `range=max` series only for portfolios that really predate it — a portfolio built this year is a curve, not six monthly steps
 - [x] X-axis labels follow the drawn span, not the selected range: `6 lug` under a year, four-digit `gen 2005` above (`gen 05` read as the 5th of January)
 - [x] Totals are untouched: TOTAL P&L, INVESTED and the all-time pill come from real cost/value, never from the estimated curve
+
+## US-26: A portfolio that doesn't move my net worth
+**As a** user, **I want** to keep a portfolio out of my combined total **so that** I can paper-trade or track an idea without it distorting what I'm actually worth.
+
+- [x] Right-click a portfolio → **Count in Total** (a checked toggle, unchecked = excluded), in both the window sidebar and the compact list
+- [x] An excluded portfolio is dimmed in the list and its figure loses the gain/loss tint, so "not counted" is readable without adding a third colour to the design language
+- [x] Everything combined honours the exclusion from one place (`StorageService.countedPortfolios`): the menu bar, "All Portfolios", the window's footer total, the cross-portfolio average buy price
+- [x] It stays a full portfolio: its own chart, snapshots, notifications, export and per-portfolio P&L are untouched — opening it directly shows it in full colour
+- [x] "Ticker + Portfolio" doesn't cycle an empty recap slide when every non-empty portfolio is excluded
+- [x] Portfolios saved before 1.9.12 have no flag and keep counting
+
+## US-27: A name I can actually read in the menu bar
+**As a** user, **I want** to rename a symbol **so that** `CAD/USD` and `^GSPC` don't eat my menu bar with strings that mean nothing at a glance.
+
+- [x] Right-click a watchlist symbol → **Rename…**, in both the compact popover and the window
+- [x] The custom name replaces the ticker in the menu bar (including the best/worst modes) and in the watchlist rows
+- [x] The real ticker is never lost: it moves to the secondary line (compact) or prefixes the Name column (window)
+- [x] The custom name wins over "show company name" — it was chosen precisely because neither the ticker nor Yahoo's name read well
+- [x] Saving an empty field clears the alias and falls back to the ticker, so there's no separate reset to find
+- [x] Aliases persist across launches
+
+## US-28: The chart opens where I left it
+**As a** user, **I want** the chart to remember the range I picked **so that** I don't reselect 24H every single time.
+
+- [x] The last range picked is restored on the next open, for the symbol chart and the portfolio chart independently
+- [x] Remembered across launches
+- [x] No new setting: the app learns the preference instead of asking for it

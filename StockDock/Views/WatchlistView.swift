@@ -7,6 +7,7 @@ struct WatchlistView: View {
     @State private var searchText = ""
     @State private var addToPortfolio: (symbol: String, portfolioId: UUID)? = nil
     @State private var alertSymbol: String? = nil
+    @State private var renameSymbol: String? = nil
     @State private var sortColumn: SortColumn = .change
     @State private var sortAscending: Bool = false
 
@@ -168,6 +169,16 @@ struct WatchlistView: View {
                     .environmentObject(storageService)
                     .frame(width: 300, height: 260)
             }
+            .sheet(item: Binding<AlertSheetItem?>(
+                get: { renameSymbol.map { AlertSheetItem(symbol: $0) } },
+                set: { renameSymbol = $0?.symbol }
+            )) { item in
+                RenameSymbolSheet(symbol: item.symbol,
+                                  currentAlias: storageService.alias(for: item.symbol)) {
+                    renameSymbol = nil
+                }
+                .environmentObject(storageService)
+            }
         }
     }
 
@@ -210,6 +221,11 @@ struct WatchlistView: View {
             alertSymbol = symbol
         } label: {
             Label("Set Price Alert…", systemImage: "bell")
+        }
+        Button {
+            renameSymbol = symbol
+        } label: {
+            Label("Rename…", systemImage: "pencil")
         }
         Divider()
         Button(role: .destructive) {
@@ -350,10 +366,18 @@ struct QuoteRow: View {
         HStack(spacing: 0) {
             // Col 1: Symbol + name
             VStack(alignment: .leading, spacing: 1) {
-                Text(quote.symbol)
+                // #12: the custom name replaces the ticker on the primary line;
+                // the real ticker moves to the secondary line so it's never lost.
+                Text(storageService.displayLabel(for: quote.symbol, fallback: quote.symbol))
                     .font(.inter(13, relativeTo: .body).monospacedDigit())
                     .fontWeight(.bold)
-                if storageService.showCompanyName {
+                    .lineLimit(1)
+                if !storageService.alias(for: quote.symbol).isEmpty {
+                    Text(quote.symbol)
+                        .font(.inter(10, relativeTo: .caption))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                } else if storageService.showCompanyName {
                     Text(quote.name)
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
