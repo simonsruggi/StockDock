@@ -192,7 +192,7 @@
 - [x] Settings → "Language": picker with English (default), Deutsch, Français, Español, Italiano, Português
 - [x] In-app override of the locale via `\.environment(\.locale, …)` on `ContentView` — reactive, does not follow the system language
 - [x] UI strings in `Resources/<lang>.lproj/Localizable.strings` (6 languages, keys = source English literals)
-- [x] `release.sh` copies the `.lproj` into `Contents/Resources` (Bundle.main) so SwiftUI resolves them; `Package.swift` declares `defaultLocalization: "en"`; `Info.plist` lists `CFBundleLocalizations`
+- [x] the release script copies the `.lproj` into `Contents/Resources` (Bundle.main) so SwiftUI resolves them; `Package.swift` declares `defaultLocalization: "en"`; `Info.plist` lists `CFBundleLocalizations`
 - [x] Verified with real SwiftUI renders that the chosen language (incl. English default) overrides the system language
 - [ ] Note: in `swift run` (dev) translations don't show (SPM resources land in `Bundle.module`); only the bundled `.app` localizes
 

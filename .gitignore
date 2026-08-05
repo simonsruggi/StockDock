@@ -39,7 +39,9 @@ banner.html
 medium-post.md
 marketing/
 
-# Local release credentials (App Store Connect key id / issuer id)
+# Release automation: needs my Developer ID, notary profile, Sparkle private key
+# and Homebrew tap — nobody else can run it, so it stays local.
+release.sh
 .env.release
 
 # Code coverage artifacts from `swift test`
