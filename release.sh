@@ -11,9 +11,12 @@ NOTARY_PROFILE="notarytool"
 # Fallback when the keychain profile can't be used (a non-interactive shell
 # cannot unlock the login keychain, so `notarytool store-credentials` and
 # `--keychain-profile` both fail): submit with the App Store Connect API key.
-ASC_KEY_ID="XHZXNVR66X"
-ASC_ISSUER_ID="2305f531-8fc2-4f06-b925-ebcc8ef21e0f"
-ASC_KEY_PATH="$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+# These identify an App Store Connect account, so they're read from the
+# environment (or an untracked .env.release) rather than committed. The actual
+# secret is the .p8 private key, which lives outside the repo either way.
+ASC_KEY_ID="${ASC_KEY_ID:-}"
+ASC_ISSUER_ID="${ASC_ISSUER_ID:-}"
+ASC_KEY_PATH="${ASC_KEY_PATH:-$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8}"
 SPARKLE_SIGN=".build/artifacts/sparkle/Sparkle/bin/sign_update"
 APPCAST="appcast.xml"
 PLIST="StockDock/Info.plist"
@@ -50,6 +53,17 @@ ZIP_NAME="${APP_NAME}.zip"
 APP_PATH="${PRODUCTS_DIR}/${APP_NAME}.app"
 
 cd "$(dirname "$0")"
+
+# Local, untracked overrides (App Store Connect key id / issuer id). Sourced
+# after the cd so it's found regardless of where the script was invoked from,
+# and guarded with `if` because `[[ ]] && source` would trip `set -e` when the
+# file is absent — which is the normal case on a fresh clone.
+if [[ -f .env.release ]]; then
+    source .env.release
+    ASC_KEY_ID="${ASC_KEY_ID:-}"
+    ASC_ISSUER_ID="${ASC_ISSUER_ID:-}"
+    ASC_KEY_PATH="${ASC_KEY_PATH:-$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8}"
+fi
 
 # --- Preflight checks ---
 step 0 "Preflight checks"
@@ -165,7 +179,7 @@ if xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null 2>&1
     xcrun notarytool submit "$ZIP_NAME" \
         --keychain-profile "$NOTARY_PROFILE" \
         --wait
-elif [[ -f "$ASC_KEY_PATH" ]]; then
+elif [[ -n "$ASC_KEY_ID" && -n "$ASC_ISSUER_ID" && -f "$ASC_KEY_PATH" ]]; then
     warn "Keychain profile '$NOTARY_PROFILE' unavailable — using the App Store Connect API key"
     xcrun notarytool submit "$ZIP_NAME" \
         --key "$ASC_KEY_PATH" \
@@ -173,7 +187,7 @@ elif [[ -f "$ASC_KEY_PATH" ]]; then
         --issuer "$ASC_ISSUER_ID" \
         --wait
 else
-    fail "No notarization credentials: neither the '$NOTARY_PROFILE' keychain profile nor $ASC_KEY_PATH"
+    fail "No notarization credentials: the '$NOTARY_PROFILE' keychain profile is unusable and no App Store Connect key was found. Set ASC_KEY_ID and ASC_ISSUER_ID (in the environment or in .env.release, which is gitignored) and make sure the .p8 exists."
 fi
 
 info "Notarization accepted"

@@ -34,7 +34,14 @@ xcuserdata/
 # Logs
 *.log
 
-# Marketing
+# Marketing / internal collateral (kept locally, not published)
 banner.html
 medium-post.md
-screenshots/
+marketing/
+
+# Local release credentials (App Store Connect key id / issuer id)
+.env.release
+
+# Code coverage artifacts from `swift test`
+*.profraw
+*.profdata
