@@ -17,6 +17,7 @@ No account. No API keys. No subscription. No tracking. Just your watchlist and p
 [![License: MIT](https://img.shields.io/github/license/simonsruggi/StockDock?color=blue)](LICENSE)
 [![Star](https://img.shields.io/github/stars/simonsruggi/StockDock?style=social)](https://github.com/simonsruggi/StockDock)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-EA4AAA?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/simonsruggi)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/simonsruggi)
 
 <br>
 
@@ -24,7 +25,7 @@ No account. No API keys. No subscription. No tracking. Just your watchlist and p
 brew install simonsruggi/tap/stockdock
 ```
 
-**[⬇️ Download](https://github.com/simonsruggi/StockDock/releases/latest)** · **[✨ Features](#features)** · **[📸 Screenshots](#screenshots)** · **[❤️ Sponsor](https://github.com/sponsors/simonsruggi)** · **[🐛 Report a bug](https://github.com/simonsruggi/StockDock/issues)**
+**[⬇️ Download](https://github.com/simonsruggi/StockDock/releases/latest)** · **[✨ Features](#features)** · **[📸 Screenshots](#screenshots)** · **[❤️ Sponsor](https://github.com/sponsors/simonsruggi)** · **[☕️ Coffee](https://buymeacoffee.com/simonsruggi)** · **[🐛 Report a bug](https://github.com/simonsruggi/StockDock/issues)**
 
 </div>
 
@@ -263,7 +264,7 @@ StockDock is **free and open source, and it will always stay that way** — no p
 
 If you find it useful, the best (and free) thing you can do is **[⭐️ star the repo](https://github.com/simonsruggi/StockDock)** — it's quick and it's the only signal I get that the app is worth maintaining.
 
-And if you'd like to go a step further, you can **[💛 sponsor me on GitHub](https://github.com/sponsors/simonsruggi)**. It's completely optional and changes nothing about the app — every feature stays free for everyone — but it helps me keep building and maintaining StockDock and my other open-source projects. Thank you! 🙏
+And if you'd like to go a step further, you can **[💛 sponsor me on GitHub](https://github.com/sponsors/simonsruggi)** or **[☕️ buy me a coffee](https://buymeacoffee.com/simonsruggi)**. It's completely optional and changes nothing about the app — every feature stays free for everyone — but it helps me keep building and maintaining StockDock and my other open-source projects. Thank you! 🙏
 
 ## License
 
