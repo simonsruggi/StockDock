@@ -25,7 +25,7 @@ No account. No API keys. No subscription. No tracking. Just your watchlist and p
 brew install simonsruggi/tap/stockdock
 ```
 
-**[⬇️ Download](https://github.com/simonsruggi/StockDock/releases/latest)** · **[✨ Features](#features)** · **[📸 Screenshots](#screenshots)** · **[❤️ Sponsor](https://github.com/sponsors/simonsruggi)** · **[☕️ Coffee](https://buymeacoffee.com/simonsruggi)** · **[🐛 Report a bug](https://github.com/simonsruggi/StockDock/issues)**
+**[⬇️ Download](https://github.com/simonsruggi/StockDock/releases/latest)** · **[✨ Features](#features)** · **[📸 Screenshots](#screenshots)** · **[❤️ Sponsor](https://github.com/sponsors/simonsruggi)** · **[☕️ Coffee](https://buymeacoffee.com/simonsruggi)** · **[🐛 Report a bug](https://github.com/simonsruggi/StockDock/issues)** · **[📝 Changelog](CHANGELOG.md)**
 
 </div>
 

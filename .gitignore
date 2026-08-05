@@ -44,6 +44,14 @@ marketing/
 release.sh
 .env.release
 
+# Per-version Sparkle notes: input for the local release script. The published
+# history lives in CHANGELOG.md.
+release-notes/
+
+# Internal acceptance checklist, kept local (users read the README, contributors
+# read PROJECT.md)
+USER_STORIES.md
+
 # Code coverage artifacts from `swift test`
 *.profraw
 *.profdata
