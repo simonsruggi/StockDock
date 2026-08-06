@@ -6,25 +6,23 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.12</title>
-            <pubDate>Thu, 06 Aug 2026 00:47:25 +0200</pubDate>
-            <sparkle:version>35</sparkle:version>
-            <sparkle:shortVersionString>1.9.12</sparkle:shortVersionString>
+            <title>Version 1.9.13</title>
+            <pubDate>Thu, 06 Aug 2026 16:25:34 +0200</pubDate>
+            <sparkle:version>36</sparkle:version>
+            <sparkle:shortVersionString>1.9.13</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Name your symbols, and a portfolio that doesn't count</h2>
+<h2>The 24H chart stops going blank</h2>
 <ul>
-    <li><strong>Give a symbol the name you actually call it.</strong> <code>CAD/USD</code> and <code>^GSPC</code> tell you nothing at a glance and eat menu bar space. Right-click any symbol in your watchlist &rarr; <strong>Rename…</strong> and call it <em>CAD</em> or <em>S&amp;P</em>. The name shows in the menu bar ticker and in your lists; the real ticker is still there, on the second line. Clearing the field puts the ticker back.</li>
-    <li><strong>A portfolio can sit outside your total.</strong> Right-click a portfolio &rarr; <strong>Count in Total</strong> and uncheck it. Paper-trade an idea, or follow a position you haven't taken, without it moving what you're actually worth. It stays a real portfolio — its own chart, history, notifications and export are untouched — it just doesn't reach the menu bar, "All Portfolios" or the total at the bottom of the window. Excluded portfolios are greyed in the list so you can see it at a glance.</li>
-    <li><strong>Your positions show how many shares you hold.</strong> The share count was only in the compact list and the holding detail; it's now on the positions row in the Portfolio window, next to the company name.</li>
-    <li><strong>Charts open where you left them.</strong> The range picker used to snap back to 1M (or All, for the portfolio chart) every single time. It now remembers the last range you picked, separately for each kind of chart.</li>
+    <li><strong>24H draws a chart outside market hours.</strong> Every evening, all weekend and on holidays, the 24H range showed "Value history builds up day by day" instead of a curve — even on a portfolio with years of history, and even while the other ranges drew perfectly. The intraday data source returns nothing until the session actually starts trading, so StockDock now falls back to the most recent session that traded, the way Stocks shows the previous session when the market is shut.</li>
+    <li><strong>Chart gridlines you can actually see.</strong> They were drawn at a tenth of the contrast they needed, which left the plot area looking empty. Gridlines now have their own colour, tuned separately for the light and dark themes, on both axes of both charts. The portfolio value chart had no vertical gridlines at all — it does now.</li>
 </ul>
-<p>With thanks to <a href="https://github.com/macOS-Mavericks">macOS-Mavericks</a> and <a href="https://github.com/pete-kasson">Pete Kasson</a>, whose issues drove this release.</p>
+<p>With thanks to <a href="https://github.com/pete-kasson">Pete Kasson</a>, whose issue drove this release.</p>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.12/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.13/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="OZRWEovjIvWgt3xyeC8EpG5HYkLvubUDFji7oYgTa5/lyXPj+iXaKfFZoAAZoBfbfYbIfMNzd4CbKyIpasHnCw=="
-                       length="9662609"/>
+                       sparkle:edSignature="AfIe0G+dTNdfdOvbocgqwKFHu2DUD8A98q6AgHMBG0JgaZH675yR2ptSiNYi27exyXiaQ+euD6D75noYEaotDw=="
+                       length="9662784"/>
         </item>
     </channel>
 </rss>
