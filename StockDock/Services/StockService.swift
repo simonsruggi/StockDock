@@ -510,13 +510,18 @@ class StockService: ObservableObject {
            Date().timeIntervalSince(at) < 300,
            intradayHistory[symbol]?.isEmpty == false { return }
         let encoded = symbol.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? symbol
-        guard let url = URL(string: "https://query1.finance.yahoo.com/v8/finance/chart/\(encoded)?interval=5m&range=1d") else { return }
+        // Two days, not one: `range=1d` is empty until today's session prints, so
+        // before the open (and all weekend) the 24H chart had nothing to draw and
+        // fell through to the "no history yet" placeholder. `lastSession` keeps
+        // the most recent session that actually traded.
+        guard let url = URL(string: "https://query1.finance.yahoo.com/v8/finance/chart/\(encoded)?interval=5m&range=2d") else { return }
         do {
             let (data, _) = try await session.data(from: url)
             let response = try JSONDecoder().decode(YahooChartResponse.self, from: data)
             guard let result = response.chart.result?.first else { return }
-            let points = PriceHistory.points(timestamps: result.timestamp ?? [],
-                                             closes: result.indicators?.quote?.first?.close ?? [])
+            let points = PriceHistory.lastSession(
+                PriceHistory.points(timestamps: result.timestamp ?? [],
+                                    closes: result.indicators?.quote?.first?.close ?? []))
             guard !points.isEmpty else { return }
             intradayHistory[symbol] = points
             intradayFetchedAt[symbol] = Date()
