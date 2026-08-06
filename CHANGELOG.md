@@ -4,6 +4,15 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.13 — 2026-08-06
+
+*The 24H chart stops going blank*
+
+- **24H draws a chart outside market hours.** Every evening, all weekend and on holidays, the 24H range showed "Value history builds up day by day" instead of a curve — even on a portfolio with years of history, and even while the other ranges drew perfectly. Yahoo's intraday endpoint returns nothing until today's session actually prints, so the app now fetches two days and charts the most recent session that traded, the way Stocks shows the previous session when the market is shut. Sessions are split on the gap between bars rather than the calendar day, so a US session isn't cut in half for anyone east of London.
+- **Chart gridlines you can actually see.** They reused the border hairline at 7% alpha — and the horizontal axis then halved it again — which left the plot area looking empty. Gridlines now have their own colour, set separately for the light and dark themes, on both axes of both charts. The portfolio value chart had no vertical gridlines at all.
+
+With thanks to [Pete Kasson](https://github.com/pete-kasson), whose issue drove this release.
+
 ## 1.9.12 — 2026-08-05
 
 *Name your symbols, and a portfolio that doesn't count*
