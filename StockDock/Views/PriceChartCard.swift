@@ -188,7 +188,7 @@ struct PriceChartCard: View {
             .chartYScale(domain: chartDomain)
             .chartYAxis {
                 AxisMarks(position: .leading, values: .automatic(desiredCount: 3)) { v in
-                    AxisGridLine().foregroundStyle(DS.hairline)
+                    AxisGridLine().foregroundStyle(DS.chartGrid)
                     AxisValueLabel {
                         if let d = v.as(Double.self) {
                             Text(StorageService.formatNumber(d, decimals: d >= 100 ? 0 : 2))
@@ -199,7 +199,7 @@ struct PriceChartCard: View {
             }
             .chartXAxis {
                 AxisMarks(values: .automatic(desiredCount: 4)) { value in
-                    AxisGridLine().foregroundStyle(DS.hairline.opacity(0.5))
+                    AxisGridLine().foregroundStyle(DS.chartGrid)
                     if let d = value.as(Date.self) {
                         AxisValueLabel { Text(xAxisLabel(d)).font(DS.micro).foregroundStyle(DS.inkTertiary) }
                     }

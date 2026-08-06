@@ -22,6 +22,11 @@ enum DS {
     /// Borders and dividers — warm, near-invisible.
     static let hairline = dynamic(light: NSColor(red: 0.102, green: 0.090, blue: 0.059, alpha: 0.07),
                                   dark: NSColor(white: 1, alpha: 0.10))
+    /// Chart gridlines. Deliberately heavier than `hairline`: a border only has
+    /// to separate two filled surfaces, a gridline has to be readable on its own
+    /// across an empty plot area (#14).
+    static let chartGrid = dynamic(light: NSColor(red: 0.102, green: 0.090, blue: 0.059, alpha: 0.16),
+                                   dark: NSColor(white: 1, alpha: 0.16))
 
     // MARK: Ink
     /// Warm near-black for display text.

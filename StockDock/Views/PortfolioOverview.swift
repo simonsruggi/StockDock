@@ -490,7 +490,7 @@ struct PortfolioOverview: View {
             .chartYScale(domain: valueDomain(points))
             .chartYAxis {
                 AxisMarks(position: .trailing, values: .automatic(desiredCount: 3)) { v in
-                    AxisGridLine().foregroundStyle(DS.hairline.opacity(0.5))
+                    AxisGridLine().foregroundStyle(DS.chartGrid)
                     AxisValueLabel {
                         if let d = v.as(Double.self) {
                             Text(StorageService.formatAmount(d, symbol: currencySymbol, decimals: 0))
@@ -501,6 +501,7 @@ struct PortfolioOverview: View {
             }
             .chartXAxis {
                 AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                    AxisGridLine().foregroundStyle(DS.chartGrid)
                     if let d = value.as(Date.self) {
                         AxisValueLabel { Text(xAxisLabel(d, span: span)).font(DS.micro).foregroundStyle(DS.inkTertiary) }
                     }
