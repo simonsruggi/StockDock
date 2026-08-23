@@ -741,6 +741,7 @@ struct PortfolioOverview: View {
                     HStack(spacing: 0) {
                         Text("Symbol").frame(width: 168, alignment: .leading)
                         Text("Last").frame(maxWidth: .infinity, alignment: .trailing)
+                        Text("Change").frame(maxWidth: .infinity, alignment: .trailing)
                         Text("Value").frame(maxWidth: .infinity, alignment: .trailing)
                         Text("P&L").frame(maxWidth: .infinity, alignment: .trailing)
                         Text("Weight").frame(width: 110, alignment: .trailing)
@@ -757,7 +758,8 @@ struct PortfolioOverview: View {
                                         weight: abs(d.totalValue) >= 0.01 ? abs(h.value) / abs(d.totalValue) * 100 : 0,
                                         topWeight: d.topWeight,
                                         decimals: decimals,
-                                        valueDecimals: storageService.valueDecimals)
+                                        valueDecimals: storageService.valueDecimals,
+                                        percentDecimals: storageService.percentDecimals)
                         }
                         .buttonStyle(.plain)
                         .help("View \(h.symbol) details · right-click to edit or delete")
@@ -832,6 +834,7 @@ private struct PositionRow: View {
     let topWeight: Double
     let decimals: Int
     let valueDecimals: Int
+    let percentDecimals: Int
     @State private var hovered = false
 
     private var amountDec: Int { valueDecimals >= 0 ? valueDecimals : 2 }
@@ -866,6 +869,15 @@ private struct PositionRow: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .font(DS.figure).foregroundStyle(DS.ink)
                 .contentTransition(.numericText())
+            VStack(alignment: .trailing, spacing: 1) {
+                ChangePill(value: h.quote.change,
+                           text: StorageService.formatAmount(h.quote.change, symbol: "", decimals: priceDec(h.quote.change), signed: true, truncateZeros: true))
+                Text(String(format: "%+.\(percentDecimals)f%%", h.quote.changePercent))
+                    .font(DS.micro)
+            }
+            .foregroundStyle(DS.pnlColor(h.quote.change))
+            .frame(maxWidth: .infinity, alignment: .trailing)
+
             Text(StorageService.formatAmount(h.value, symbol: currencySymbol, decimals: amountDec))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .font(DS.figure).foregroundStyle(DS.ink)

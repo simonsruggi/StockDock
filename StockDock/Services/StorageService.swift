@@ -367,18 +367,28 @@ class StorageService: ObservableObject {
     /// Formats a plain number with a thousands grouping separator and locale-aware
     /// decimal separator, e.g. "1,234.56" (en) / "1.234,56" (it). Falls back to a
     /// non-grouped representation if the formatter ever fails.
-    nonisolated static func formatNumber(_ value: Double, decimals: Int, locale: Locale = .autoupdatingCurrent) -> String {
+    nonisolated static func formatNumber(_ value: Double, decimals: Int, truncateZeros: Bool = false, locale: Locale = .autoupdatingCurrent) -> String {
         // Grouping is inserted manually (every 3 digits from the right) so every value
         // > 1,000 is separated regardless of the locale's CLDR rule (e.g. it/es only group
         // from 10,000 by default), and without needing macOS 15's `minimumGroupingDigits`.
         let formatter = NumberFormatter()
         formatter.locale = locale
         formatter.numberStyle = .decimal
+
         let groupSep = formatter.groupingSeparator ?? ","
         let decSep = formatter.decimalSeparator ?? "."
 
-        // %f always emits "." as the decimal separator, independent of locale.
-        let rounded = String(format: "%.\(decimals)f", abs(value))
+        // Reuse the formatter to produce the raw digits: en_US + no grouping yields a
+        // plain "1234.56" we regroup below, and minimumFractionDigits = 0 lets us drop
+        // trailing zeros when `truncateZeros` is set — something `%f` can't do.
+        formatter.locale = Locale(identifier: "en_US")
+        formatter.groupingSeparator = ""
+        formatter.maximumFractionDigits = decimals
+        formatter.minimumFractionDigits = truncateZeros ? 0 : decimals
+
+        // Falls back to a non-grouped %f representation if the formatter ever fails.
+        let rounded = formatter.string(from: NSNumber(value: abs(value)))
+            ?? String(format: "%.\(decimals)f", abs(value))
         let parts = rounded.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
         let intDigits = String(parts[0])
         let fracDigits = parts.count > 1 ? String(parts[1]) : ""
@@ -391,16 +401,16 @@ class StorageService: ObservableObject {
             count += 1
         }
         var result = String(grouped.reversed())
-        if decimals > 0 { result += decSep + fracDigits }
+        if !fracDigits.isEmpty { result += decSep + fracDigits }
         return (value < 0 ? "-" : "") + result
     }
 
     /// Formats an amount with the currency symbol *before* the figure, e.g.
     /// "€1,234.56", "+€820.00", "-€540.00". The sign (when shown) precedes the symbol.
-    nonisolated static func formatAmount(_ value: Double, symbol: String, decimals: Int = 2, signed: Bool = false,
+    nonisolated static func formatAmount(_ value: Double, symbol: String, decimals: Int = 2, signed: Bool = false, truncateZeros: Bool = false,
                              locale: Locale = .autoupdatingCurrent) -> String {
         let sign = signed ? (value >= 0 ? "+" : "-") : (value < 0 ? "-" : "")
-        let magnitude = formatNumber(abs(value), decimals: decimals, locale: locale)
+        let magnitude = formatNumber(abs(value), decimals: decimals, truncateZeros: truncateZeros, locale: locale)
         return "\(sign)\(symbol)\(magnitude)"
     }
 
