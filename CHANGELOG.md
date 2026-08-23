@@ -4,6 +4,14 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.14 — 2026-08-23
+
+*See the day's move on every position*
+
+- **A Change column in the Portfolio window.** The holdings list showed Last, Value, P&L and Weight, but not the figure that moves minute to minute — how much each position has changed today. There's now a Change column between Last and Value, showing the day's move in your currency with the percent below it, in the usual green/red. The figures drop trailing zeros, so a move reads as +12 rather than +12.00.
+
+With thanks to [Greg](https://github.com/barereef), whose pull request added this.
+
 ## 1.9.13 — 2026-08-06
 
 *The 24H chart stops going blank*
