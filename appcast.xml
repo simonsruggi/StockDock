@@ -6,23 +6,22 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.13</title>
-            <pubDate>Thu, 06 Aug 2026 16:25:34 +0200</pubDate>
-            <sparkle:version>36</sparkle:version>
-            <sparkle:shortVersionString>1.9.13</sparkle:shortVersionString>
+            <title>Version 1.9.14</title>
+            <pubDate>Sun, 23 Aug 2026 21:35:23 +0200</pubDate>
+            <sparkle:version>37</sparkle:version>
+            <sparkle:shortVersionString>1.9.14</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>The 24H chart stops going blank</h2>
+<h2>See the day's move on every position</h2>
 <ul>
-    <li><strong>24H draws a chart outside market hours.</strong> Every evening, all weekend and on holidays, the 24H range showed "Value history builds up day by day" instead of a curve — even on a portfolio with years of history, and even while the other ranges drew perfectly. The intraday data source returns nothing until the session actually starts trading, so StockDock now falls back to the most recent session that traded, the way Stocks shows the previous session when the market is shut.</li>
-    <li><strong>Chart gridlines you can actually see.</strong> They were drawn at a tenth of the contrast they needed, which left the plot area looking empty. Gridlines now have their own colour, tuned separately for the light and dark themes, on both axes of both charts. The portfolio value chart had no vertical gridlines at all — it does now.</li>
+    <li><strong>A Change column in the Portfolio window.</strong> The holdings list showed Last, Value, P&amp;L and Weight, but not the one figure that changes minute to minute — how much each position has moved today. There's now a Change column between Last and Value, with the day's move in your currency and the percent below it, coloured green or red like the rest of the app.</li>
 </ul>
-<p>With thanks to <a href="https://github.com/pete-kasson">Pete Kasson</a>, whose issue drove this release.</p>
+<p>The figures drop any trailing zeros, so a move reads as +12 rather than +12.00.</p>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.13/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.14/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="AfIe0G+dTNdfdOvbocgqwKFHu2DUD8A98q6AgHMBG0JgaZH675yR2ptSiNYi27exyXiaQ+euD6D75noYEaotDw=="
-                       length="9662784"/>
+                       sparkle:edSignature="TQ6bbfWhkmnY1NsT1c6QuFUIbavnlJqljj2jGYdrdBsp5HKp3BYPkDcC/d8IEAnXCE+g6nMZOVPPFOJcbnKmDg=="
+                       length="9667710"/>
         </item>
     </channel>
 </rss>

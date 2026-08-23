@@ -20,9 +20,9 @@
 	<key>CFBundleName</key>
 	<string>StockDock</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.9.13</string>
+	<string>1.9.14</string>
 	<key>CFBundleVersion</key>
-	<string>36</string>
+	<string>37</string>
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
