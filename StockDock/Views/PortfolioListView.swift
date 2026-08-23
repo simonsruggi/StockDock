@@ -139,7 +139,7 @@ struct PortfolioListView: View {
 
                     Divider()
                 }
-
+                
                 List {
                     if showNewPortfolio {
                         HStack {
