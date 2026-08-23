@@ -377,34 +377,32 @@ class StorageService: ObservableObject {
 
         let groupSep = formatter.groupingSeparator ?? ","
         let decSep = formatter.decimalSeparator ?? "."
-        
-        // Setup the formatter to be used for the number conversion so we can omit trailing zeros when desired which
-        // standard format can't do.  The formatter isn't used for the actual locale formatting below so we can safely
-        // reuse it.
-        formatter.maximumFractionDigits = decimals
-        formatter.minimumFractionDigits = truncateZeros ? 0 : decimals
+
+        // Reuse the formatter to produce the raw digits: en_US + no grouping yields a
+        // plain "1234.56" we regroup below, and minimumFractionDigits = 0 lets us drop
+        // trailing zeros when `truncateZeros` is set — something `%f` can't do.
         formatter.locale = Locale(identifier: "en_US")
         formatter.groupingSeparator = ""
-        
-        // %f always emits "." as the decimal separator, independent of locale.
-//        let rounded = String(format: "%.\(decimals)f", abs(value))
-        if let rounded = formatter.string(from: NSNumber(value: abs(value))) {
-            let parts = rounded.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
-            let intDigits = String(parts[0])
-            let fracDigits = parts.count > 1 ? String(parts[1]) : ""
-            
-            var grouped = ""
-            var count = 0
-            for ch in intDigits.reversed() {
-                if count > 0 && count % 3 == 0 { grouped.append(contentsOf: groupSep.reversed()) }
-                grouped.append(ch)
-                count += 1
-            }
-            var result = String(grouped.reversed())
-            if decimals > 0 { result += decSep + fracDigits }
-            return (value < 0 ? "-" : "") + result
+        formatter.maximumFractionDigits = decimals
+        formatter.minimumFractionDigits = truncateZeros ? 0 : decimals
+
+        // Falls back to a non-grouped %f representation if the formatter ever fails.
+        let rounded = formatter.string(from: NSNumber(value: abs(value)))
+            ?? String(format: "%.\(decimals)f", abs(value))
+        let parts = rounded.split(separator: ".", maxSplits: 1, omittingEmptySubsequences: false)
+        let intDigits = String(parts[0])
+        let fracDigits = parts.count > 1 ? String(parts[1]) : ""
+
+        var grouped = ""
+        var count = 0
+        for ch in intDigits.reversed() {
+            if count > 0 && count % 3 == 0 { grouped.append(contentsOf: groupSep.reversed()) }
+            grouped.append(ch)
+            count += 1
         }
-        return "";
+        var result = String(grouped.reversed())
+        if !fracDigits.isEmpty { result += decSep + fracDigits }
+        return (value < 0 ? "-" : "") + result
     }
 
     /// Formats an amount with the currency symbol *before* the figure, e.g.
