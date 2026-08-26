@@ -228,20 +228,22 @@ struct ContentView: View {
             Divider()
 
             // Content
-            Group {
-                switch selectedTab {
-                case .home:
-                    HomeView()
-                case .watchlist:
-                    WatchlistView(showSearch: $showSearch)
-                case .portfolios:
-                    PortfolioListView()
-                case .settings:
-                    SettingsView()
+            ScrollView {
+                Group {
+                    switch selectedTab {
+                    case .home:
+                        HomeView()
+                    case .watchlist:
+                        WatchlistView(showSearch: $showSearch)
+                    case .portfolios:
+                        PortfolioListView()
+                    case .settings:
+                        SettingsView()
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(DS.ground)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(DS.ground)
         }
         .tint(DS.brand)
         .environment(\.addHoldingAction, AddHoldingAction { portfolioId in

@@ -8,6 +8,7 @@ struct PortfolioListView: View {
     @State private var newPortfolioName = ""
     @State private var searchText = ""
     @State private var importAlert: String?
+    @State private var sortOrder = [KeyPathComparator(\GlobalPosition.changePct, order: .reverse)]
 
     var filteredPortfolios: [Portfolio] {
         guard !searchText.isEmpty else { return storageService.portfolios }
@@ -46,26 +47,26 @@ struct PortfolioListView: View {
         } else {
             VStack(spacing: 0) {
                 // Search bar
-                HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.secondary)
-                        .font(.inter(10, relativeTo: .caption))
-                    TextField("Filter portfolios…", text: $searchText)
-                        .textFieldStyle(.plain)
-                        .font(.inter(10, relativeTo: .caption))
-                    if !searchText.isEmpty {
-                        Button(action: { searchText = "" }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                                .font(.inter(10, relativeTo: .caption))
-                        }
-                        .buttonStyle(.borderless)
-                    }
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-
-                Divider()
+//                HStack(spacing: 6) {
+//                    Image(systemName: "magnifyingglass")
+//                        .foregroundColor(.secondary)
+//                        .font(.inter(10, relativeTo: .caption))
+//                    TextField("Filter portfolios…", text: $searchText)
+//                        .textFieldStyle(.plain)
+//                        .font(.inter(10, relativeTo: .caption))
+//                    if !searchText.isEmpty {
+//                        Button(action: { searchText = "" }) {
+//                            Image(systemName: "xmark.circle.fill")
+//                                .foregroundColor(.secondary)
+//                                .font(.inter(10, relativeTo: .caption))
+//                        }
+//                        .buttonStyle(.borderless)
+//                    }
+//                }
+//                .padding(.horizontal, 10)
+//                .padding(.vertical, 6)
+//
+//                Divider()
 
                 // Grand total
                 if storageService.portfolios.count > 0 {
@@ -105,39 +106,161 @@ struct PortfolioListView: View {
 
                     // Per-symbol average buy price, aggregated across ALL portfolios,
                     // with the price return vs. that average.
-                    let globals = globalPositions
+                    let globals = globalPositions.sorted(using: sortOrder)
                     if !globals.isEmpty {
                         Divider()
-                        VStack(spacing: 4) {
+                        
+                        Grid(horizontalSpacing: 8) {
+                            GridRow {
+                                Text("Symbol")
+                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                    .foregroundColor(.primary)
+                                    .fontWeight(.semibold)
+                                    .frame(minWidth: 56, alignment: .leading)
+                                Text("Last")
+                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                    .foregroundColor(.primary)
+                                    .fontWeight(.semibold)
+                                    .frame(minWidth: 62, alignment: .trailing)
+                                Text("Change")
+                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                    .foregroundColor(.primary)
+                                    .fontWeight(.semibold)
+                                    .frame(minWidth: 80, alignment: .trailing)
+                                Text("Avg Cost")
+                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                    .foregroundColor(.primary)
+                                    .fontWeight(.semibold)
+                                    .frame(minWidth: 62, alignment: .trailing)
+                                Text("Gain")
+                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                    .foregroundColor(.primary)
+                                    .fontWeight(.semibold)
+                                    .frame(minWidth: 62, alignment: .trailing)
+                            }
+                            .padding(.top, 8)
+                            
+                            Divider()
+                                .gridCellUnsizedAxes(.horizontal)
                             ForEach(globals) { p in
-                                HStack(spacing: 8) {
+                                GridRow {
                                     Text(p.symbol)
                                         .font(.inter(11, relativeTo: .caption).monospacedDigit())
                                         .fontWeight(.semibold)
-                                        .frame(width: 62, alignment: .leading)
-                                    Text("avg \(StorageService.formatAmount(p.avgPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.avgPrice)))")
-                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                    Text("now \(StorageService.formatAmount(p.currentPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.currentPrice)))")
+                                        .frame(minWidth: 56, alignment: .leading)
+                                    Text(StorageService.formatAmount(p.currentPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.currentPrice)))
                                         .font(.inter(11, relativeTo: .caption).monospacedDigit())
                                         .foregroundColor(.primary)
                                         .lineLimit(1)
                                         .minimumScaleFactor(0.7)
-                                    Spacer()
+                                        .frame(minWidth: 62, alignment: .trailing)
+
+                                    Text(String(format: "%@ (%+.1f%%)",
+                                            StorageService.formatAmount(p.change, symbol: "",
+                                                                     decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.currentPrice),
+                                                                     signed: true,
+                                                                     truncateZeros: true),
+                                            p.changePct))
+                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                        .foregroundColor(p.change >= 0 ? DS.up : DS.down)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                        .frame(minWidth: 80, alignment: .trailing)
+
+                                    Text(StorageService.formatAmount(p.avgPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.avgPrice)))
+                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                        .foregroundColor(.secondary)
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                        .frame(minWidth: 62, alignment: .trailing)
+
                                     Text(String(format: "%+.\(storageService.percentDecimals)f%%", p.pct))
                                         .font(.inter(11, relativeTo: .caption).monospacedDigit())
                                         .fontWeight(.medium)
                                         .foregroundColor(p.pct >= 0 ? DS.up : DS.down)
+                                        .frame(minWidth: 62, alignment: .trailing)
                                 }
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
+                        .background(Color.gray.opacity(0.05))
+                        .frame(maxWidth: .infinity)
+//                        .padding(.vertical, 6)
+                        //                        .padding(.horizontal, 16)
+
+//                        VStack(spacing: 4) {
+//                            HStack(spacing: 8) {
+//                                Text("Symbol")
+//                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                    .foregroundColor(.primary)
+//                                    .fontWeight(.semibold)
+//                                    .frame(width: 56, alignment: .leading)
+//                                Text("Last")
+//                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                    .foregroundColor(.primary)
+//                                    .fontWeight(.semibold)
+//                                    .frame(width: 62, alignment: .trailing)
+//                                Text("Change")
+//                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                    .foregroundColor(.primary)
+//                                    .fontWeight(.semibold)
+//                                    .frame(width: 100, alignment: .trailing)
+//                                Text("Avg Cost")
+//                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                    .foregroundColor(.primary)
+//                                    .fontWeight(.semibold)
+//                                    .frame(width: 62, alignment: .trailing)
+//                                Text("Gain")
+//                                    .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                    .foregroundColor(.primary)
+//                                    .fontWeight(.semibold)
+//                                    .frame(width: 62, alignment: .trailing)
+//                            }
+//                        }
+//                        Divider()
+//
+//                        VStack(spacing: 4) {
+//                            ForEach(globals) { p in
+//                                HStack(spacing: 8) {
+//                                    Text(p.symbol)
+//                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                        .fontWeight(.semibold)
+//                                        .frame(width: 56, alignment: .leading)
+//                                    Text(StorageService.formatAmount(p.currentPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.currentPrice)))
+//                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                        .foregroundColor(.primary)
+//                                        .lineLimit(1)
+//                                        .minimumScaleFactor(0.7)
+//                                        .frame(width: 62, alignment: .trailing)
+//
+//                                    Text(String(format: "%@ (%+.1f%%)",
+//                                            StorageService.formatAmount(p.change, symbol: "",
+//                                                                     decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.currentPrice),
+//                                                                     signed: true,
+//                                                                     truncateZeros: true),
+//                                            p.changePct))
+//                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                        .foregroundColor(p.change >= 0 ? DS.up : DS.down)
+//                                        .lineLimit(1)
+//                                        .minimumScaleFactor(0.7)
+//                                        .frame(width: 80, alignment: .trailing)
+//
+//                                    Text(StorageService.formatAmount(p.avgPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.avgPrice)))
+//                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                        .foregroundColor(.secondary)
+//                                        .lineLimit(1)
+//                                        .minimumScaleFactor(0.7)
+//                                        .frame(width: 62, alignment: .trailing)
+//                                    Text(String(format: "%+.\(storageService.percentDecimals)f%%", p.pct))
+//                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
+//                                        .fontWeight(.medium)
+//                                        .foregroundColor(p.pct >= 0 ? DS.up : DS.down)
+//                                        .frame(width: 62, alignment: .trailing)
+//                                }
+//                            }
+//                        }
                     }
 
-                    Divider()
+//                    Divider()
                 }
 
                 List {
@@ -241,6 +364,8 @@ struct PortfolioListView: View {
         let id: String            // symbol
         let avgPrice: Double      // weighted avg buy price, in the price currency
         let currentPrice: Double  // latest quote price, same currency as avgPrice
+        let change: Double        // latest quote change
+        let changePct: Double     // latest quote change %
         let priceSymbol: String
         let pct: Double           // price return vs. avg (position-direction aware)
         let value: Double         // market value (preferred currency), for sorting
@@ -268,7 +393,7 @@ struct PortfolioListView: View {
             let priceCurr = storageService.stockPriceCurrency
             let priceSymbol = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
             let value = abs(price * q) * stockService.rate(from: quote.currency)
-            return GlobalPosition(id: symbol, avgPrice: avg, currentPrice: price, priceSymbol: priceSymbol, pct: pct, value: value)
+            return GlobalPosition(id: symbol, avgPrice: avg, currentPrice: price, change: quote.change, changePct: quote.changePercent, priceSymbol: priceSymbol, pct: pct, value: value)
         }
         .sorted { $0.value > $1.value }
     }
