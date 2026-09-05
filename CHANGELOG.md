@@ -4,6 +4,18 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.15 — 2026-09-05
+
+*Prices in the currency they say they're in*
+
+- **The Portfolio window converts the price columns.** Last and Change printed the stock's native figure under your portfolio currency's symbol, while Value and P&L on the very same row were genuinely converted — a $190 holding read "€190" next to a real euro value. Both columns now carry the conversion, as the compact list already did.
+- **Your average price is shown next to a comparable one.** The `3×190` under a converted Last was still in the stock's own currency, so the two prices on a row could not be compared. It converts now, in the positions list and in the cross-portfolio "avg / now" view.
+- **A price and its currency symbol can no longer disagree.** Switching currency in Settings clears the exchange rates before fetching the new ones, and in that gap every price was printed unconverted under the new symbol. The rate and the currency are now decided together: prices stay in the stock's own currency, symbol included, until the rate lands, then switch over on their own. A dropped rate request is retried once instead of stranding every converted figure until the next poll.
+- **The average price field names its currency.** It has always been stored in the stock's own currency whatever the display settings say, but the field just said "Avg price" — so the figure was converted by hand before being typed in, and then counted twice. All three holding forms now read "Avg price (USD)".
+- **The compact watchlist opens in your own order.** It always sorted by the day's change and offered no way back, so the order arranged in the main window was unreachable from the menu bar. Rows can now be dragged to rearrange, Move Up / Move Down join the right-click menu, and clicking a column header a third time returns to your own order. Dragging is withheld while a column sort or a search filter is active, so a drag can never move the wrong row.
+
+With thanks to [Indianhedgehog](https://github.com/Indianhedgehog) and [nez329](https://github.com/nez329), whose issues drove this release.
+
 ## 1.9.14 — 2026-08-23
 
 *See the day's move on every position*
