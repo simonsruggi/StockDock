@@ -522,6 +522,17 @@ class StorageService: ObservableObject {
         watchlist.move(fromOffsets: source, toOffset: destination)
     }
 
+    /// Nudges a symbol one place up (`-1`) or down (`+1`) in the manual order.
+    /// Returns false at the ends of the list, so callers can leave the UI alone.
+    @discardableResult
+    func moveWatchlistItem(_ symbol: String, by delta: Int) -> Bool {
+        guard let i = watchlist.firstIndex(of: symbol) else { return false }
+        let j = i + delta
+        guard j >= 0, j < watchlist.count else { return false }
+        watchlist.swapAt(i, j)
+        return true
+    }
+
     func addPortfolio(name: String) {
         portfolios.append(Portfolio(name: name))
     }

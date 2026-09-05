@@ -376,11 +376,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard let quote = stockService.quotes[symbol] else {
             return (" \(symbol)", .secondaryLabelColor)
         }
-        let pRate = stockService.priceRate(from: quote.currency)
-        let priceCurr = storageService.stockPriceCurrency
+        // #24: one call for both, so the ticker can't print a native figure
+        // under the target currency's symbol while the FX pair is loading.
+        let priced = stockService.priceDisplay(for: quote.currency)
+        let pRate = priced.rate
         // #8.3: indices have no currency, so don't prefix a currency symbol.
         let isIndex = StorageService.isIndex(symbol: quote.symbol, type: storageService.type(for: quote.symbol))
-        let sym = isIndex ? "" : StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
+        let sym = isIndex ? "" : StorageService.currencySymbol(for: priced.currency)
         // #8.2: prefer the readable name when the user opted in and it's available.
         // #12: a custom name, if the user set one, wins over both — it was chosen
         // precisely because neither the ticker nor Yahoo's name reads well up here.

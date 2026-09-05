@@ -417,23 +417,45 @@ class StockService: ObservableObject {
     }
 
     func priceRate(from currency: String) -> Double {
-        let target = StorageService.shared.stockPriceCurrency
-        if target.isEmpty || currency == target { return 1.0 }
-        return exchangeRates["\(currency)\(target)"] ?? 1.0
+        priceDisplay(for: currency).rate
     }
 
+    /// How to render a price quoted in `currency`: the multiplier, and the
+    /// currency the result is actually in.
+    ///
+    /// #24: the rate and the symbol have to be decided together. While the FX
+    /// pair is still loading (right after switching currency in Settings, when
+    /// `exchangeRates` was just cleared, or when the fetch failed) there is no
+    /// rate, and multiplying by a silent 1.0 printed the native figure under the
+    /// target currency's symbol — a $190 stock reading "€190". Degrading to the
+    /// stock's own currency keeps the number and the symbol in agreement; the
+    /// display switches over on its own once the rate lands.
+    func priceDisplay(for currency: String) -> (rate: Double, currency: String) {
+        let target = StorageService.shared.stockPriceCurrency
+        guard !target.isEmpty, target != currency else { return (1.0, currency) }
+        guard let rate = exchangeRates["\(currency)\(target)"] else { return (1.0, currency) }
+        return (rate, target)
+    }
+
+    /// #24: a currency switch clears `exchangeRates` and refetches, so a single
+    /// dropped request left every converted figure stranded until the next poll
+    /// minutes later. One retry covers the transient failure.
     private func fetchExchangeRate(from: String, to: String) async {
         let symbol = "\(from)\(to)=X"
         let encoded = symbol.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? symbol
         guard let url = URL(string: "https://query1.finance.yahoo.com/v8/finance/chart/\(encoded)?interval=1d&range=1d") else { return }
 
-        do {
-            let (data, _) = try await session.data(from: url)
-            let response = try JSONDecoder().decode(YahooChartResponse.self, from: data)
-            if let result = response.chart.result?.first {
-                exchangeRates["\(from)\(to)"] = result.meta.regularMarketPrice
+        for attempt in 0..<2 {
+            if attempt > 0 { try? await Task.sleep(nanoseconds: 1_000_000_000) }
+            do {
+                let (data, _) = try await session.data(from: url)
+                let response = try JSONDecoder().decode(YahooChartResponse.self, from: data)
+                if let result = response.chart.result?.first {
+                    exchangeRates["\(from)\(to)"] = result.meta.regularMarketPrice
+                    return
+                }
+            } catch {
             }
-        } catch {
         }
     }
 

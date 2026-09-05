@@ -46,13 +46,16 @@ struct WatchlistWideView: View {
     private var rows: [WatchRow] {
         storageService.watchlist.enumerated().map { index, symbol in
             let q = stockService.quotes[symbol]
-            let rate = q.map { stockService.priceRate(from: $0.currency) } ?? 1
+            // #24: rate and currency come from one call, so the figure and the
+            // symbol agree even while the FX pair is still loading.
+            let priced = q.map { stockService.priceDisplay(for: $0.currency) }
+            let rate = priced?.rate ?? 1
             let ext: Double? = q.flatMap { $0.isExtendedHours ? $0.effectivePrice * rate : nil }
             return WatchRow(
                 id: symbol, order: index, symbol: symbol,
                 alias: storageService.alias(for: symbol),
                 name: q?.name ?? "",
-                currency: (storageService.stockPriceCurrency.isEmpty ? q?.currency : storageService.stockPriceCurrency) ?? "",
+                currency: priced?.currency ?? "",
                 price: (q?.price ?? 0) * rate,
                 extPrice: ext,
                 extChangePercent: ext != nil ? q?.extendedChangePercent : nil,
@@ -280,12 +283,12 @@ struct WatchlistWideView: View {
         }
     }
 
-    /// Moves a symbol up/down in the manual watchlist order (persisted).
+    /// Moves a symbol up/down in the manual watchlist order (persisted), and
+    /// shows the result — under a column sort the move would look inert.
     private func move(_ symbol: String, by delta: Int) {
-        guard let i = storageService.watchlist.firstIndex(of: symbol) else { return }
-        let j = i + delta
-        guard j >= 0, j < storageService.watchlist.count else { return }
-        storageService.watchlist.swapAt(i, j)
+        guard storageService.moveWatchlistItem(symbol, by: delta) else { return }
+        sortKey = .order
+        sortAsc = true
     }
 
     private var emptyState: some View {

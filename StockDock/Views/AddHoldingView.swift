@@ -17,6 +17,17 @@ struct AddHoldingView: View {
     @State private var selectedSymbol: String?
     @State private var searchTask: Task<Void, Never>?
 
+    /// #24: the avg price is stored in the stock's own currency, whatever the
+    /// display settings say. Naming that currency on the field is what stops
+    /// people converting the figure by hand before typing it in.
+    private var avgPriceLabel: String {
+        guard let symbol = selectedSymbol,
+              let currency = stockService.quotes[symbol]?.currency,
+              !currency.isEmpty
+        else { return "Avg price" }
+        return "Avg price (\(currency))"
+    }
+
     var body: some View {
         VStack(spacing: 12) {
             HStack {
@@ -120,7 +131,7 @@ struct AddHoldingView: View {
                         .textFieldStyle(.roundedBorder)
                 }
                 VStack(alignment: .leading) {
-                    Text("Avg price")
+                    Text(avgPriceLabel)
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     TextField("0.00", text: $avgPriceText)
