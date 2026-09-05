@@ -12,6 +12,13 @@ struct ValuedHolding: Identifiable {
     let cost: Double
     let dayChangePercent: Double
     let type: String
+    /// #24: `value` and `cost` are in the preferred currency, but a per-share
+    /// price is not — it follows the "stock price currency" setting, exactly as
+    /// the watchlist and the compact list do. These two carry that conversion so
+    /// the Last/Change columns can never print a native figure under the
+    /// portfolio currency's symbol.
+    let priceRate: Double
+    let priceCurrency: String
 
     var symbol: String { holding.symbol }
     var name: String { quote.name.isEmpty ? holding.symbol : quote.name }
@@ -129,9 +136,11 @@ struct PortfolioOverview: View {
                 let price = quote.displayPrice(extendedHours: storageService.showExtendedHours)
                 let value = holding.marketValue(currentPrice: price) * stockService.rate(from: quote.currency)
                 let cost = holding.costBasisLocal * stockService.rate(from: quote.currency, for: holding.purchaseDate)
+                let priced = stockService.priceDisplay(for: quote.currency)
                 return ValuedHolding(id: holding.id, portfolioId: portfolio.id, holding: holding, quote: quote,
                                      value: value, cost: cost, dayChangePercent: quote.changePercent,
-                                     type: storageService.type(for: holding.symbol))
+                                     type: storageService.type(for: holding.symbol),
+                                     priceRate: priced.rate, priceCurrency: priced.currency)
             }
         }
         .sorted { abs($0.value) > abs($1.value) }
@@ -842,6 +851,12 @@ private struct PositionRow: View {
         valueDecimals >= 0 ? valueDecimals : StorageService.priceDecimals(symbol: h.symbol, price: price)
     }
 
+    // #24: Last and Change are per-share prices, so they carry the stock's own
+    // conversion — never `currencySymbol`, which belongs to Value and P&L.
+    private var priceSymbol: String { StorageService.currencySymbol(for: h.priceCurrency) }
+    private var lastPrice: Double { h.quote.displayPrice(extendedHours: false) * h.priceRate }
+    private var lastChange: Double { h.quote.change * h.priceRate }
+
     var body: some View {
         HStack(spacing: 0) {
             HStack(spacing: 10) {
@@ -865,13 +880,13 @@ private struct PositionRow: View {
             }
             .frame(width: 168, alignment: .leading)
 
-            Text(StorageService.formatAmount(h.quote.displayPrice(extendedHours: false), symbol: currencySymbol, decimals: priceDec(h.quote.displayPrice(extendedHours: false))))
+            Text(StorageService.formatAmount(lastPrice, symbol: priceSymbol, decimals: priceDec(lastPrice)))
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .font(DS.figure).foregroundStyle(DS.ink)
                 .contentTransition(.numericText())
             VStack(alignment: .trailing, spacing: 1) {
-                ChangePill(value: h.quote.change,
-                           text: StorageService.formatAmount(h.quote.change, symbol: "", decimals: priceDec(h.quote.change), signed: true, truncateZeros: true))
+                ChangePill(value: lastChange,
+                           text: StorageService.formatAmount(lastChange, symbol: "", decimals: priceDec(lastChange), signed: true, truncateZeros: true))
                 Text(String(format: "%+.\(percentDecimals)f%%", h.quote.changePercent))
                     .font(DS.micro)
             }

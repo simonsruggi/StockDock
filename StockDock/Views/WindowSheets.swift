@@ -248,6 +248,17 @@ struct HoldingFormSheet: View {
     }
     private var symbol: String? { fixedSymbol ?? selectedSymbol }
 
+    /// #24: the avg price is stored in the stock's own currency, not in the one
+    /// the lists display prices in. Naming it on the field is what stops people
+    /// converting the figure by hand before typing it in.
+    private var avgPriceLabel: String {
+        guard let sym = symbol,
+              let currency = stockService.quotes[sym]?.currency,
+              !currency.isEmpty
+        else { return "Avg price" }
+        return "Avg price (\(currency))"
+    }
+
     private var title: String {
         if let h = editingHolding { return "Edit \(h.symbol)" }
         return "Add holding"
@@ -272,7 +283,7 @@ struct HoldingFormSheet: View {
 
             HStack(alignment: .top, spacing: 12) {
                 FieldBlock("Quantity") { DSTextField(placeholder: "0", text: $quantityText, mono: true) }
-                FieldBlock("Avg price") { DSTextField(placeholder: "0.00", text: $avgPriceText, mono: true) }
+                FieldBlock(avgPriceLabel) { DSTextField(placeholder: "0.00", text: $avgPriceText, mono: true) }
                 if storageService.advancedPositions {
                     FieldBlock("Leverage") { DSTextField(placeholder: "1×", text: $leverageText, mono: true) }
                         .frame(width: 90)

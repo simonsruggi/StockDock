@@ -265,10 +265,11 @@ struct PortfolioListView: View {
             let rawPct = abs(avg) >= 1e-6 ? (price / avg - 1) * 100 : 0
             // A short position gains when the price falls, so flip the sign.
             let pct = q >= 0 ? rawPct : -rawPct
-            let priceCurr = storageService.stockPriceCurrency
-            let priceSymbol = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
+            let priced = stockService.priceDisplay(for: quote.currency)
+            let priceSymbol = StorageService.currencySymbol(for: priced.currency)
             let value = abs(price * q) * stockService.rate(from: quote.currency)
-            return GlobalPosition(id: symbol, avgPrice: avg, currentPrice: price, priceSymbol: priceSymbol, pct: pct, value: value)
+            return GlobalPosition(id: symbol, avgPrice: avg * priced.rate, currentPrice: price * priced.rate,
+                                  priceSymbol: priceSymbol, pct: pct, value: value)
         }
         .sorted { $0.value > $1.value }
     }
@@ -477,6 +478,13 @@ struct HoldingRow: View {
         stockService.quotes[holding.symbol]
     }
 
+    /// #24: the price-display conversion for this row, decided once so the
+    /// figure and the symbol always come from the same source.
+    private var priced: (rate: Double, currency: String) {
+        guard let quote else { return (1.0, "") }
+        return stockService.priceDisplay(for: quote.currency)
+    }
+
     private func formatQty(_ qty: Double) -> String {
         qty == qty.rounded(.down) ? String(format: "%.0f", qty) : String(format: "%.2f", qty)
     }
@@ -506,7 +514,10 @@ struct HoldingRow: View {
                             .background(RoundedRectangle(cornerRadius: 2).fill(DS.brand))
                     }
                 }
-                Text("\(formatQty(holding.quantity))\u{00D7}\(StorageService.formatNumber(holding.avgPrice, decimals: 2))")
+                // #24: the avg price sits right under the Last column, so it has
+                // to be in the same currency — it was printed raw while Last was
+                // converted, which is what made people convert it by hand.
+                Text("\(formatQty(holding.quantity))\u{00D7}\(StorageService.formatNumber(holding.avgPrice * priced.rate, decimals: 2))")
                     .font(.inter(10, relativeTo: .caption).monospacedDigit())
                     .foregroundColor(.secondary)
                     .lineLimit(1)
@@ -516,9 +527,8 @@ struct HoldingRow: View {
 
             if let quote {
                 let rate = stockService.rate(from: quote.currency)
-                let pRate = stockService.priceRate(from: quote.currency)
-                let priceCurr = storageService.stockPriceCurrency
-                let priceSymbol = StorageService.currencySymbol(for: priceCurr.isEmpty ? quote.currency : priceCurr)
+                let pRate = priced.rate
+                let priceSymbol = StorageService.currencySymbol(for: priced.currency)
                 let prefSymbol = StorageService.currencySymbol(for: storageService.preferredCurrency)
 
                 // Col 2: Price + badge
@@ -605,6 +615,14 @@ struct EditHoldingView: View {
         _purchaseDate = State(initialValue: holding.purchaseDate ?? Date())
     }
 
+    /// #24: names the currency the stored avg price is in, so it is never
+    /// mistaken for the converted figure shown in the list.
+    private var avgPriceLabel: String {
+        guard let currency = stockService.quotes[holding.symbol]?.currency, !currency.isEmpty
+        else { return "Avg price" }
+        return "Avg price (\(currency))"
+    }
+
     private var costBasisInfo: (costInStock: Double, rate: Double, costInPreferred: Double)? {
         guard let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
               let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
@@ -652,7 +670,7 @@ struct EditHoldingView: View {
                         .textFieldStyle(.roundedBorder)
                 }
                 VStack(alignment: .leading) {
-                    Text("Avg price")
+                    Text(avgPriceLabel)
                         .font(.inter(10, relativeTo: .caption))
                         .foregroundColor(.secondary)
                     TextField("0.00", text: $avgPriceText)

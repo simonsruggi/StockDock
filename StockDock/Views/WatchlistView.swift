@@ -8,15 +8,34 @@ struct WatchlistView: View {
     @State private var addToPortfolio: (symbol: String, portfolioId: UUID)? = nil
     @State private var alertSymbol: String? = nil
     @State private var renameSymbol: String? = nil
-    @State private var sortColumn: SortColumn = .change
+    // #23: the list opens in the order the user arranged, like the wide window
+    // does. Clicking a column header sorts by it; clicking it once more past the
+    // reversed direction comes back here.
+    @State private var sortColumn: SortColumn = .manual
     @State private var sortAscending: Bool = false
 
     enum SortColumn {
-        case symbol, price, change
+        case manual, symbol, price, change
+
+        /// Direction a column starts on when first picked.
+        var initialAscending: Bool { self == .symbol }
+    }
+
+    /// Reordering only makes sense against the stored order, and the drag
+    /// offsets only line up with `watchlist` when nothing is filtered out.
+    private var canReorder: Bool { sortColumn == .manual && searchText.isEmpty }
+
+    /// The drag handler, or nil when a drag would move the wrong row.
+    private var reorderAction: ((IndexSet, Int) -> Void)? {
+        guard canReorder else { return nil }
+        return { source, destination in
+            storageService.moveWatchlistItem(from: source, to: destination)
+        }
     }
 
     var sortedSymbols: [String] {
-        storageService.watchlist.sorted { a, b in
+        guard sortColumn != .manual else { return storageService.watchlist }
+        return storageService.watchlist.sorted { a, b in
             let qa = stockService.quotes[a]
             let qb = stockService.quotes[b]
             let result: Bool
@@ -31,6 +50,8 @@ struct WatchlistView: View {
                 let ca = qa?.changePercent ?? 0
                 let cb = qb?.changePercent ?? 0
                 result = ca < cb
+            case .manual:
+                result = false  // unreachable: the guard above returns the stored order
             }
             return sortAscending ? result : !result
         }
@@ -128,6 +149,10 @@ struct WatchlistView: View {
                     }
                     symbols.forEach { storageService.removeFromWatchlist($0) }
                 }
+                // #23: drag to arrange. `reorderAction` is nil while sorted or
+                // filtered, which withholds the drag affordance rather than
+                // offering one that would move the wrong row.
+                .onMove(perform: reorderAction)
 
             }
             .listStyle(.plain)
@@ -182,16 +207,24 @@ struct WatchlistView: View {
         }
     }
 
-    @ViewBuilder
+    /// #23: three states per column — ascending, descending, then back to the
+    /// user's own order, so a sort is never a one-way door.
+    private func cycleSort(_ column: SortColumn) {
+        if sortColumn != column {
+            sortColumn = column
+            sortAscending = column.initialAscending
+        } else if sortAscending == column.initialAscending {
+            sortAscending.toggle()
+        } else {
+            sortColumn = .manual
+        }
+    }
+
     private func sortHeader(_ title: String, column: SortColumn) -> some View {
-        Button(action: {
-            if sortColumn == column {
-                sortAscending.toggle()
-            } else {
-                sortColumn = column
-                sortAscending = column == .symbol
-            }
-        }) {
+        let hint: String = sortColumn == column
+            ? "Click again to return to your own order"
+            : "Sort by \(title.lowercased())"
+        return Button(action: { cycleSort(column) }) {
             HStack(spacing: 2) {
                 Text(title)
                 if sortColumn == column {
@@ -201,6 +234,7 @@ struct WatchlistView: View {
             }
         }
         .buttonStyle(.plain)
+        .help(hint)
     }
 
     @ViewBuilder
@@ -227,12 +261,28 @@ struct WatchlistView: View {
         } label: {
             Label("Rename…", systemImage: "pencil")
         }
+        // #23: the same reorder actions the wide window offers — they work
+        // while the list is sorted or filtered, when dragging cannot.
+        if let idx = storageService.watchlist.firstIndex(of: symbol) {
+            Divider()
+            Button { move(symbol, by: -1) } label: { Label("Move Up", systemImage: "arrow.up") }
+                .disabled(idx == 0)
+            Button { move(symbol, by: 1) } label: { Label("Move Down", systemImage: "arrow.down") }
+                .disabled(idx == storageService.watchlist.count - 1)
+        }
         Divider()
         Button(role: .destructive) {
             storageService.removeFromWatchlist(symbol)
         } label: {
             Label("Remove from Watchlist", systemImage: "trash")
         }
+    }
+
+    /// Moves a symbol one place up/down in the stored order, and shows the
+    /// result: reordering while sorted by a column would otherwise look inert.
+    private func move(_ symbol: String, by delta: Int) {
+        guard storageService.moveWatchlistItem(symbol, by: delta) else { return }
+        sortColumn = .manual
     }
 }
 
@@ -349,14 +399,15 @@ struct QuoteRow: View {
     @EnvironmentObject var storageService: StorageService
     let quote: StockQuote
 
-    private var displayCurrency: String {
-        let pref = storageService.stockPriceCurrency
-        return pref.isEmpty ? quote.currency : pref
+    /// #24: rate and currency are read together, so a row can never show a
+    /// native figure under another currency's symbol while the FX pair loads.
+    private var priced: (rate: Double, currency: String) {
+        stockService.priceDisplay(for: quote.currency)
     }
 
-    private var priceRate: Double {
-        stockService.priceRate(from: quote.currency)
-    }
+    private var displayCurrency: String { priced.currency }
+
+    private var priceRate: Double { priced.rate }
 
     private var currSymbol: String {
         StorageService.currencySymbol(for: displayCurrency)
