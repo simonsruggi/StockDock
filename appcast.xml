@@ -6,22 +6,31 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.14</title>
-            <pubDate>Sun, 23 Aug 2026 21:35:23 +0200</pubDate>
-            <sparkle:version>37</sparkle:version>
-            <sparkle:shortVersionString>1.9.14</sparkle:shortVersionString>
+            <title>Version 1.9.15</title>
+            <pubDate>Sat, 05 Sep 2026 21:54:33 +0200</pubDate>
+            <sparkle:version>38</sparkle:version>
+            <sparkle:shortVersionString>1.9.15</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>See the day's move on every position</h2>
+<h2>Prices in the currency they say they're in</h2>
 <ul>
-    <li><strong>A Change column in the Portfolio window.</strong> The holdings list showed Last, Value, P&amp;L and Weight, but not the one figure that changes minute to minute — how much each position has moved today. There's now a Change column between Last and Value, with the day's move in your currency and the percent below it, coloured green or red like the rest of the app.</li>
+    <li><strong>The Portfolio window converts the price columns.</strong> Last and Change printed the stock's native figure under your portfolio currency's symbol, while Value and P&amp;L on the very same row were genuinely converted — a $190 holding read "€190" next to a real euro value. Both columns now carry the conversion.</li>
+    <li><strong>Your average price is shown next to a comparable one.</strong> The <code>3×190</code> under a converted Last was still in the stock's own currency, so the two prices on a row could not be compared. It converts now, in the positions list and in the cross-portfolio view.</li>
+    <li><strong>A price and its currency symbol can no longer disagree.</strong> Switching currency in Settings clears the exchange rates before fetching the new ones, and in that gap every price was printed unconverted under the new symbol. Prices now stay in the stock's own currency, symbol included, until the rate lands — then switch over on their own. A dropped rate request is retried instead of stranding the display until the next poll.</li>
+    <li><strong>The average price field names its currency.</strong> It has always been stored in the stock's own currency whatever the display settings say, but the field just said "Avg price" — so people converted the figure by hand before typing it in, and it was counted twice. It now reads "Avg price (USD)".</li>
 </ul>
-<p>The figures drop any trailing zeros, so a move reads as +12 rather than +12.00.</p>
+<h2>Arrange the watchlist from the menu bar</h2>
+<ul>
+    <li><strong>The compact list opens in your own order.</strong> It always sorted by the day's change and offered no way back, so the order you had arranged in the main window was unreachable there.</li>
+    <li><strong>Drag a row to move it</strong>, or use Move Up / Move Down from the right-click menu — the same actions the main window has. Dragging is withheld while a column sort or a search filter is active, so a drag can never move the wrong row.</li>
+    <li><strong>A column sort is no longer a one-way door.</strong> Clicking a header a third time returns to your own order.</li>
+</ul>
+<p>With thanks to <a href="https://github.com/Indianhedgehog">Indianhedgehog</a> and <a href="https://github.com/nez329">nez329</a>, whose issues drove this release.</p>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.14/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.15/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="TQ6bbfWhkmnY1NsT1c6QuFUIbavnlJqljj2jGYdrdBsp5HKp3BYPkDcC/d8IEAnXCE+g6nMZOVPPFOJcbnKmDg=="
-                       length="9667710"/>
+                       sparkle:edSignature="7E8/RcOlUs99/rmQ4ya78A3FKsZN5wv3gde6BzUBz2qv0aq3CcaFEhRdkM8+tge9ZAPyN8xt61fAYllscIWyAA=="
+                       length="9688396"/>
         </item>
     </channel>
 </rss>
