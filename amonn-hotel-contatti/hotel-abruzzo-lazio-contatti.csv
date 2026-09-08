@@ -1,8 +1,10 @@
 ﻿Struttura;Categoria;Comune;Prov.;Regione;Indirizzo;Telefono;Email;Sito web;Priorita commerciale;Note
+Albergo Desiree 2;3*;Alba Adriatica;TE;Abruzzo;Via Mincio 8;+39 0861 712030;info@albergodesiree2.com;albergodesiree2.com;Bassa;Spiaggia privata e ristorante
 Hotel Boracay;3*;Alba Adriatica;TE;Abruzzo;Via Cesare Battisti 171;+39 0861 713612;info@boracay.it;boracay.it;Bassa;
 Hotel Doge;3*;Alba Adriatica;TE;Abruzzo;Lungomare Marconi 292;+39 0861 712508;info@hoteldoge.it;hoteldoge.it;Bassa;
 Hotel Eden;4*;Alba Adriatica;TE;Abruzzo;Lungomare Marconi 328;+39 0861 714251;;;Media;Fronte mare
 Hotel Impero;3*;Alba Adriatica;TE;Abruzzo;Lungomare Marconi 162;+39 0861 712422;info@hotelimpero.com;hotelimpero.com;Bassa;
+Hotel Lidia;3*;Alba Adriatica;TE;Abruzzo;Via dei Tigli 15;+39 0861 714441;info@hotel-lidia.it;hotel-lidia.it;Bassa;Spiaggia privata
 Hotel Meripol;4*;Alba Adriatica;TE;Abruzzo;Lungomare Marconi 290;+39 0861 714744;;hotelmeripol.it;Media;Spiaggia privata e piscina
 Hotel Sporting;3*;Alba Adriatica;TE;Abruzzo;Lungomare Marconi 308;+39 0861 712510;;;Bassa;
 Resort Olympus;4*;Alba Adriatica;TE;Abruzzo;Via Olimpica 16;+39 0861 759486;info@resortolympus.it;resortolympus.it;Alta;Resort e residence
@@ -10,29 +12,60 @@ Grand Hotel Don Juan;4*;Giulianova;TE;Abruzzo;Lungomare Zara 97;+39 085 8008341;
 Hotel Baltic;3*;Giulianova;TE;Abruzzo;Lungomare Zara;+39 085 8008241;;;Bassa;
 Hotel Cristallo;4*;Giulianova;TE;Abruzzo;Lungomare Zara;;;hcristallo.it;Media;Fronte mare
 Hotel Europa Beach Village;4*;Giulianova;TE;Abruzzo;Lungomare Zara 57;+39 085 8003600;info@htleuropa.it;htleuropa.it;Alta;Beach village
+Hotel Settibi;n.d.;Giulianova;TE;Abruzzo;Via Ischia 32;+39 085 9218095;info@hmiramare.it;;Da qualificare;
 YOUMAMI Lifestyle Suite Hotel;4*;Giulianova;TE;Abruzzo;Via De Bartolomei;+39 085 8003367;info@youmami.it;youmami.it;Alta;Suite hotel con SPA
+Hotel Abruzzo;n.d.;Pineto;TE;Abruzzo;Via Stati Uniti d'America 20;+39 085 9492149;;hotelpineto.it;Da qualificare;Lungomare pedonale con spiaggia privata
 Hotel Ambasciatori;4*;Pineto;TE;Abruzzo;Via XXV Aprile;+39 085 9492900;htlambasc@gmail.com;pineto.it;Media;Fronte mare vicino Torre del Cerrano
+Hotel Astoria;n.d.;Pineto;TE;Abruzzo;Pineto;+39 085 9490460;direzione@hotelastoriapineto.com;hotelastoriapineto.com;Da qualificare;
+Hotel Columbia;n.d.;Pineto;TE;Abruzzo;Pineto;+39 085 9490505;info@hotelresidencecolumbia.com;hotelresidencecolumbia.com;Da qualificare;Hotel residence
+Hotel Corfu;n.d.;Pineto;TE;Abruzzo;Pineto;+39 085 9490482;info@hotelcorfupineto.it;hotelcorfupineto.it;Da qualificare;
+Hotel Costa Verde;n.d.;Pineto;TE;Abruzzo;Pineto;;;hotelpineto.it;Da qualificare;
+Hotel Il Veliero;n.d.;Pineto;TE;Abruzzo;Pineto;;;hotelpineto.it;Da qualificare;A 50 m dal mare con spiaggia privata
+Hotel La Lancetta;n.d.;Pineto;TE;Abruzzo;Pineto;+39 085 9493086;info@lalancetta.com;lalancetta.com;Da qualificare;
+Hotel La Pineta;n.d.;Pineto;TE;Abruzzo;Pineto;;;hotelpineto.it;Da qualificare;
+Hotel Lisa;n.d.;Pineto;TE;Abruzzo;Pineto;;;hotelpineto.it;Da qualificare;Ristorante di pesce e servizio spiaggia
+Hotel Parco degli Ulivi;n.d.;Pineto;TE;Abruzzo;Pineto;;;hotelpineto.it;Da qualificare;
+Hotel Roma;3*;Pineto;TE;Abruzzo;Pineto;;;hotelpineto.it;Bassa;Gestione familiare dal 1963
+Hotel Villa Bristol;n.d.;Pineto;TE;Abruzzo;Pineto;+39 085 9490639;info@villabristolpineto.it;villabristolpineto.it;Da qualificare;
+Pineto Resort;n.d.;Pineto;TE;Abruzzo;Pineto;+39 085 9491291;info@pinetoresort.com;pinetoresort.it;Da qualificare;Spiaggia privata a 350 m dal mare
 Elite Boutique Hotel;4*;Roseto degli Abruzzi;TE;Abruzzo;Viale Makarska 50;+39 085 2934554;;elitemare.it;Media;A 200 m dalla spiaggia
 Hotel Albatros;4*;Roseto degli Abruzzi;TE;Abruzzo;Via Cerrano 7;+39 085 8996126;hotelalbatrosroseto@gmail.com;hotelalbatrosroseto.it;Media;
 Hotel La Tartaruga;4*;Roseto degli Abruzzi;TE;Abruzzo;Via Marcantonio 3;+39 085 8944193;info@hotellatartaruga.it;hotellatartaruga.it;Media;
+Hotel Lina;3*;Roseto degli Abruzzi;TE;Abruzzo;Via Marche 4;+39 085 8944509;info@hotellina.net;hotellina.net;Bassa;
+Hotel Narcisi;3*;Roseto degli Abruzzi;TE;Abruzzo;Lungomare Roseto;;;;Media;Sala da 220 coperti per eventi e convegni
+Hotel Nettuno;3*;Roseto degli Abruzzi;TE;Abruzzo;Via Cavour 156;+39 085 8944248;info@nettunohotel.eu;nettunohotel.eu;Bassa;
+Hotel Palmarosa;3*;Roseto degli Abruzzi;TE;Abruzzo;Lungomare Roma;;;hotelpalmarosa.it;Bassa;Prima fila sul lungomare - garage e solarium
+Hotel Quaglia Frontemare;3*;Roseto degli Abruzzi;TE;Abruzzo;Lungomare Trento;+39 085 8930425;info@hotelquagliaroseto.com;hotelquagliaroseto.com;Bassa;Fronte mare
 Roses Hotel;4*;Roseto degli Abruzzi;TE;Abruzzo;Viale Makarska 1;+39 085 8936203;;roseshotel.it;Media;SG Hotels Srl - fronte mare con piscina
 Abruzzo Marina Hotel Beach & Resort;4*;Silvi;TE;Abruzzo;Via G. Garibaldi 242;+39 085 930397;info@hotelabruzzomarina.it;hotelabruzzomarina.it;Media;Family hotel
 Hotel Hermitage;4*;Silvi Marina;TE;Abruzzo;Via Dante Alighieri 1;+39 085 9353565;info@hermitagesilvi.com;hermitagesilvi.com;Alta;Hotel Club & Spa - sale meeting
 Hotel Mion;4*;Silvi Marina;TE;Abruzzo;Via Garibaldi 22;+39 085 9350935;info@mionhotel.com;mionhotel.com;Media;Fronte mare
 Hotel President;4*;Silvi Marina;TE;Abruzzo;Via G. Garibaldi 242;+39 085 9350760;;hotelpresidentsilvi.it;Media;Family hotel fronte mare
+Hotel Silvi;3*;Silvi Marina;TE;Abruzzo;Silvi Marina;;;hotel-silvi.com;Bassa;Direttamente sul mare
 Park Hotel Sporting;4*;Teramo;TE;Abruzzo;Via Alcide De Gasperi 41;;;hotelsportingteramo.it;Media;Centro storico di Teramo
 Hotel Aurea;3*;Tortoreto;TE;Abruzzo;Via L. Da Vinci 46;+39 0861 786430;;;Bassa;
+Tortorella-Inn Resort;n.d.;Tortoreto;TE;Abruzzo;Via XXIV Maggio 22 - Tortoreto Alto;+39 0861 787579;info@residencetortorellatortoreto.it;;Media;Resort con spiaggia privata e piscina
 Hotel Ambassador;4*;Tortoreto Lido;TE;Abruzzo;Lungomare Sirena 598;+39 0861 777399;info@hotelambassador.it;hotelambassador.it;Media;Hotel 4 stelle con piscina
+Hotel La Sirenetta;3*;Tortoreto Lido;TE;Abruzzo;Lungomare Sirena 160;+39 0861 787037;info@hotellasirenetta.it;hotellasirenetta.it;Bassa;
+Hotel Poseidon;3*;Tortoreto Lido;TE;Abruzzo;Lungomare Sirena 370;+39 0861 787833;;;Bassa;
 Hotel Quattro Palme;4*;Tortoreto Lido;TE;Abruzzo;Lungomare Sirena 256;+39 0861 1828180;info@hotelquattropalme.it;hotelquattropalme.it;Media;
 Hotel Villa Elena;4*;Tortoreto Lido;TE;Abruzzo;Via Adriatica 136;+39 0861 787266;info@hotelvillaelena.it;hotelvillaelena.it;Media;
+Welcome Riviera d'Abruzzo;n.d.;Tortoreto Lido;TE;Abruzzo;Viale Sirena 470;+39 0861 786341;booking@welcomevillaggi.com;welcomevillaggi.com;Media;Villaggio con spiaggia privata piscina e tennis - alta capacita
 Hotel Holiday;3*;Villa Rosa di Martinsicuro;TE;Abruzzo;Via Amalfi 27/35;+39 0861 713555;info@hotelholiday.it;hotelholiday.it;Bassa;
 Hotel Olimpic;3*;Villa Rosa di Martinsicuro;TE;Abruzzo;Fronte mare Villa Rosa;;;hotelolimpic.it;Bassa;
+Hotel Rex;n.d.;Villa Rosa di Martinsicuro;TE;Abruzzo;Via Bellini 1;;;;Da qualificare;
+I Tre Ciliegi;n.d.;Citta Sant'Angelo;PE;Abruzzo;Via Petruzzi 15/1;+39 085 4429061;info@itreciliegi.it;itreciliegi.it;Da qualificare;
+Villa Nacalua;n.d.;Citta Sant'Angelo;PE;Abruzzo;Via dell'Autostrada 5;+39 085 7993019;info@nacalua.it;nacalua.it;Da qualificare;
 Grand Eurhotel & Residence;4*;Montesilvano;PE;Abruzzo;Viale Carlo Maresca 32;+39 085 837043;info@ghmeurhotels.com;ghmeurhotels.com;Media;Stesso gruppo del Grand Hotel Montesilvano
 Grand Hotel Adriatico;3*S;Montesilvano;PE;Abruzzo;Viale Carlo Maresca 10;+39 085 4452696;;grandhoteladriatico.com;Bassa;
 Grand Hotel Montesilvano;4*;Montesilvano;PE;Abruzzo;Piazzale Kennedy 28;+39 085 835887;info@ghmeurhotels.com;ghmeurhotels.com;Alta;Gruppo GHM Eurhotels - grande capacita ricettiva e congressuale
+Hotel Antagos;n.d.;Montesilvano;PE;Abruzzo;Montesilvano;;;hotelantagos.it;Da qualificare;A 200 m dal mare con spiaggia privata
 Hotel Ariminum Felicioni;3*;Montesilvano;PE;Abruzzo;Viale Carlo Maresca 3;+39 085 4450022;;;Bassa;
 Hotel City;4*;Montesilvano;PE;Abruzzo;Montesilvano Marina;;;hotelcityabruzzo.com;Media;
+Hotel Duca degli Abruzzi;3*;Montesilvano;PE;Abruzzo;Montesilvano;;;hotelducadegliabruzzi.it;Bassa;Family hotel con piscina e spiaggia privata
+Hotel Excelsior;3*;Montesilvano;PE;Abruzzo;Montesilvano - fronte mare;;;hotelexcelsiorabruzzo.com;Bassa;A 30 m dalla spiaggia
 Hotel Promenade;4*;Montesilvano;PE;Abruzzo;Via A. Moro 63;+39 085 4452221;;hotelpromenadeabruzzo.it;Media;
+Hotel Settebello;n.d.;Montesilvano;PE;Abruzzo;Via Tevere 5;+39 085 4452663;info@hotelsettebello.it;hotelsettebello.it;Da qualificare;
 Serena Majestic Hotel Residence;4*;Montesilvano;PE;Abruzzo;Via Carlo Maresca 12;+39 085 8369777;;bluserena.it;Alta;Gruppo Bluserena - villaggio fronte mare di grandi dimensioni
 Best Western Hotel Duca d'Aosta;4*;Pescara;PE;Abruzzo;Piazza Duca d'Aosta 4;+39 085 374241;;;Media;
 G Hotel Pescara;4*;Pescara;PE;Abruzzo;Via Stazione Ferroviaria 100;+39 085 27689;info@ghotelpescara.it;ghotelpescara.it;Media;
@@ -44,13 +77,19 @@ Best Western Hotel Parco Paglia;4*;Chieti;CH;Abruzzo;Via Erasmo Piaggio 13;+39 0
 Hotel Levante;4*;Fossacesia Marina;CH;Abruzzo;Via Nazionale SS16 n.120;;;hotellevante.it;Media;Costa dei Trabocchi
 Marina Gardens Boutique & Suites;4*;Francavilla al Mare;CH;Abruzzo;Via dei Marrucini 45B;+39 331 2223000;hello@marina-gardens-boutique.com;marina-gardens-boutique.com;Media;
 Villa Maria Hotel & SPA;4*;Francavilla al Mare;CH;Abruzzo;Contrada Pretaro snc;+39 085 450051;info@hvillamaria.it;hvillamaria.it;Alta;Ufficio commerciale: commerciale@hvillamaria.it - congressi e SPA
-Hotel Excelsior;4*;Lanciano;CH;Abruzzo;Viale della Rimembranza 19;+39 0872 713013;;hotelexcelsiorlanciano.it;Media;
+Hotel Excelsior;4*;Lanciano;CH;Abruzzo;Viale della Rimembranza 19;+39 0872 713013;;hotelexcelsiorlanciano.it;Alta;SPA e centro benessere - sale congressi palestra e ristorante
 Hotel Villa Medici;4*;Lanciano;CH;Abruzzo;Contrada Santa Calcagna 71/72;+39 0872 717645;info@hotelvillamediciabruzzo.it;hotelvillamediciabruzzo.it;Alta;SPA e centro benessere
-Hotel Mara;4*;Ortona;CH;Abruzzo;Lido Riccio - Ortona;;;hotelmara.it;Media;Fronte spiaggia a 5 km da Ortona
+Hotel Aurum;n.d.;Ortona;CH;Abruzzo;Ortona;;;;Da qualificare;
+Hotel Ideale;n.d.;Ortona;CH;Abruzzo;Corso Garibaldi 65;+39 085 9063735;;;Da qualificare;
+Hotel Mara;4*;Ortona;CH;Abruzzo;Lido Riccio 18;+39 085 9190648;;hotelmara.it;Alta;Fronte spiaggia - 23 camere / 58 posti letto
 Europa Hotel;4*;Vasto;CH;Abruzzo;Via Itaca 5 - Vasto Marina;+39 0873 328169;info@europahotelvasto.it;europahotelvasto.it;Alta;SPA sul mare
 Hotel Excelsior;4*;Vasto;CH;Abruzzo;SS 16 Adriatica km 522 n.226 - Marina di Vasto;+39 0873 802222;info@hotelexcelsiorvasto.com;hotelexcelsiorvasto.com;Alta;Excelsior Hotel & Spa - prenotazioni@hotelexcelsiorvasto.com
+Palace Hotel Vasto;n.d.;Vasto;CH;Abruzzo;Vasto;;;;Da qualificare;
+Autostello Park Hotel;n.d.;Vasto Marina;CH;Abruzzo;Viale Dalmazia 165;+39 0873 801934;;;Da qualificare;
+Hotel Adriatico;n.d.;Vasto Marina;CH;Abruzzo;Viale Dalmazia 138;;;;Media;47 camere - ristorante e spiaggia privata
 Hotel San Giorgio;4*;Vasto Marina;CH;Abruzzo;Viale Dalmazia 138;+39 0873 801902;info@hotelsangiorgiovasto.it;hotelsangiorgiovasto.it;Alta;50 camere - spiaggia privata
 Hotel Sporting;4*;Vasto Marina;CH;Abruzzo;SS 16 Sud - Vasto Marina;+39 0873 801908;info@hotelsportingvasto.it;hotelsportingvasto.it;Media;Tennis e piscina
+Hotel Twins;n.d.;Vasto Marina;CH;Abruzzo;Viale Dalmazia 140;;;;Media;28 camere - ristorante e spiaggia privata
 Hotel Della Piana;4*;Avezzano;AQ;Abruzzo;Via Tiburtina Valeria km 112700;+39 0863 398968;info@dellapianahotel.it;dellapianahotel.it;Media;
 Hotel Velino;4*;Avezzano;AQ;Abruzzo;Via Montello 9;+39 0863 412696;info@hotelvelino.it;hotelvelino.it;Media;
 Sport Village Hotel & Spa;4*;Castel di Sangro;AQ;Abruzzo;Piazza del Mezzogiorno 6;+39 0864 847280;info@sportvillagehotel.it;sportvillagehotel.it;Media;Vicino piste Roccaraso
@@ -65,46 +104,82 @@ Hotel Iris;3*;Pescasseroli;AQ;Abruzzo;Pescasseroli;;;irispescasseroli.it;Bassa;P
 Aqua Montis Resort & Spa;4*;Rivisondoli;AQ;Abruzzo;Via Difesa snc;+39 0864 571010;;aquamontisresort.com;Alta;Resort con SPA
 Cipriani Park Hotel;4*;Rivisondoli;AQ;Abruzzo;Via Gabriele D'Annunzio 159;+39 0864 641105;info@ciprianiparkhotel.com;ciprianiparkhotel.com;Media;
 Hotel 5 Miglia & Spa;4*;Rivisondoli;AQ;Abruzzo;SS 17 km 134,500;;;5miglia.com;Alta;Oropedium Spa
+Albergo del Sole;n.d.;Roccaraso;AQ;Abruzzo;SP84 Nuova Sangrina km 2+100;;;;Da qualificare;
+Hotel Ansharius;n.d.;Roccaraso;AQ;Abruzzo;Roccaraso;+39 0864 62589;info@ansharius.it;ansharius.it;Da qualificare;
+Hotel Belvedere;n.d.;Roccaraso;AQ;Abruzzo;Via del Sannio 3;+39 0864 62279;info@hbelvedere.net;hbelvedere.net;Da qualificare;
+Hotel Il Bucaneve;n.d.;Roccaraso;AQ;Abruzzo;Via Roncone 53;+39 0864 62999;info@hotelbucaneveroccaraso.it;hotelbucaneveroccaraso.it;Da qualificare;
 Hotel Le Ortensie;4*;Roccaraso;AQ;Abruzzo;Via Roncone 31;+39 0864 602025;hotelleortensie@gmail.com;hotelleortensie.it;Media;Montagna
+Hotel LuSi;n.d.;Roccaraso;AQ;Abruzzo;Roccaraso;+39 0864 63125;info@hotellusi.it;hotellusi.it;Da qualificare;
+Hotel Paradiso Aremogna;n.d.;Roccaraso;AQ;Abruzzo;Localita Aremogna;;;;Da qualificare;Sulle piste da sci
+Hotel Pizzalto;4*;Roccaraso;AQ;Abruzzo;Via Aremogna 12;+39 0864 602383;pizzalto@pizzalto.com;pizzalto.com;Alta;Altopiano Aremogna 1440 m - centro benessere e impianti propri
 Hotel Reale;4*;Roccaraso;AQ;Abruzzo;Via Roma 50;+39 0864 602349;direzione@hotelreale.com;albergorealeroccaraso.com;Media;Montagna
+Hotel Suisse;n.d.;Roccaraso;AQ;Abruzzo;Viale Roma 22;+39 0864 602347;info@hotelsuisse.com;hotelsuisse.com;Da qualificare;
 Rasinus Hotel;4*;Roccaraso;AQ;Abruzzo;SP 119 Contrada Il Poggio 1;+39 0864 63386;info@rasinushotel.com;rasinushotel.com;Media;
+Hotel Garni del Lago;n.d.;Scanno;AQ;Abruzzo;Viale del Lago 202;+39 0864 74343;albergodellago.scanno@gmail.com;;Da qualificare;
 Hotel Santacroce Meeting;4*;Sulmona;AQ;Abruzzo;Sulmona;;;hotelsantacrocemeeting.com;Media;Business hotel - stesso gruppo
 Hotel Santacroce Ovidius;4*;Sulmona;AQ;Abruzzo;Via Circonvallazione Occidentale 177;+39 0864 53824;ovidius@hotelsantacroce.com;hotelsantacroceovidius.com;Media;Gruppo Santacroce Hotels
+Albergo degli Olmi;n.d.;Villetta Barrea;AQ;Abruzzo;Via Fossato 33;+39 0864 89159;info@hotel-olmi.it;hotel-olmi.it;Da qualificare;
+Art Hotel;n.d.;Villetta Barrea;AQ;Abruzzo;Via Scanno 13;+39 0864 663936;art.hotel@libero.it;;Da qualificare;Parco Nazionale d'Abruzzo
+Hotel Il Vecchio Pescatore;n.d.;Villetta Barrea;AQ;Abruzzo;Via Benedetto Virgilio 175;+39 0864 89274;info@ilvecchiopescatore.net;ilvecchiopescatore.net;Da qualificare;
 Hotel del Conte;4*;Fondi;LT;Lazio;Via Appia lato Roma km 119 n.134;;info@hoteldelconte.it;hoteldelconte.it;Media;
 Bajamar Beach Hotel;4*;Formia;LT;Lazio;Lungomare Citta di Ferrara 9/15;+39 0771 061919;info@bajamarhotel.it;bajamarhotel.it;Media;Fronte spiaggia
 Grande Albergo Miramare;4*;Formia;LT;Lazio;Via Appia lato Napoli 44;;;;Media;Fronte spiaggia - 2 ristoranti
 Kora Park Resort;4*;Formia;LT;Lazio;Formia;+39 0771 723681;info@korapark.it;korapark.it;Alta;Resort sul mare
+Villa Caribe Resort & Spa;4*;Formia;LT;Lazio;Formia - zona porto;;;;Alta;Piscina jacuzzi sauna SPA fitness e ristorante
 Grand Hotel Le Rocce;4*;Gaeta;LT;Lazio;Via Flacca km 23,300;+39 0771 740985;;lerocce.com;Alta;Resort con spiaggia privata
 Hotel Serapo;3*;Gaeta;LT;Lazio;Via Firenze 11 - Spiaggia di Serapo;+39 0771 450037;info@hotelserapo.com;hotelserapo.com;Bassa;
 Villa Irlanda Grand Hotel;4*;Gaeta;LT;Lazio;Lungomare Caboto 6;+39 0771 712581;villairlanda@villairlanda.com;villairlanda.it;Media;
 Foro Appio Mansio Hotel;4*;Latina;LT;Lazio;Via Appia km 72,800;+39 327 6707336;info@foroappiohotel.it;foroappiohotel.it;Alta;SPA ristorante e sala meeting
 Hotel Europa;4*;Latina;LT;Lazio;Via Emanuele Filiberto 14;+39 0773 407199;info@hoteleuropalatina.it;hoteleuropalatina.com;Alta;Unico 4 stelle nel centro di Latina - SPA e centro congressi
+Hotel Panoramico;n.d.;Marina di Minturno;LT;Lazio;Via Lungomare 391;;;albergopanoramico.com;Da qualificare;Golfo di Gaeta
 Grand Hotel Santa Domitilla;4*;Ponza;LT;Lazio;Via Panoramica;+39 0771 809951;info@santadomitilla.com;santadomitilla.com;Media;
 Hotel Chiaia di Luna;4*;Ponza;LT;Lazio;Via Chiaia di Luna;+39 0771 809954;info@hotelchiaiadiluna.com;hotelchiaiadiluna.com;Media;
 Best Western Plus Hotel Sabaudia;4*;Sabaudia;LT;Lazio;Viale 4 Stagioni 4;+39 0773 1785800;;sabaudiahotel.com;Alta;Hotel & Spa
-Hotel Oasi di Kufra;4*;Sabaudia;LT;Lazio;Strada Lungomare Pontino 8852;+39 0773 5191;hotelkufra@oasidikufra.it;oasidikufra.it;Media;Due strutture: Kufra Sea e Kufra Lake - eventi@oasidikufra.it
+Hotel Oasi di Kufra;4*;Sabaudia;LT;Lazio;Strada Lungomare Pontino 8852;+39 0773 5191;hotelkufra@oasidikufra.it;oasidikufra.it;Alta;Due strutture: Kufra Sea e Kufra Lake - eventi@oasidikufra.it
 Circeo Park Hotel;4*;San Felice Circeo;LT;Lazio;Via Lungomare 49;+39 0773 548814;info@circeopark.it;circeopark.it;Media;Spiaggia privata e piscine
-Hotel Capo Circeo;4*;San Felice Circeo;LT;Lazio;Viale Europa 9;+39 0773 540403;;hotelcapocirceo.it;Media;
+Hotel Capo Circeo;4*;San Felice Circeo;LT;Lazio;Viale Europa 9;+39 0773 540403;hotelcapocirceo@gmail.com;hotelcapocirceo.it;Media;
 Hotel Fiordaliso;4*;San Felice Circeo;LT;Lazio;San Felice Circeo;;;;Media;
-Hotel Maga Circe;4*;San Felice Circeo;LT;Lazio;Via A. Bergamini 7;+39 0773 547821;;hotelmagacirce.it;Media;
+Hotel Maga Circe;4*;San Felice Circeo;LT;Lazio;Via A. Bergamini 7;+39 0773 547821;info@hotelmagacirce.it;hotelmagacirce.it;Media;
+Hotel Mercede 2.0;3*;San Felice Circeo;LT;Lazio;Viale Regina Elena 76;+39 0773 1870993;info@hotelmercededuepuntozero.it;hotelmercededuepuntozero.it;Bassa;
 Hotel Punta Rossa;4*;San Felice Circeo;LT;Lazio;Via delle Batterie 37 - Quarto Caldo;+39 0773 548085;info@puntarossa.it;puntarossa.it;Media;Struttura di alta gamma sul mare
+Albergo Villa Aurora;n.d.;Scauri di Minturno;LT;Lazio;Via Guglielmo Marconi 84;+39 0771 683657;info@albergovillaaurora.it;albergovillaaurora.it;Da qualificare;
+Hotel La Rosetta;n.d.;Scauri di Minturno;LT;Lazio;Scauri;+39 0771 614952;;;Da qualificare;Ristorante piscina e bar
+Hotel Villa Eleonora;3*;Scauri di Minturno;LT;Lazio;Scauri - fronte mare;+39 0771 683243;info@villaeleonora.com;villaeleonora.com;Bassa;
+Hotel Club Torre Capovento;n.d.;Sperlonga;LT;Lazio;Via Flacca km 17,700;+39 0771 549756;reservations@torrecapovento.com;torrecapovento.com;Da qualificare;Hotel club sul mare
 Hotel Ganimede;4*;Sperlonga;LT;Lazio;Via Ulisse 275/323;+39 0771 557096;info@hotelganimede.it;hotelganimede.it;Media;Piscina e lido privato
+Hotel Miralago;n.d.;Sperlonga;LT;Lazio;Via Flacca km 11,200;+39 0771 548725;info@miralagohotel.it;miralagohotel.it;Da qualificare;
 Virgilio Grand Hotel;4*;Sperlonga;LT;Lazio;Via Giuseppe Romita 262;+39 0771 557600;info@virgiliograndhotel.it;virgiliograndhotel.it;Alta;72 camere
 Albergo Mediterraneo;4*;Terracina;LT;Lazio;Via Veneto 2;+39 0773 733001;info@albergo-mediterraneo.it;albergo-mediterraneo.it;Media;
 Grand Hotel L'Approdo;4*;Terracina;LT;Lazio;Via della Batteria snc;+39 0773 721647;info@approdograndhotel.it;approdograndhotel.it;Media;
+Hotel Le Onde;n.d.;Terracina;LT;Lazio;Terracina - mare e centro;+39 0773 731575;info@leondehotel.it;leondehotel.it;Da qualificare;
+Hotel Ristorante Centosedici;n.d.;Terracina;LT;Lazio;Lungomare Circe 116;+39 0773 731501;info@centosedici.it;centosedici.it;Da qualificare;
 Hotel Torre del Sole;4*;Terracina;LT;Lazio;Via Pontina km 106,500;+39 0773 764076;info@torredelsole.com;torredelsole.com;Media;114 unita abitative - fronte spiaggia
+Piccolo Hotel Terracina;n.d.;Terracina;LT;Lazio;Lungomare Terracina;;;piccolohotelterracina.it;Da qualificare;Fronte mare con terrazza vista mare
 Hotel Citta dei Papi;4*;Anagni;FR;Lazio;Anagni;;;cittadeipapi.it;Media;Uscita casello Anagni-Fiuggi
 Hotel Colaiaco;4*;Anagni;FR;Lazio;Via Anticolana 5;+39 0775 1888650;;hotelcolaiaco.it;Media;Best Western - fronte autostrada
 Hotel Il Cavalier d'Arpino;4*;Arpino;FR;Lazio;Arpino - strada Ferentino Sora;+39 0776 849348;info@cavalierdarpino.it;cavalierdarpino.it;Media;
 Best Western Hotel Rocca;4*;Cassino;FR;Lazio;Via Sferracavalli 105;+39 0776 311212;rocca.fr@bestwestern.it;hotelrocca.it;Media;
 Edra Palace Hotel;4*;Cassino;FR;Lazio;Via Ausonia angolo Via Cerro snc;+39 0776 373010;info@edrapalacehotel.it;edrapalacehotel.it;Alta;Ristorante piscina e sale meeting
 Hotel al Boschetto;3*;Cassino;FR;Lazio;Via Ausonia 54;+39 0776 39131;;;Bassa;
+Albergo Italia;n.d.;Fiuggi;FR;Lazio;Fiuggi;+39 0775 515380;info@albergoitalia.it;albergoitalia.it;Da qualificare;
 Ambasciatori Place Hotel;4*;Fiuggi;FR;Lazio;Via dei Villini 8;+39 0775 514351;info@ambasciatoriplacehotel.com;ambasciatoriplacehotel.com;Media;Vacanze benessere
 Atlantic Park Hotel;4*;Fiuggi;FR;Lazio;Via Prenestina Sud 37;+39 0775 514065;info@atlanticparkhotel.it;atlanticparkhotel.it;Alta;Ristorante SPA e centro congressi
 Grand Hotel Palazzo della Fonte;5*;Fiuggi;FR;Lazio;Via dei Villini 7;+39 0775 5081;;palazzodellafonte.com;Alta;Storico 5 stelle con SPA e centro congressi
+Hotel Argentina;n.d.;Fiuggi;FR;Lazio;Fiuggi;+39 0775 515117;info@albergoargentina.it;albergoargentina.it;Da qualificare;
+Hotel Belsito;n.d.;Fiuggi;FR;Lazio;Fiuggi;+39 0775 515038;info@belsitofiuggihotel.it;belsitofiuggihotel.it;Da qualificare;
+Hotel Bonifacio;n.d.;Fiuggi;FR;Lazio;Fiuggi;+39 0775 515780;info@hotelbonifaciofiuggi.it;hotelbonifaciofiuggi.it;Da qualificare;
+Hotel Ciociaria;n.d.;Fiuggi;FR;Lazio;Fiuggi;+39 0775 515664;hotelciociaria@alice.it;;Da qualificare;
+Hotel Erika;n.d.;Fiuggi;FR;Lazio;Via Armando Diaz 568;;;hotelerikafiuggi.it;Da qualificare;
 Hotel Fiuggi Terme Resort & Spa;4*;Fiuggi;FR;Lazio;Via Capo i Prati 9;+39 0775 515212;;hotelfiuggiterme.it;Media;Parco di due ettari
-Hotel San Giorgio & Heaven Spa;4*;Fiuggi;FR;Lazio;Via Prenestina 31;;;heavenspa.it;Media;
+Hotel Marconi;3*;Fiuggi;FR;Lazio;Via Valle del Silenzio 9;+39 0775 515639;info@hotelmarconifiuggi.it;hotelmarconifiuggi.it;Bassa;
+Hotel Olimpic;n.d.;Fiuggi;FR;Lazio;Fiuggi;+39 0775 515584;info@hotel-olimpic.it;hotel-olimpic.it;Da qualificare;Piscina e centro benessere
+Hotel San Giorgio & Heaven Spa;4*;Fiuggi;FR;Lazio;Via Prenestina 31;+39 0775 515313;info@hotel-sangiorgio.it;hotel-sangiorgio.it;Media;
+Hotel Siviglia;n.d.;Fiuggi;FR;Lazio;Fiuggi;;;hotelsivigliafiuggi.it;Da qualificare;
+Hotel Touring;n.d.;Fiuggi;FR;Lazio;Fiuggi;;;hoteltouringfiuggi.it;Da qualificare;
+Hotel Universo;n.d.;Fiuggi;FR;Lazio;Fiuggi;+39 0775 515014;info@albergouniversofiuggi.it;albergouniversofiuggi.it;Da qualificare;
 Hotel delle Terme & SPA;4*;Fiuggi;FR;Lazio;Via dei Villini 57;+39 0775 515067;info@hoteldelletermefiuggi.it;hoteldelletermefiuggi.it;Media;Tra le fonti Anticolana e Bonifacio VIII
+King Hotel;n.d.;Fiuggi;FR;Lazio;Fiuggi;+39 320 9791004;king@kinghotelfiuggi.it;kinghotelfiuggi.it;Da qualificare;
+Relais Le Felci;n.d.;Fiuggi;FR;Lazio;Fiuggi;+39 0775 506070;info@relaislefelci.it;relaislefelci.it;Da qualificare;
 Silva Hotel Splendid;4*;Fiuggi;FR;Lazio;Corso Nuova Italia 40;+39 0775 515791;silvasplendid@silvasplendid.it;silvasplendid.it;Media;Centro benessere e piscine termali
-Astor Hotel;3*;Frosinone;FR;Lazio;Frosinone - uscita A1;;;astorhotelfrosinone.it;Bassa;54 camere - hotel e ristorante
-Hotel Memmina;3*;Frosinone;FR;Lazio;Via Maria 172;+39 0775 873548;;;Bassa;Hotel residence con sale meeting
+Astor Hotel;3*;Frosinone;FR;Lazio;Frosinone - uscita A1;;;astorhotelfrosinone.it;Media;54 camere - hotel e ristorante
+Hotel Memmina;3*;Frosinone;FR;Lazio;Via Maria 172;+39 0775 873548;;;Media;Hotel residence con sale meeting
