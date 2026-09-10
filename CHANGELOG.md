@@ -4,6 +4,15 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.16 — 2026-09-10
+
+*Price alerts, organised*
+
+- **Alerts are grouped by symbol.** A ladder of levels on the same stock used to fill Settings with one row per level. Each symbol is now a single row with a count; click the arrow to open it.
+- **Above and Below have their own groups.** Inside a symbol, levels are split by condition and sorted by price, so a ladder reads top to bottom. A group only gets an arrow when it holds more than one alert.
+- **Re-arm a whole group at once.** The switch on an Above or Below group re-arms every alert in it, or turns them all off.
+- **Edit and duplicate from the right-click menu.** Right-click an alert to change its condition or price, or to use it as the starting point for a new one. An edited alert is armed again.
+
 ## 1.9.15 — 2026-09-05
 
 *Prices in the currency they say they're in*

@@ -153,6 +153,52 @@ final class AlertEvaluatorTests: XCTestCase {
 
     // MARK: - Helpers
 
+    // MARK: - Grouping by symbol (Settings list)
+
+    func testGroupedBySymbolKeepsFirstAppearanceOrderAndSortsThresholds() {
+        let alerts = [
+            PriceAlert(symbol: "MU", condition: .priceAbove, threshold: 1020),
+            PriceAlert(symbol: "AAPL", condition: .priceBelow, threshold: 150),
+            PriceAlert(symbol: "MU", condition: .priceAbove, threshold: 1010),
+            PriceAlert(symbol: "MU", condition: .priceBelow, threshold: 900),
+        ]
+        let groups = PriceAlert.groupedBySymbol(alerts)
+        XCTAssertEqual(groups.map(\.symbol), ["MU", "AAPL"])
+        XCTAssertEqual(groups[0].alerts.map(\.threshold), [1010, 1020, 900])
+        XCTAssertEqual(groups[1].alerts.count, 1)
+    }
+
+    func testGroupedByConditionSplitsAboveAndBelowInOrder() {
+        let alerts = [
+            PriceAlert(symbol: "MU", condition: .priceBelow, threshold: 900),
+            PriceAlert(symbol: "MU", condition: .priceAbove, threshold: 1020),
+            PriceAlert(symbol: "MU", condition: .priceAbove, threshold: 1010),
+        ]
+        let groups = PriceAlert.groupedByCondition(alerts)
+        XCTAssertEqual(groups.map(\.condition), [.priceAbove, .priceBelow])
+        XCTAssertEqual(groups[0].alerts.map(\.threshold), [1010, 1020])
+        XCTAssertEqual(groups[1].alerts.map(\.threshold), [900])
+    }
+
+    func testDuplicateIsFreshArmedCopy() {
+        let original = PriceAlert(symbol: "MU", condition: .priceAbove, threshold: 1010,
+                                  isEnabled: false, lastTriggeredAt: Date())
+        let copy = original.duplicate(condition: .priceBelow, threshold: 900)
+        XCTAssertNotEqual(copy.id, original.id)
+        XCTAssertEqual(copy.symbol, "MU")
+        XCTAssertEqual(copy.condition, .priceBelow)
+        XCTAssertEqual(copy.threshold, 900)
+        XCTAssertTrue(copy.isEnabled)
+        XCTAssertNil(copy.lastTriggeredAt)
+    }
+
+    func testDescribeShortOmitsPriceWording() {
+        let a = PriceAlert(symbol: "MU", condition: .priceAbove, threshold: 1010)
+        XCTAssertTrue(AlertEvaluator.describeShort(a, currencySymbol: "$").hasPrefix("Above $"))
+        let b = PriceAlert(symbol: "MU", condition: .priceBelow, threshold: 900)
+        XCTAssertTrue(AlertEvaluator.describeShort(b, currencySymbol: "$").hasPrefix("Below $"))
+    }
+
     private func makeQuote(price: Double,
                            changePercent: Double = 0,
                            marketState: String = "REGULAR",

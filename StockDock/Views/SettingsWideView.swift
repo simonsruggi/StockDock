@@ -225,10 +225,7 @@ struct SettingsWideView: View {
 
     private var alertsCard: some View {
         SettingsCard(title: "Price alerts") {
-            ForEach(storageService.alerts) { alert in
-                AlertRow(alert: alert)
-                if alert.id != storageService.alerts.last?.id { SettingDivider() }
-            }
+            AlertGroupList()
             SettingDivider()
             HStack {
                 Spacer()

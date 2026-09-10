@@ -246,6 +246,15 @@ class StorageService: ObservableObject {
         alerts.append(alert)
     }
 
+    /// Edits an alert's rule; a changed rule is a new target, so it is re-armed.
+    func updateAlert(id: UUID, condition: AlertCondition, threshold: Double) {
+        guard let i = alerts.firstIndex(where: { $0.id == id }) else { return }
+        alerts[i].condition = condition
+        alerts[i].threshold = threshold
+        alerts[i].isEnabled = true
+        alerts[i].lastTriggeredAt = nil
+    }
+
     func removeAlert(id: UUID) {
         alerts.removeAll { $0.id == id }
     }
@@ -258,6 +267,16 @@ class StorageService: ObservableObject {
         guard let i = alerts.firstIndex(where: { $0.id == id }) else { return }
         alerts[i].isEnabled = enabled
         if enabled { alerts[i].lastTriggeredAt = nil }
+    }
+
+    /// Enables/disables several alerts in one mutation (group toggle in Settings).
+    func setAlertsEnabled(ids: Set<UUID>, enabled: Bool) {
+        var updated = alerts
+        for i in updated.indices where ids.contains(updated[i].id) {
+            updated[i].isEnabled = enabled
+            if enabled { updated[i].lastTriggeredAt = nil }
+        }
+        alerts = updated
     }
 
     /// Marks an alert as fired: records the time and disables it (one-shot).

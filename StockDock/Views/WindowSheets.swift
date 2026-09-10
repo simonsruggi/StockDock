@@ -712,15 +712,40 @@ struct WatchlistSearchSheet: View {
 
 // MARK: - Price alert
 
-/// DS-styled one-shot price alert creation.
+/// DS-styled one-shot price alert creation, editing and duplication.
 struct PriceAlertSheet: View {
+    enum Mode {
+        case create
+        case edit(PriceAlert)
+        case duplicate(PriceAlert)
+    }
+
     @EnvironmentObject var storageService: StorageService
     @EnvironmentObject var stockService: StockService
     let symbol: String
+    var mode: Mode = .create
     let onDismiss: () -> Void
 
     @State private var condition: AlertCondition = .priceAbove
     @State private var thresholdText = ""
+
+    private var source: PriceAlert? {
+        switch mode {
+        case .create: return nil
+        case .edit(let a), .duplicate(let a): return a
+        }
+    }
+    private var title: String {
+        switch mode {
+        case .create: return "Alert · \(symbol)"
+        case .edit: return "Edit alert · \(symbol)"
+        case .duplicate: return "Duplicate alert · \(symbol)"
+        }
+    }
+    private var confirmTitle: String {
+        if case .edit = mode { return "Save" }
+        return "Create alert"
+    }
 
     private var quote: StockQuote? { stockService.quotes[symbol] }
     private var currencySymbol: String {
@@ -731,11 +756,13 @@ struct PriceAlertSheet: View {
     }
 
     var body: some View {
-        SheetShell(title: "Alert · \(symbol)", onCancel: onDismiss, width: 420) {
+        SheetShell(title: title, onCancel: onDismiss, width: 420) {
             FieldBlock("Condition") {
                 DSPicker(options: AlertCondition.allCases.map { ($0, $0.label) },
                          selection: $condition, width: 260)
-                    .onChange(of: condition) { prefill() }
+                    .onChange(of: condition) {
+                        if condition != source?.condition { prefill() } else { loadSource() }
+                    }
             }
             FieldBlock(thresholdLabel) {
                 HStack(spacing: 8) {
@@ -747,9 +774,11 @@ struct PriceAlertSheet: View {
                 Text("Current price: \(currencySymbol)\(StorageService.formatNumber(q.effectivePrice, decimals: 2))")
                     .font(DS.caption).foregroundStyle(DS.inkTertiary)
             }
-            PrimaryButton(title: "Create alert", enabled: parsedValue != nil, action: create)
+            PrimaryButton(title: confirmTitle, enabled: parsedValue != nil, action: create)
         }
-        .onAppear(perform: prefill)
+        .onAppear {
+            if let source { condition = source.condition; loadSource() } else { prefill() }
+        }
     }
 
     private var parsedValue: Double? {
@@ -766,6 +795,13 @@ struct PriceAlertSheet: View {
     }
     private var placeholder: String { condition.thresholdKind == .price ? "0.00" : "5" }
 
+    private func loadSource() {
+        guard let source else { return }
+        thresholdText = source.condition.thresholdKind == .price
+            ? String(format: "%.2f", source.threshold)
+            : String(format: "%g", source.threshold)
+    }
+
     private func prefill() {
         switch condition.thresholdKind {
         case .price: if let q = quote { thresholdText = String(format: "%.2f", q.effectivePrice) }
@@ -779,7 +815,14 @@ struct PriceAlertSheet: View {
 
     private func create() {
         guard let v = parsedValue else { return }
-        storageService.addAlert(PriceAlert(symbol: symbol, condition: condition, threshold: v))
+        switch mode {
+        case .create:
+            storageService.addAlert(PriceAlert(symbol: symbol, condition: condition, threshold: v))
+        case .edit(let a):
+            storageService.updateAlert(id: a.id, condition: condition, threshold: v)
+        case .duplicate(let a):
+            storageService.addAlert(a.duplicate(condition: condition, threshold: v))
+        }
         onDismiss()
     }
 }

@@ -272,9 +272,7 @@ struct SettingsView: View {
                     if storageService.alerts.isEmpty {
                         caption("No alerts. Right-click a stock in the watchlist to add one.")
                     } else {
-                        ForEach(storageService.alerts) { alert in
-                            AlertRow(alert: alert)
-                        }
+                        AlertGroupList()
                     }
 
                     // Portfolio notifications
@@ -431,10 +429,155 @@ struct SettingsGroup<Content: View>: View {
     }
 }
 
-/// A single alert row in Settings: enable/re-arm toggle, description and delete.
+/// Price alerts grouped by symbol, then by condition (Above / Below …). A level
+/// only gets a disclosure chevron when it holds more than one alert.
+struct AlertGroupList: View {
+    @EnvironmentObject var storageService: StorageService
+    @EnvironmentObject var stockService: StockService
+    @State private var expanded: Set<String> = []
+    @State private var sheet: AlertEditTarget?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(PriceAlert.groupedBySymbol(storageService.alerts), id: \.symbol) { group in
+                if group.alerts.count == 1, let alert = group.alerts.first {
+                    AlertRow(alert: alert, showsSymbol: true)
+                } else {
+                    DisclosureHeader(key: group.symbol, alerts: group.alerts, expanded: $expanded) {
+                        Text(group.symbol)
+                            .font(.inter(12, weight: .semibold, relativeTo: .body))
+                    }
+                    if expanded.contains(group.symbol) {
+                        conditionGroups(symbol: group.symbol, alerts: group.alerts)
+                            .padding(.leading, 22)
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                }
+            }
+        }
+        .environment(\.editAlert) { alert, duplicate in
+            sheet = AlertEditTarget(alert: alert, duplicate: duplicate)
+        }
+        .sheet(item: $sheet) { t in
+            PriceAlertSheet(symbol: t.alert.symbol,
+                            mode: t.duplicate ? .duplicate(t.alert) : .edit(t.alert)) { sheet = nil }
+                .environmentObject(stockService).environmentObject(storageService)
+        }
+    }
+
+    @ViewBuilder
+    private func conditionGroups(symbol: String, alerts: [PriceAlert]) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            ForEach(PriceAlert.groupedByCondition(alerts), id: \.condition) { sub in
+                let key = "\(symbol)|\(sub.condition.rawValue)"
+                if sub.alerts.count == 1, let alert = sub.alerts.first {
+                    AlertRow(alert: alert)
+                } else {
+                    DisclosureHeader(key: key, alerts: sub.alerts, expanded: $expanded,
+                                     showsGroupToggle: true) {
+                        HStack(spacing: 6) {
+                            Image(systemName: sub.condition.systemImage)
+                                .font(.inter(10, relativeTo: .caption))
+                                .foregroundColor(.accentColor)
+                            Text(sub.condition.shortLabel)
+                                .font(.inter(11, weight: .medium, relativeTo: .caption))
+                        }
+                    }
+                    if expanded.contains(key) {
+                        ForEach(sub.alerts) { alert in
+                            AlertRow(alert: alert).padding(.leading, 22)
+                        }
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct AlertEditTarget: Identifiable {
+    let id = UUID()
+    let alert: PriceAlert
+    let duplicate: Bool
+}
+
+private struct EditAlertKey: EnvironmentKey {
+    static let defaultValue: ((PriceAlert, Bool) -> Void)? = nil
+}
+
+extension EnvironmentValues {
+    /// Opens the alert editor: `(alert, duplicate)`. Nil outside `AlertGroupList`.
+    var editAlert: ((PriceAlert, Bool) -> Void)? {
+        get { self[EditAlertKey.self] }
+        set { self[EditAlertKey.self] = newValue }
+    }
+}
+
+/// Chevron + title + count badge (+ triggered count); toggles `key` in `expanded`.
+private struct DisclosureHeader<Title: View>: View {
+    @EnvironmentObject var storageService: StorageService
+    let key: String
+    let alerts: [PriceAlert]
+    @Binding var expanded: Set<String>
+    /// Master switch that enables/disables every alert in the group.
+    var showsGroupToggle = false
+    @ViewBuilder let title: () -> Title
+
+    private var isExpanded: Bool { expanded.contains(key) }
+    private var triggeredCount: Int { alerts.filter { !$0.isEnabled }.count }
+
+    var body: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                if isExpanded { expanded.remove(key) } else { expanded.insert(key) }
+            }
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "chevron.right")
+                    .font(.inter(9, weight: .semibold, relativeTo: .caption2))
+                    .foregroundColor(.secondary)
+                    .rotationEffect(.degrees(isExpanded ? 90 : 0))
+                    .frame(width: 14)
+                title()
+                Text("\(alerts.count)")
+                    .font(.inter(9, weight: .semibold, relativeTo: .caption2))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 1)
+                    .background(Capsule().fill(Color.secondary.opacity(0.15)))
+                Spacer()
+                if triggeredCount > 0 {
+                    Text("\(triggeredCount) triggered")
+                        .font(.inter(8, weight: .semibold, relativeTo: .caption2))
+                        .foregroundColor(.orange)
+                }
+                if showsGroupToggle {
+                    Toggle("", isOn: Binding(
+                        get: { triggeredCount == 0 },
+                        set: { storageService.setAlertsEnabled(ids: Set(alerts.map(\.id)), enabled: $0) }
+                    ))
+                    .toggleStyle(.switch)
+                    .controlSize(.mini)
+                    .labelsHidden()
+                    .help(triggeredCount == 0 ? "Disable all" : "Re-arm all")
+                    // Keeps the switch aligned with the rows' switches (trash column).
+                    Color.clear.frame(width: 14, height: 1)
+                }
+            }
+            .contentShape(Rectangle())
+            .padding(.vertical, 4)
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// A single alert level inside a symbol group: condition, re-arm toggle and delete.
 struct AlertRow: View {
     @EnvironmentObject var storageService: StorageService
+    @Environment(\.editAlert) private var editAlert
     let alert: PriceAlert
+    /// A symbol's only alert sits at the top level, so it carries the symbol itself.
+    var showsSymbol = false
 
     private var currencySymbol: String {
         StorageService.currencySymbol(for: StockService.shared.quotes[alert.symbol]?.currency
@@ -447,13 +590,13 @@ struct AlertRow: View {
                 .font(.inter(10, relativeTo: .caption))
                 .foregroundColor(alert.isEnabled ? .accentColor : .secondary)
                 .frame(width: 14)
-            VStack(alignment: .leading, spacing: 1) {
+            if showsSymbol {
                 Text(alert.symbol)
                     .font(.inter(12, weight: .semibold, relativeTo: .body))
-                Text(AlertEvaluator.describe(alert, currencySymbol: currencySymbol))
-                    .font(.inter(9, relativeTo: .caption2))
-                    .foregroundColor(.secondary)
             }
+            Text(AlertEvaluator.describeShort(alert, currencySymbol: currencySymbol))
+                .font(.inter(11, relativeTo: .caption))
+                .foregroundColor(alert.isEnabled ? .primary : .secondary)
             Spacer()
             if !alert.isEnabled {
                 Text("triggered")
@@ -476,6 +619,15 @@ struct AlertRow: View {
             .buttonStyle(.borderless)
         }
         .padding(.vertical, 2)
+        .contentShape(Rectangle())
+        .contextMenu {
+            if let editAlert {
+                Button("Edit…") { editAlert(alert, false) }
+                Button("Duplicate…") { editAlert(alert, true) }
+                Divider()
+            }
+            Button("Delete", role: .destructive) { storageService.removeAlert(id: alert.id) }
+        }
     }
 }
 

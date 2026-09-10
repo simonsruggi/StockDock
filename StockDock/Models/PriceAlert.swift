@@ -37,6 +37,18 @@ enum AlertCondition: String, Codable, CaseIterable {
         }
     }
 
+    /// Compact label used under a symbol header, where "Price" is implied.
+    var shortLabel: String {
+        switch self {
+        case .priceAbove: return "Above"
+        case .priceBelow: return "Below"
+        case .dailyChangeUp: return "Day up"
+        case .dailyChangeDown: return "Day down"
+        case .near52WeekHigh: return "Near 52w high"
+        case .near52WeekLow: return "Near 52w low"
+        }
+    }
+
     var systemImage: String {
         switch self {
         case .priceAbove, .dailyChangeUp, .near52WeekHigh: return "arrow.up.right"
@@ -71,6 +83,37 @@ struct PriceAlert: Identifiable, Codable, Equatable {
         self.isEnabled = isEnabled
         self.createdAt = createdAt
         self.lastTriggeredAt = lastTriggeredAt
+    }
+
+    /// A new, armed alert on the same symbol (context menu "Duplicate…").
+    func duplicate(condition: AlertCondition? = nil, threshold: Double? = nil) -> PriceAlert {
+        PriceAlert(symbol: symbol, condition: condition ?? self.condition,
+                   threshold: threshold ?? self.threshold)
+    }
+
+    /// Alerts split by condition (enum order), each sorted by threshold.
+    static func groupedByCondition(_ alerts: [PriceAlert]) -> [(condition: AlertCondition, alerts: [PriceAlert])] {
+        AlertCondition.allCases.compactMap { condition in
+            let matching = alerts.filter { $0.condition == condition }.sorted { $0.threshold < $1.threshold }
+            return matching.isEmpty ? nil : (condition, matching)
+        }
+    }
+
+    /// Alerts grouped by symbol, groups in first-appearance order; inside a group
+    /// sorted by condition then threshold, so ladders of levels read top-down.
+    static func groupedBySymbol(_ alerts: [PriceAlert]) -> [(symbol: String, alerts: [PriceAlert])] {
+        var order: [String] = []
+        var bySymbol: [String: [PriceAlert]] = [:]
+        for alert in alerts {
+            if bySymbol[alert.symbol] == nil { order.append(alert.symbol) }
+            bySymbol[alert.symbol, default: []].append(alert)
+        }
+        let rank = Dictionary(uniqueKeysWithValues: AlertCondition.allCases.enumerated().map { ($1, $0) })
+        return order.map { symbol in
+            (symbol, bySymbol[symbol]!.sorted {
+                (rank[$0.condition]!, $0.threshold) < (rank[$1.condition]!, $1.threshold)
+            })
+        }
     }
 }
 
@@ -120,6 +163,21 @@ enum AlertEvaluator {
                           changePercent: quote.changePercent,
                           fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
                           fiftyTwoWeekLow: quote.fiftyTwoWeekLow)
+    }
+
+    /// Compact summary shown under the symbol header, e.g. "Above $200.00".
+    static func describeShort(_ alert: PriceAlert, currencySymbol: String) -> String {
+        switch alert.condition.thresholdKind {
+        case .price:
+            return "\(alert.condition.shortLabel) \(currencySymbol)\(StorageService.formatNumber(alert.threshold, decimals: 2))"
+        case .percent:
+            switch alert.condition {
+            case .near52WeekHigh, .near52WeekLow:
+                return "\(alert.condition.shortLabel) (\u{2264} \(String(format: "%.1f", alert.threshold))%)"
+            default:
+                return "\(alert.condition.shortLabel) \(String(format: "%.1f", alert.threshold))%"
+            }
+        }
     }
 
     /// Human-readable summary, e.g. "Price rises above 200.00" — used in the UI.
