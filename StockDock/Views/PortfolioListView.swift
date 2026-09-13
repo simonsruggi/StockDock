@@ -8,6 +8,13 @@ struct PortfolioListView: View {
     @State private var newPortfolioName = ""
     @State private var searchText = ""
     @State private var importAlert: String?
+    /// Quanto è alto davvero l'elenco aggregato, per non riservargli spazio vuoto.
+    @State private var globalsHeight: CGFloat = 0
+
+    /// Il tetto dell'elenco aggregato dentro il popover, che è fisso a 380×520. Quel che
+    /// resta serve al riepilogo sopra e alla lista dei portafogli sotto, che deve restare
+    /// visibile e raggiungibile.
+    private static let maxGlobalsHeight: CGFloat = 180
 
     var filteredPortfolios: [Portfolio] {
         guard !searchText.isEmpty else { return storageService.portfolios }
@@ -108,33 +115,55 @@ struct PortfolioListView: View {
                     let globals = globalPositions
                     if !globals.isEmpty {
                         Divider()
-                        VStack(spacing: 4) {
-                            ForEach(globals) { p in
-                                HStack(spacing: 8) {
-                                    Text(p.symbol)
-                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
-                                        .fontWeight(.semibold)
-                                        .frame(width: 62, alignment: .leading)
-                                    Text("avg \(StorageService.formatAmount(p.avgPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.avgPrice)))")
-                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
-                                        .foregroundColor(.secondary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                    Text("now \(StorageService.formatAmount(p.currentPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.currentPrice)))")
-                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
-                                        .foregroundColor(.primary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
-                                    Spacer()
-                                    Text(String(format: "%+.\(storageService.percentDecimals)f%%", p.pct))
-                                        .font(.inter(11, relativeTo: .caption).monospacedDigit())
-                                        .fontWeight(.medium)
-                                        .foregroundColor(p.pct >= 0 ? DS.up : DS.down)
+                        // Scrolls inside its own bounded area instead of growing with the
+                        // number of symbols. The popover is a fixed 380×520: past ~25
+                        // holdings an unbounded list pushed the header off the top and the
+                        // portfolio list, "New portfolio" and Import/Export off the bottom,
+                        // leaving them unreachable (reported in #21).
+                        //
+                        // The cap is a share of the popover, not a row count: what matters
+                        // is how much room is left for everything else, and rows grow with
+                        // the user's text size.
+                        ScrollView {
+                            VStack(spacing: 4) {
+                                ForEach(globals) { p in
+                                    HStack(spacing: 8) {
+                                        Text(p.symbol)
+                                            .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                            .fontWeight(.semibold)
+                                            .frame(width: 62, alignment: .leading)
+                                        Text("avg \(StorageService.formatAmount(p.avgPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.avgPrice)))")
+                                            .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                            .foregroundColor(.secondary)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.7)
+                                        Text("now \(StorageService.formatAmount(p.currentPrice, symbol: p.priceSymbol, decimals: StorageService.priceDecimals(symbol: p.symbol, price: p.currentPrice)))")
+                                            .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                            .foregroundColor(.primary)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.7)
+                                        Spacer()
+                                        Text(String(format: "%+.\(storageService.percentDecimals)f%%", p.pct))
+                                            .font(.inter(11, relativeTo: .caption).monospacedDigit())
+                                            .fontWeight(.medium)
+                                            .foregroundColor(p.pct >= 0 ? DS.up : DS.down)
+                                    }
                                 }
                             }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 6)
+                            // L'altezza vera del contenuto: con pochi titoli il riquadro
+                            // si stringe su di essa, invece di lasciare un vuoto alto
+                            // quanto il tetto.
+                            .background(
+                                GeometryReader { g in
+                                    Color.clear.preference(key: GlobalsHeightKey.self, value: g.size.height)
+                                }
+                            )
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
+                        .onPreferenceChange(GlobalsHeightKey.self) { globalsHeight = $0 }
+                        .frame(height: min(globalsHeight, Self.maxGlobalsHeight))
+                        .scrollBounceBehavior(.basedOnSize)
                     }
 
                     Divider()
@@ -766,5 +795,16 @@ struct EditHoldingView: View {
             await stockService.refreshAll(storageService: storageService)
         }
         isPresented = nil
+    }
+}
+
+/// L'altezza del contenuto dell'elenco aggregato, misurata mentre viene disegnato.
+///
+/// Serve perché uno `ScrollView` prende tutta l'altezza che gli viene offerta: senza
+/// misura, chi ha tre titoli si ritroverebbe un riquadro alto come il tetto e mezzo vuoto.
+private struct GlobalsHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
     }
 }
