@@ -6,24 +6,22 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.16</title>
-            <pubDate>Thu, 10 Sep 2026 17:57:46 +0200</pubDate>
-            <sparkle:version>39</sparkle:version>
-            <sparkle:shortVersionString>1.9.16</sparkle:shortVersionString>
+            <title>Version 1.9.17</title>
+            <pubDate>Sun, 13 Sep 2026 20:00:15 +0200</pubDate>
+            <sparkle:version>40</sparkle:version>
+            <sparkle:shortVersionString>1.9.17</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Price alerts, organised</h2>
+<h2>A popover that holds its shape</h2>
 <ul>
-    <li><strong>Alerts are grouped by symbol.</strong> A ladder of levels on the same stock used to fill Settings with one row per level. Each symbol is now a single row with a count; click the arrow to open it.</li>
-    <li><strong>Above and Below have their own groups.</strong> Inside a symbol, levels are split by condition and sorted by price, so a ladder reads top to bottom. A group only gets an arrow when it holds more than one alert.</li>
-    <li><strong>Re-arm a whole group at once.</strong> The switch on an Above or Below group re-arms every alert in it, or turns them all off.</li>
-    <li><strong>Edit and duplicate from the right-click menu.</strong> Right-click an alert to change its condition or price, or to use it as the starting point for a new one. An edited alert is armed again.</li>
+    <li><strong>Long holding lists stay inside the popover.</strong> With many positions across your portfolios, the per-symbol list used to grow past the popover, pushing the tabs off the top and the portfolio list and Import/Export off the bottom. It now scrolls within its own area, and everything else stays in reach.</li>
+    <li><strong>Short lists take only the room they need.</strong> With a handful of symbols the panel shrinks to its content instead of leaving an empty gap.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.16/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.17/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="t/HXpSApY14KO1jIwGIt2nnisgA64hMR4bhXwpJeqMV9H+9ukI410OtoLjwSAhmNaUfaQNblw1bS/wcalgHoDw=="
-                       length="9800459"/>
+                       sparkle:edSignature="jjyR4B2gVSAL0Tn1HPPJZHiTxB4EJ735M7IrptoU2rGQZt2DHkzJggd4Y+5URxQeLLlvtNzQhWMY7diKOJZzDA=="
+                       length="9824777"/>
         </item>
     </channel>
 </rss>
