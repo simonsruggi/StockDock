@@ -4,6 +4,13 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.17 — 2026-09-13
+
+*A popover that holds its shape*
+
+- **Long holding lists stay inside the popover.** With many positions across your portfolios, the per-symbol list used to grow past the popover, pushing the tabs off the top and the portfolio list and Import/Export off the bottom. It now scrolls within its own area, and everything else stays in reach. (#21)
+- **Short lists take only the room they need.** With a handful of symbols the panel shrinks to its content instead of leaving an empty gap.
+
 ## 1.9.16 — 2026-09-10
 
 *Price alerts, organised*
