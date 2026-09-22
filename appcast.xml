@@ -6,22 +6,22 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.17</title>
-            <pubDate>Sun, 13 Sep 2026 20:00:15 +0200</pubDate>
-            <sparkle:version>40</sparkle:version>
-            <sparkle:shortVersionString>1.9.17</sparkle:shortVersionString>
+            <title>Version 1.9.18</title>
+            <pubDate>Tue, 22 Sep 2026 19:33:40 +0200</pubDate>
+            <sparkle:version>41</sparkle:version>
+            <sparkle:shortVersionString>1.9.18</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>A popover that holds its shape</h2>
+<h2>StockDock speaks Chinese</h2>
 <ul>
-    <li><strong>Long holding lists stay inside the popover.</strong> With many positions across your portfolios, the per-symbol list used to grow past the popover, pushing the tabs off the top and the portfolio list and Import/Export off the bottom. It now scrolls within its own area, and everything else stays in reach.</li>
-    <li><strong>Short lists take only the room they need.</strong> With a handful of symbols the panel shrinks to its content instead of leaving an empty gap.</li>
+    <li><strong>Simplified Chinese is the seventh language.</strong> Every string in the popover, the window and Settings is translated; pick 简体中文 from Settings → Language.</li>
 </ul>
+<p>With thanks to <a href="https://github.com/Chuhan1112">Chuhan1112</a>, whose pull request added this.</p>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.17/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.18/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="jjyR4B2gVSAL0Tn1HPPJZHiTxB4EJ735M7IrptoU2rGQZt2DHkzJggd4Y+5URxQeLLlvtNzQhWMY7diKOJZzDA=="
-                       length="9824777"/>
+                       sparkle:edSignature="aBejqKhOd7M+vj1zs071z1jQyATMl8tAihFYS1TdTy8Mj76IzNQuCLOhlvABLsXCaC+z4acTDr354Iw4d+icBQ=="
+                       length="9837364"/>
         </item>
     </channel>
 </rss>
