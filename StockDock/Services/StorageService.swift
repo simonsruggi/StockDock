@@ -139,6 +139,7 @@ class StorageService: ObservableObject {
     /// Supported UI languages: (ISO code, native display name).
     static let supportedLanguages: [(code: String, name: String)] = [
         ("en", "English"),
+        ("zh-Hans", "简体中文"),
         ("de", "Deutsch"),
         ("fr", "Français"),
         ("es", "Español"),

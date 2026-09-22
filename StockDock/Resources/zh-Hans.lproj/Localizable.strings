@@ -1,0 +1,258 @@
+/* StockDock — 简体中文。键名是 SwiftUI 中使用的原始字符串字面量。 */
+
+/* 标签页 / 导航 */
+"Watchlist" = "自选股";
+"Portfolios" = "投资组合";
+"Search" = "搜索";
+
+/* 语言 */
+"Language" = "语言";
+"Choose the app's language. Default is English." = "选择应用语言。默认为英语。";
+
+/* 货币 */
+"Stock Price Currency" = "股票价格货币";
+"Price currency" = "价格货币";
+"Original" = "原始货币";
+"Portfolio Currency" = "投资组合货币";
+"Portfolio currency" = "投资组合货币";
+
+/* 市场时段 */
+"Market Hours" = "市场时段";
+"Show extended hours (Pre/Post)" = "显示盘前/盘后价格";
+"Show pre-market and after-hours prices" = "显示盘前和盘后价格";
+
+/* 自选股显示 */
+"Watchlist Display" = "自选股显示";
+"Company name" = "公司名称";
+"Day range (low – high)" = "日内区间（最低 – 最高）";
+"52-week range bar" = "52 周区间条";
+"52-week range" = "52 周区间";
+"Absolute change value" = "绝对涨跌额";
+"Choose which details appear in each watchlist row" = "选择每行自选股中显示的详情";
+
+/* 菜单栏显示 */
+"Menu Bar Display" = "菜单栏显示";
+"Display" = "显示";
+"Choose what to show in the menu bar" = "选择要在菜单栏中显示的内容";
+"P&L (+321.09€)" = "盈亏 (+321.09€)";
+"Daily P&L (+321.09€)" = "当日盈亏 (+321.09€)";
+"P&L % (+2.3%)" = "盈亏 % (+2.3%)";
+"P&L + % (+321.09€ +2.3%)" = "盈亏 + % (+321.09€ +2.3%)";
+"Total Value (14396.67€)" = "总价值 (14396.67€)";
+"Best Stock (▲ AAPL +1.2%)" = "最佳股票 (▲ AAPL +1.2%)";
+"Worst Stock (▼ TSLA -0.8%)" = "最差股票 (▼ TSLA -0.8%)";
+"Best & Worst" = "最佳与最差";
+"Portfolio (14396.67€ +1.2%)" = "投资组合 (14396.67€ +1.2%)";
+"Ticker (cycle watchlist)" = "滚动行情（循环自选股）";
+"Ticker + Portfolio (cycle)" = "滚动行情 + 投资组合（循环）";
+"Icon Only" = "仅图标";
+"Show percentages with 2 decimals" = "百分比显示两位小数";
+"Applies to the menu bar, watchlist and portfolios (e.g. +2.34% instead of +2.3%)." = "应用于菜单栏、自选股和投资组合（例如 +2.34% 而非 +2.3%）。";
+
+/* 菜单栏颜色 */
+"Menu Bar Colors" = "菜单栏颜色";
+"Use system text color" = "使用系统文本颜色";
+"Always readable on any background. Up/down stays shown by + / − and ▲ ▼." = "在任何背景下都清晰可读。涨跌仍通过 + / − 和 ▲ ▼ 表示。";
+"Gain color" = "上涨颜色";
+"Loss color" = "下跌颜色";
+"Reset to default green/red" = "恢复默认绿/红";
+
+/* 通知 */
+"Notifications" = "通知";
+"Channels" = "通知渠道";
+"Mirror notifications to a Discord/Slack webhook" = "将通知同步到 Discord/Slack Webhook";
+"Not a valid Discord or Slack webhook URL (must be https)." = "Discord 或 Slack Webhook URL 无效（必须使用 https）。";
+"Price alerts and portfolio notifications are also sent here." = "价格提醒和投资组合通知也会发送到这里。";
+"Send test" = "发送测试";
+"Price alerts" = "价格提醒";
+"No alerts. Right-click a stock in the watchlist to add one." = "暂无提醒。在自选股中右键点击股票即可添加。";
+"Portfolio notifications" = "投资组合通知";
+"None. Right-click a portfolio → “Notifications…” to add one." = "暂无。右键点击投资组合 →“通知…”即可添加。";
+"Notifications…" = "通知…";
+"triggered" = "已触发";
+"Tip: enable the Discord/Slack webhook in Settings to also receive these on your phone." = "提示：在设置中启用 Discord/Slack Webhook，即可在手机上同步接收这些通知。";
+
+/* 字体 */
+"Font" = "字体";
+"Font family" = "字体";
+
+/* 更新 */
+"Updates" = "更新";
+"Check for Updates..." = "检查更新...";
+
+/* 重置 */
+"Reset" = "重置";
+"Reset to Default Settings" = "恢复默认设置";
+"This will not erase your portfolios or watchlist" = "不会删除你的投资组合或自选股";
+"This will reset all settings to their defaults. Your portfolios and watchlist will not be affected." = "这会将所有设置恢复为默认值。你的投资组合和自选股不会受到影响。";
+
+/* 自选股 / 投资组合视图 */
+"No stocks in watchlist" = "自选股中没有股票";
+"No results" = "无结果";
+"No portfolios" = "暂无投资组合";
+"Total value" = "总价值";
+"Create portfolio" = "创建投资组合";
+"New portfolio" = "新建投资组合";
+"Export All" = "全部导出";
+"Add to Portfolio" = "添加到投资组合";
+"Remove from Watchlist" = "从自选股中移除";
+"Set Price Alert…" = "设置价格提醒…";
+"Add stock" = "添加股票";
+"Add holding" = "添加持仓";
+"Value / P&L" = "价值 / 盈亏";
+"Avg price" = "平均价格";
+"Purchase date" = "购买日期";
+"Quantity" = "数量";
+"Symbol" = "代码";
+"Price" = "价格";
+
+/* 提醒编辑器 */
+"Set Price Alert" = "设置价格提醒";
+"Create Alert" = "创建提醒";
+"Condition" = "条件";
+"Add notification" = "添加通知";
+"Mode" = "模式";
+
+/* 常用操作 */
+"Add" = "添加";
+"Save" = "保存";
+"Cancel" = "取消";
+"Delete" = "删除";
+"Edit" = "编辑";
+"Rename" = "重命名";
+"Done" = "完成";
+"Close" = "关闭";
+"OK" = "好";
+"Import" = "导入";
+"Export" = "导出";
+
+/* 状态菜单 */
+"Quit StockDock" = "退出 StockDock";
+
+/* 滚动行情选项（issue #8） */
+"Show name instead of symbol" = "显示名称而非代码";
+"Shows the readable name in the ticker (e.g. \"S&P 500\" instead of \"^GSPC\")." = "在滚动行情中显示可读名称（例如 \"S&P 500\" 而非 \"^GSPC\"）。";
+"Ticker order" = "滚动行情顺序";
+"As added" = "按添加顺序";
+"By type (stocks, ETFs, indices…)" = "按类型（股票、ETF、指数…）";
+"Alphabetical" = "按字母顺序";
+"Order in which watchlist entries cycle in the menu bar." = "自选股在菜单栏滚动行情中的循环顺序。";
+
+/* 高级持仓（issue #9） */
+"Advanced" = "高级";
+"Enable short positions & leverage" = "启用做空与杠杆";
+"Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket." = "增加杠杆字段，并允许为做空输入负数数量，使投资组合可成为多空相对篮子。";
+"Leverage" = "杠杆";
+"Position" = "方向";
+"Pick Long or Short. Leverage multiplies P&L and exposure (empty = 1×)." = "选择多头或空头。杠杆会放大盈亏和敞口（留空 = 1×）。";
+
+/* 清除所有提醒 */
+"Clear all" = "全部清除";
+"Clear all alerts" = "清除所有提醒";
+"This will delete all your price alerts. This cannot be undone." = "这将删除你的所有价格提醒，且无法撤销。";
+"Clear all portfolio notifications" = "清除所有投资组合通知";
+"This will delete all portfolio notifications across every portfolio. This cannot be undone." = "这将删除所有投资组合中的通知，且无法撤销。";
+
+/* 首页 / 新闻 */
+"Home" = "首页";
+"Loading news…" = "正在加载新闻…";
+"No news available" = "暂无新闻";
+"Refresh" = "刷新";
+
+/* 赞助 */
+"Enjoying StockDock?" = "喜欢 StockDock 吗？";
+"StockDock is free and open source — and always will be. If it's useful to you, you can sponsor its development. Every feature stays free for everyone." = "StockDock 免费、开源，而且始终如此。如果它对你有帮助，你可以赞助它的开发。所有功能对每个人都保持免费。";
+"Become a Sponsor" = "成为赞助者";
+
+/* 桌面窗口 */
+"About" = "关于";
+"Add Holding" = "添加持仓";
+"Add Holding…" = "添加持仓…";
+"All Portfolios" = "所有投资组合";
+"Allocation" = "资产配置";
+"Always readable; direction stays in + / − and ▲ ▼" = "始终清晰可读；涨跌方向仍通过 + / − 和 ▲ ▼ 表示";
+"Appearance" = "外观";
+"Assets" = "资产";
+"Best stock" = "最佳股票";
+"By type" = "按类型";
+"Change" = "涨跌";
+"Check for Updates…" = "检查更新…";
+"Concentration" = "集中度";
+"Cost basis" = "成本基础";
+"Create" = "创建";
+"Crypto" = "加密货币";
+"Currency" = "货币";
+"Day range" = "日内区间";
+"ETFs" = "ETF";
+"Extended hours (Pre/Post)" = "盘前/盘后";
+"FEATURED" = "精选";
+"Filter" = "筛选";
+"Funds" = "基金";
+"Futures" = "期货";
+"General" = "通用";
+"High" = "最高";
+"holdings" = "个持仓";
+"How individual quotes are shown" = "单只股票报价的显示方式";
+"Icon only" = "仅图标";
+"If it's useful to you, you can sponsor its development" = "如果它对你有帮助，你可以赞助它的开发";
+"Indices" = "指数";
+"Invested" = "已投资";
+"Last" = "最新";
+"Last price" = "最新价格";
+"Loading price history…" = "正在加载价格历史…";
+"Low" = "最低";
+"Market stories for your symbols" = "与你关注的股票相关的市场新闻";
+"Menu bar" = "菜单栏";
+"Mirror to a Discord/Slack webhook" = "同步到 Discord/Slack Webhook";
+"Name" = "名称";
+"New Portfolio" = "新建投资组合";
+"New Portfolio…" = "新建投资组合…";
+"New portfolio or holding" = "新建投资组合或持仓";
+"News" = "新闻";
+"No holdings yet" = "暂无持仓";
+"No price history available" = "暂无价格历史";
+"No stocks in your watchlist" = "你的自选股中没有股票";
+"Other" = "其他";
+"P&L" = "盈亏";
+"P&L + %" = "盈亏 + %";
+"Percentages with 2 decimals" = "百分比显示两位小数";
+"Portfolio" = "投资组合";
+"Portfolio name" = "投资组合名称";
+"Portfolio recap" = "投资组合概览";
+"Position facts" = "持仓信息";
+"positions" = "个持仓";
+"Positions" = "持仓";
+"Preferences are shared with the menu bar." = "设置会与菜单栏共享。";
+"Price alerts and portfolio notifications are also sent there" = "价格提醒和投资组合通知也会发送到那里";
+"Quote currency" = "报价货币";
+"Reset Settings" = "重置设置";
+"Reset to Defaults…" = "恢复默认值…";
+"Session" = "交易时段";
+"Settings" = "设置";
+"SHORT" = "空头";
+"Short positions & leverage" = "做空与杠杆";
+"Sponsor" = "赞助";
+"Stock price currency" = "股票价格货币";
+"StockDock is free and open source" = "StockDock 免费且开源";
+"Stocks" = "股票";
+"Text size" = "文字大小";
+"Ticker + Portfolio" = "滚动行情 + 投资组合";
+"Today" = "今天";
+"Today's movers" = "今日涨跌";
+"Total P&L" = "总盈亏";
+"Total portfolio" = "投资组合总额";
+"Totals and P&L are converted here" = "总额和盈亏会在此转换";
+"Trading" = "交易";
+"Trend (1M)" = "趋势（1 月）";
+"Unlocks negative quantity and a leverage field" = "解锁负数数量和杠杆字段";
+"Use the + button in the sidebar to add one." = "使用边栏中的 + 按钮添加一个。";
+"Value" = "价值";
+"Value history builds up day by day" = "价值历史会逐日积累";
+"View all positions ↓" = "查看所有持仓 ↓";
+"View Chart" = "查看图表";
+"Watchlist row details" = "自选股行详情";
+"Weight" = "权重";
+"Worst stock" = "最差股票";
+"you bought here" = "你的买入点";
+"Your average purchase price" = "你的平均买入价";
+"Your first trend appears tomorrow." = "你的第一张趋势图将于明天显示。";
