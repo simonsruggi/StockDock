@@ -48,6 +48,16 @@ cat > "$APP/Contents/Info.plist" << EOF
     <string>com.simone.stockdock.dev</string>
     <key>CFBundleName</key>
     <string>StockDock Dev</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>en</string>
+        <string>zh-Hans</string>
+        <string>de</string>
+        <string>fr</string>
+        <string>es</string>
+        <string>it</string>
+        <string>pt</string>
+    </array>
     <key>CFBundleShortVersionString</key>
     <string>${DEV_VERSION}</string>
     <key>CFBundleVersion</key>

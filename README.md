@@ -92,7 +92,7 @@ Stocks, ETFs, indices (S&P 500, NASDAQ…), crypto, and forex — anything with 
 - **Discord / Slack Webhooks** — Mirror every notification to a Discord or Slack webhook with colored embeds
 - **Customizable Watchlist** — Toggle company name, day range, 52-week bar, and absolute change per row
 - **Customizable Menu Bar** — Choose what to display: P&L, total value, percentages, best/worst stock, or just an icon
-- **6 Languages** — English, German, French, Spanish, Italian, Portuguese
+- **7 Languages** — English, Simplified Chinese, German, French, Spanish, Italian, Portuguese
 - **Auto-Updates** — Updates are delivered automatically via Sparkle, no manual downloads needed
 
 ## Install
@@ -199,7 +199,7 @@ Click the gear icon tab to configure:
 | **Show Extended Hours** | Toggle pre-market and after-hours prices on/off — affects prices, P&L, and menu bar |
 | **Watchlist Display** | Toggle company name, day range, 52-week range bar, and absolute change value per row |
 | **Menu Bar Display** | What appears in your menu bar (see below) |
-| **Language** | English, German, French, Spanish, Italian, Portuguese |
+| **Language** | English, Simplified Chinese, German, French, Spanish, Italian, Portuguese |
 | **Notifications** | Discord/Slack webhook, plus management of price alerts and portfolio notifications |
 
 ### Menu Bar Display Options
