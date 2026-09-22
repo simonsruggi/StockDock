@@ -4,6 +4,14 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.18 — 2026-09-22
+
+*StockDock speaks Chinese*
+
+- **Simplified Chinese is the seventh language.** Every string in the popover, the window and Settings is translated; pick 简体中文 from Settings → Language. (#26)
+
+With thanks to [Chuhan1112](https://github.com/Chuhan1112), whose pull request added this.
+
 ## 1.9.17 — 2026-09-13
 
 *A popover that holds its shape*
