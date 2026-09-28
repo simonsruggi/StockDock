@@ -226,7 +226,6 @@ struct PortfolioWindowView: View {
         .overlay(alignment: .trailing) { DS.hairline.frame(width: 1) }
     }
 
-
     /// Explicit exit: closing the window keeps StockDock in the menu bar, so a
     /// separate "Quit" affordance makes "leave everything" discoverable.
     @State private var quitHover = false
@@ -366,110 +365,4 @@ struct PortfolioWindowView: View {
         }
     }
 
-    // MARK: - Aggregation helpers (reuse the shared valuation math)
-
-    private func valued(_ portfolios: [Portfolio]) -> [PortfolioValuation.Input] {
-        portfolios.flatMap { $0.holdings }.compactMap { holding in
-            guard let quote = stockService.quotes[holding.symbol] else { return nil }
-            return PortfolioValuation.Input(
-                holding: holding,
-                price: quote.displayPrice(extendedHours: storageService.showExtendedHours),
-                rate: stockService.rate(from: quote.currency),
-                costRate: stockService.rate(from: quote.currency, for: holding.purchaseDate)
-            )
-        }
-    }
-
-    private func aggregateValue(for portfolios: [Portfolio]) -> Double {
-        PortfolioValuation.totals(valued(portfolios)).value
-    }
-    private func aggregateCost(for portfolios: [Portfolio]) -> Double {
-        PortfolioValuation.totals(valued(portfolios)).cost
-    }
-    private func aggregatePnlPercent(for portfolios: [Portfolio]) -> Double {
-        let t = PortfolioValuation.totals(valued(portfolios))
-        return abs(t.cost) >= 0.01 ? ((t.value - t.cost) / abs(t.cost)) * 100 : 0
-    }
-
-    /// Sidebar trailing figure — nil (hidden) until at least one holding is
-    /// priced, so an unpriced portfolio never shows a fake "+0.0%".
-    private func trailingPercent(for portfolios: [Portfolio]) -> String? {
-        guard !valued(portfolios).isEmpty else { return nil }
-        return String(format: "%+.1f%%", aggregatePnlPercent(for: portfolios))
-    }
-}
-
-// MARK: - Sidebar pieces
-
-/// A subtle support button (Star / Sponsor) that opens a URL and warms to a tint
-/// on hover.
-private struct SupportButton: View {
-    let icon: String
-    let title: String
-    let hoverTint: Color
-    let url: String
-    var compact: Bool = false
-    @State private var hover = false
-
-    var body: some View {
-        Button {
-            if let u = URL(string: url) { NSWorkspace.shared.open(u) }
-        } label: {
-            Group {
-                if compact {
-                    Image(systemName: hover ? "\(icon).fill" : icon)
-                        .font(.system(size: 12, weight: .medium))
-                        .frame(width: 26, height: 26)
-                        .background(Circle().fill(hover ? hoverTint.opacity(0.14) : DS.cardAlt))
-                } else {
-                    HStack(spacing: 5) {
-                        Image(systemName: hover ? "\(icon).fill" : icon).font(.system(size: 11, weight: .medium))
-                        Text(LocalizedStringKey(title)).font(.inter(11, weight: .medium, relativeTo: .caption))
-                    }
-                    .frame(maxWidth: .infinity).padding(.vertical, 6)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(hover ? hoverTint.opacity(0.10) : DS.cardAlt))
-                }
-            }
-            .foregroundStyle(hover ? hoverTint : DS.inkSecondary)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .onHover { hover = $0 }
-        .help(title == "Star" ? "Star the repo on GitHub" : "Sponsor development")
-    }
-}
-
-private struct TotalFooter: View {
-    let value: Double
-    let cost: Double
-    let currency: String
-    var decimals: Int = 2
-
-    var body: some View {
-        let symbol = StorageService.currencySymbol(for: currency)
-        let pnl = value - cost
-        // Same convention as the popover: amount and percentage, always together.
-        let pct: Double? = abs(cost) >= 0.01 ? (pnl / abs(cost)) * 100 : nil
-        VStack(alignment: .leading, spacing: 3) {
-            Divider().overlay(DS.hairline)
-            SectionLabel("Total portfolio").padding(.top, 10)
-            Text(StorageService.formatAmount(value, symbol: symbol, decimals: decimals))
-                .font(.inter(17, weight: .bold, relativeTo: .title3).monospacedDigit())
-                .foregroundStyle(DS.ink)
-                .contentTransition(.numericText())
-            HStack(spacing: 5) {
-                Image(systemName: pnl >= 0 ? "arrow.up.right" : "arrow.down.right")
-                    .font(.system(size: 8, weight: .bold))
-                Text(StorageService.formatAmount(pnl, symbol: symbol, decimals: decimals, signed: true)
-                     + (pct.map { String(format: " (%+.1f%%)", $0) } ?? ""))
-                    .font(.inter(11, weight: .medium, relativeTo: .caption).monospacedDigit())
-                    .contentTransition(.numericText())
-            }
-            .foregroundStyle(DS.pnlColor(pnl))
-            .padding(.bottom, 12)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16)
-    }
 }

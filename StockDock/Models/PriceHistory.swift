@@ -1,12 +1,5 @@
 import Foundation
 
-/// A daily closing price for the detail chart.
-struct PricePoint: Identifiable, Equatable {
-    let date: Date
-    let close: Double
-    var id: Date { date }
-}
-
 /// Pure transforms over Yahoo v8 chart arrays.
 enum PriceHistory {
     /// Pairs the v8 chart `timestamp` array with the `close` array into

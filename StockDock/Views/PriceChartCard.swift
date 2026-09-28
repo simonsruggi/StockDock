@@ -27,7 +27,7 @@ struct PriceChartCard: View {
     }
     /// #14: seeded from the last range the user picked (see `restoreRange`), so
     /// the chart opens where they left it instead of always on 1M.
-    @State private var chartRange: ChartRange = .month
+    @State var chartRange: ChartRange = .month
     @State private var hoverPoint: PricePoint?
 
     /// Applies the remembered range, if there is a valid one stored.
@@ -38,21 +38,6 @@ struct PriceChartCard: View {
     }
 
     private var priceSymbol: String { StorageService.currencySymbol(for: quote.currency) }
-
-    private func hoverLabel(_ date: Date) -> String {
-        chartRange.isIntraday ? date.formatted(.dateTime.hour().minute())
-                              : date.formatted(date: .abbreviated, time: .omitted)
-    }
-
-    /// X-axis tick label, formatted for the selected period.
-    private func xAxisLabel(_ date: Date) -> String {
-        switch chartRange {
-        case .day: return date.formatted(.dateTime.hour().minute())
-        case .week: return date.formatted(.dateTime.weekday(.abbreviated))
-        case .month: return date.formatted(.dateTime.day().month(.abbreviated))
-        case .year, .all: return date.formatted(.dateTime.month(.abbreviated).year(.twoDigits))
-        }
-    }
 
     /// Smooth hover crosshair drawn as an overlay (not chart marks), so moving the
     /// mouse doesn't re-render the whole chart. Vertical rule + dot + tooltip.
@@ -93,28 +78,6 @@ struct PriceChartCard: View {
                     }
                 }
             }
-        }
-    }
-
-    private var history: [PricePoint] {
-        if chartRange.isIntraday {
-            return stockService.intradayHistory[symbol] ?? []
-        }
-        if chartRange == .all {
-            return stockService.priceHistoryMax[symbol] ?? []
-        }
-        guard let all = stockService.priceHistory[symbol] else { return [] }
-        guard let days = chartRange.days,
-              let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date())
-        else { return all }
-        return all.filter { $0.date >= cutoff }
-    }
-
-    private var isLoadingCurrent: Bool {
-        switch chartRange {
-        case .day: return stockService.intradayHistory[symbol] == nil
-        case .all: return stockService.priceHistoryMax[symbol] == nil
-        default: return stockService.priceHistory[symbol] == nil
         }
     }
 
@@ -230,57 +193,4 @@ struct PriceChartCard: View {
         }
     }
 
-    private var chartDomain: ClosedRange<Double> {
-        let closes = history.map(\.close)
-        guard let min = closes.min(), let max = closes.max(), max > min else { return 0...1 }
-        let pad = (max - min) * 0.12
-        return (min - pad)...(max + pad)
-    }
-}
-
-/// A tiny 30-day price line for table rows — no axes, tinted by direction.
-/// Lazily triggers the (cached) history fetch for its symbol.
-///
-/// Reads the shared service directly (not @EnvironmentObject): `Table` cells on
-/// macOS are hosted outside the SwiftUI environment chain, so an environment
-/// object would crash here.
-struct Sparkline: View {
-    @ObservedObject private var stockService = StockService.shared
-    let symbol: String
-
-    private var points: [PricePoint] {
-        guard let all = stockService.priceHistory[symbol],
-              let cutoff = Calendar.current.date(byAdding: .day, value: -30, to: Date())
-        else { return [] }
-        return all.filter { $0.date >= cutoff }
-    }
-
-    var body: some View {
-        Group {
-            if points.count >= 2 {
-                let up = (points.last?.close ?? 0) >= (points.first?.close ?? 0)
-                let tint = up ? DS.up : DS.down
-                Chart(points) { point in
-                    LineMark(x: .value("Day", point.date), y: .value("Close", point.close))
-                        .foregroundStyle(tint).lineStyle(.init(lineWidth: 1.5))
-                        .interpolationMethod(.monotone)
-                }
-                .chartYScale(domain: sparkDomain)
-                .chartXAxis(.hidden)
-                .chartYAxis(.hidden)
-                .chartLegend(.hidden)
-            } else {
-                Capsule().fill(DS.cardAlt).frame(height: 2)
-            }
-        }
-        .frame(width: 64, height: 22)
-        // History is filled by the watchlist's batched spark request, so no
-        // per-row fetch here (that would be one request per symbol).
-    }
-
-    private var sparkDomain: ClosedRange<Double> {
-        let closes = points.map(\.close)
-        guard let min = closes.min(), let max = closes.max(), max > min else { return 0...1 }
-        return min...max
-    }
 }

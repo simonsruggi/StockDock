@@ -4,15 +4,15 @@ struct WatchlistView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
     @Binding var showSearch: Bool
-    @State private var searchText = ""
+    @State var searchText = ""
     @State private var addToPortfolio: (symbol: String, portfolioId: UUID)? = nil
     @State private var alertSymbol: String? = nil
     @State private var renameSymbol: String? = nil
     // #23: the list opens in the order the user arranged, like the wide window
     // does. Clicking a column header sorts by it; clicking it once more past the
     // reversed direction comes back here.
-    @State private var sortColumn: SortColumn = .manual
-    @State private var sortAscending: Bool = false
+    @State var sortColumn: SortColumn = .manual
+    @State var sortAscending: Bool = false
 
     enum SortColumn {
         case manual, symbol, price, change
@@ -30,40 +30,6 @@ struct WatchlistView: View {
         guard canReorder else { return nil }
         return { source, destination in
             storageService.moveWatchlistItem(from: source, to: destination)
-        }
-    }
-
-    var sortedSymbols: [String] {
-        guard sortColumn != .manual else { return storageService.watchlist }
-        return storageService.watchlist.sorted { a, b in
-            let qa = stockService.quotes[a]
-            let qb = stockService.quotes[b]
-            let result: Bool
-            switch sortColumn {
-            case .symbol:
-                result = a.localizedCompare(b) == .orderedAscending
-            case .price:
-                let pa = qa?.price ?? 0
-                let pb = qb?.price ?? 0
-                result = pa < pb
-            case .change:
-                let ca = qa?.changePercent ?? 0
-                let cb = qb?.changePercent ?? 0
-                result = ca < cb
-            case .manual:
-                result = false  // unreachable: the guard above returns the stored order
-            }
-            return sortAscending ? result : !result
-        }
-    }
-
-    var filteredSymbols: [String] {
-        guard !searchText.isEmpty else { return sortedSymbols }
-        let query = searchText.lowercased()
-        return sortedSymbols.filter { symbol in
-            symbol.lowercased().contains(query) ||
-            (stockService.quotes[symbol]?.name.lowercased().contains(query) ?? false) ||
-            (storageService.isinMap[symbol]?.lowercased().contains(query) ?? false)
         }
     }
 
@@ -295,212 +261,4 @@ private struct AddToPortfolioItem: Identifiable {
 private struct AlertSheetItem: Identifiable {
     let symbol: String
     var id: String { symbol }
-}
-
-struct QuickAddHoldingView: View {
-    @EnvironmentObject var stockService: StockService
-    @EnvironmentObject var storageService: StorageService
-
-    let symbol: String
-    let portfolioId: UUID
-    let onDismiss: () -> Void
-
-    @State private var quantityText = ""
-    @State private var avgPriceText = ""
-    @State private var leverageText = ""
-    @State private var isShort = false
-    @State private var purchaseDate = Date()
-
-    var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Add \(symbol)")
-                    .font(.inter(13, weight: .bold, relativeTo: .headline))
-                Spacer()
-                Button("Cancel") { onDismiss() }
-                    .buttonStyle(.borderless)
-            }
-
-            if storageService.advancedPositions {
-                VStack(alignment: .leading) {
-                    Text("Position").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
-                    Picker("Position", selection: $isShort) {
-                        Text("Long").tag(false)
-                        Text("Short").tag(true)
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                }
-            }
-
-            HStack(spacing: 12) {
-                VStack(alignment: .leading) {
-                    Text("Quantity").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
-                    TextField("0", text: $quantityText)
-                        .textFieldStyle(.roundedBorder)
-                }
-                VStack(alignment: .leading) {
-                    Text("Avg price").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
-                    TextField("0.00", text: $avgPriceText)
-                        .textFieldStyle(.roundedBorder)
-                }
-                if storageService.advancedPositions {
-                    VStack(alignment: .leading) {
-                        Text("Leverage").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
-                        TextField("1\u{00D7}", text: $leverageText)
-                            .textFieldStyle(.roundedBorder)
-                            .frame(width: 56)
-                    }
-                }
-            }
-
-            VStack(alignment: .leading) {
-                Text("Purchase date").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
-                DatePicker("", selection: $purchaseDate, displayedComponents: .date)
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-            }
-
-            Spacer()
-
-            Button("Add") {
-                guard let qty = Double(quantityText.replacingOccurrences(of: ",", with: ".")),
-                      let price = Double(avgPriceText.replacingOccurrences(of: ",", with: ".")),
-                      abs(qty) > 0, price > 0
-                else { return }
-                let advanced = storageService.advancedPositions
-                let signedQty = (advanced && isShort) ? -abs(qty) : abs(qty)
-                let leverage: Double? = {
-                    guard advanced,
-                          let l = Double(leverageText.replacingOccurrences(of: ",", with: ".")),
-                          l > 0, l != 1
-                    else { return nil }
-                    return l
-                }()
-                storageService.addHolding(to: portfolioId, symbol: symbol, quantity: signedQty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
-                Task { await stockService.refreshAll(storageService: storageService) }
-                onDismiss()
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(quantityText.isEmpty || avgPriceText.isEmpty)
-        }
-        .padding()
-        .onAppear {
-            // Pre-fill current price
-            if let quote = stockService.quotes[symbol] {
-                avgPriceText = String(format: "%.2f", quote.price)
-            }
-        }
-    }
-}
-
-struct QuoteRow: View {
-    @EnvironmentObject var stockService: StockService
-    @EnvironmentObject var storageService: StorageService
-    let quote: StockQuote
-
-    /// #24: rate and currency are read together, so a row can never show a
-    /// native figure under another currency's symbol while the FX pair loads.
-    private var priced: (rate: Double, currency: String) {
-        stockService.priceDisplay(for: quote.currency)
-    }
-
-    private var displayCurrency: String { priced.currency }
-
-    private var priceRate: Double { priced.rate }
-
-    private var currSymbol: String {
-        StorageService.currencySymbol(for: displayCurrency)
-    }
-
-    var body: some View {
-        HStack(spacing: 0) {
-            // Col 1: Symbol + name
-            VStack(alignment: .leading, spacing: 1) {
-                // #12: the custom name replaces the ticker on the primary line;
-                // the real ticker moves to the secondary line so it's never lost.
-                Text(storageService.displayLabel(for: quote.symbol, fallback: quote.symbol))
-                    .font(.inter(13, relativeTo: .body).monospacedDigit())
-                    .fontWeight(.bold)
-                    .lineLimit(1)
-                if !storageService.alias(for: quote.symbol).isEmpty {
-                    Text(quote.symbol)
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                } else if storageService.showCompanyName {
-                    Text(quote.name)
-                        .font(.inter(10, relativeTo: .caption))
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                }
-            }
-            .frame(width: 80, alignment: .leading)
-
-            // Col 2: Price + day range
-            VStack(spacing: 1) {
-                HStack(spacing: 3) {
-                    Text("\(currSymbol)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate)))")
-                        .font(.inter(13, relativeTo: .body).monospacedDigit())
-                        .fontWeight(.medium)
-                    if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
-                        Text(quote.marketStateLabel)
-                            .font(.inter(9, weight: .semibold, relativeTo: .caption2))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 3)
-                            .padding(.vertical, 1)
-                            .background(
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(quote.marketState.hasPrefix("PRE") ? DS.gold : DS.palette[3])
-                            )
-                    }
-                }
-                if storageService.showDayRange, let high = quote.dayHigh, let low = quote.dayLow {
-                    let rangeDecimals = storageService.resolvedPriceDecimals(symbol: quote.symbol, price: low * priceRate)
-                    Text("\(StorageService.formatNumber(low * priceRate, decimals: rangeDecimals)) – \(StorageService.formatNumber(high * priceRate, decimals: rangeDecimals))")
-                        .font(.inter(10, relativeTo: .caption).monospacedDigit())
-                        .foregroundColor(.secondary)
-                }
-                if storageService.show52WeekBar,
-                   let pos = quote.fiftyTwoWeekPosition,
-                   let low = quote.fiftyTwoWeekLow, let high = quote.fiftyTwoWeekHigh {
-                    HStack(spacing: 4) {
-                        Text(StorageService.formatNumber(low * priceRate, decimals: 0))
-                            .font(.inter(8, relativeTo: .caption2).monospacedDigit())
-                            .foregroundColor(.secondary)
-                        RangeBar(position: pos)
-                            .frame(width: 56)
-                        Text(StorageService.formatNumber(high * priceRate, decimals: 0))
-                            .font(.inter(8, relativeTo: .caption2).monospacedDigit())
-                            .foregroundColor(.secondary)
-                    }
-                    .help("52-week range")
-                }
-            }
-            .frame(maxWidth: .infinity)
-
-            // Col 3: Change
-            VStack(alignment: .trailing, spacing: 1) {
-                if storageService.showAbsoluteChange {
-                    Text(StorageService.formatAmount(quote.change * priceRate, symbol: currSymbol, signed: true))
-                        .font(.inter(13, relativeTo: .body).monospacedDigit())
-                        .fontWeight(.medium)
-                        .foregroundColor(quote.isPositive ? DS.up : DS.down)
-                }
-                Text(String(format: "%.\(storageService.percentDecimals)f%%", quote.changePercent))
-                    .font(.inter(10, relativeTo: .caption).monospacedDigit())
-                    .foregroundColor(quote.isPositive ? DS.up : DS.down)
-
-                if storageService.showExtendedHours,
-                   let extChg = quote.extendedChange,
-                   let extPct = quote.extendedChangePercent {
-                    Text(String(format: "%+.2f (%.\(storageService.percentDecimals)f%%)", extChg * priceRate, extPct))
-                        .font(.inter(10, relativeTo: .caption).monospacedDigit())
-                        .foregroundColor(extChg >= 0 ? DS.up.opacity(0.8) : DS.down.opacity(0.8))
-                }
-            }
-            .frame(width: 120, alignment: .trailing)
-        }
-        .padding(.vertical, 2)
-    }
 }

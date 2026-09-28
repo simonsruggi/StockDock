@@ -1,10 +1,5 @@
 import SwiftUI
 
-enum SearchMode {
-    case watchlist
-    case holding(portfolioId: UUID)
-}
-
 struct SearchView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
