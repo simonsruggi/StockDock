@@ -6,22 +6,22 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.18</title>
-            <pubDate>Tue, 22 Sep 2026 19:33:40 +0200</pubDate>
-            <sparkle:version>41</sparkle:version>
-            <sparkle:shortVersionString>1.9.18</sparkle:shortVersionString>
+            <title>Version 1.9.19</title>
+            <pubDate>Mon, 28 Sep 2026 11:58:06 +0200</pubDate>
+            <sparkle:version>42</sparkle:version>
+            <sparkle:shortVersionString>1.9.19</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>StockDock speaks Chinese</h2>
+<h2>A menu bar that adds up</h2>
 <ul>
-    <li><strong>Simplified Chinese is the seventh language.</strong> Every string in the popover, the window and Settings is translated; pick 简体中文 from Settings → Language.</li>
+    <li><strong>The menu bar P&amp;L now matches the window.</strong> With short or leveraged positions, the profit and loss in the menu bar used the plain average price times quantity, while the window used the real cost basis. Both now use the same valuation.</li>
+    <li><strong>Short-only portfolios show their percentage.</strong> A portfolio made only of short positions always showed 0% in the menu bar; it now shows its real change.</li>
 </ul>
-<p>With thanks to <a href="https://github.com/Chuhan1112">Chuhan1112</a>, whose pull request added this.</p>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.18/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.19/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="aBejqKhOd7M+vj1zs071z1jQyATMl8tAihFYS1TdTy8Mj76IzNQuCLOhlvABLsXCaC+z4acTDr354Iw4d+icBQ=="
-                       length="9837364"/>
+                       sparkle:edSignature="UsPXQ03BMPVPcYF5YX8KWwXOo++tCuJAD4vQ1FsjR53hRvqPo23cvMjEWSyDc+lHTixzxskap5dMzHWk8L44Aw=="
+                       length="9921072"/>
         </item>
     </channel>
 </rss>
