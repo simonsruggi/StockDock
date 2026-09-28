@@ -28,4 +28,10 @@ enum PortfolioValuation {
         }
         return (value, cost)
     }
+
+    /// Total P&L as a percentage of |cost|, so a short-only book (negative
+    /// cost) still reads its gain or loss correctly.
+    static func pnlPercent(value: Double, cost: Double) -> Double {
+        abs(cost) >= 0.01 ? ((value - cost) / abs(cost)) * 100 : 0
+    }
 }

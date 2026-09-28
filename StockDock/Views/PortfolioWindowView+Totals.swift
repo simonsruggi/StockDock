@@ -16,7 +16,7 @@ extension PortfolioWindowView {
     }
     func aggregatePnlPercent(for portfolios: [Portfolio]) -> Double {
         let t = PortfolioValuation.totals(valued(portfolios))
-        return abs(t.cost) >= 0.01 ? ((t.value - t.cost) / abs(t.cost)) * 100 : 0
+        return PortfolioValuation.pnlPercent(value: t.value, cost: t.cost)
     }
 
     /// Sidebar trailing figure — nil (hidden) until at least one holding is

@@ -2,7 +2,31 @@ import AppKit
 import Combine
 import SwiftUI
 
+/// Menu bar portfolio figures. Value and cost come from `PortfolioValuation`,
+/// the same signed, leverage-aware math the Portfolio window uses.
+struct MenuBarPortfolioStats {
+    var value = 0.0
+    var cost = 0.0
+    var dailyPnl = 0.0
+    var pnl: Double { value - cost }
+    var pnlPercent: Double { PortfolioValuation.pnlPercent(value: value, cost: cost) }
+}
+
 extension AppDelegate {
+    static func menuBarPortfolioStats(portfolios: [Portfolio], stockService: StockService,
+                                      storageService: StorageService) -> MenuBarPortfolioStats {
+        let holdings = portfolios.flatMap { $0.holdings }
+        let totals = PortfolioValuation.totals(
+            PortfolioValuation.inputs(for: holdings, stockService: stockService, storageService: storageService))
+        var stats = MenuBarPortfolioStats(value: totals.value, cost: totals.cost)
+        for holding in holdings {
+            guard let quote = stockService.quotes[holding.symbol] else { continue }
+            let change = quote.effectiveChange(extendedHours: storageService.showExtendedHours)
+            stats.dailyPnl += holding.dailyPnl(priceChange: change) * stockService.rate(from: quote.currency)
+        }
+        return stats
+    }
+
     private var menuBarFontSize: CGFloat {
         CGFloat(storageService.fontSizeLevel) + 5
     }
@@ -53,25 +77,13 @@ extension AppDelegate {
             return
         }
 
-        // Compute portfolio stats
-        var totalValue = 0.0
-        var totalCost = 0.0
-        var dailyPnl = 0.0
         // #14: excluded portfolios never reach the menu bar figure.
-        for portfolio in storageService.countedPortfolios {
-            for holding in portfolio.holdings {
-                if let quote = stockService.quotes[holding.symbol] {
-                    let rate = stockService.rate(from: quote.currency)
-                    let displayPrice = quote.displayPrice(extendedHours: storageService.showExtendedHours)
-                    totalValue += holding.marketValue(currentPrice: displayPrice) * rate
-                    dailyPnl += holding.dailyPnl(priceChange: quote.effectiveChange(extendedHours: storageService.showExtendedHours)) * rate
-                    let costRate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
-                    totalCost += (holding.avgPrice * holding.quantity) * costRate
-                }
-            }
-        }
-        let totalPnl = totalValue - totalCost
-        let totalPnlPct = totalCost > 0 ? (totalPnl / totalCost) * 100 : 0
+        let stats = Self.menuBarPortfolioStats(portfolios: storageService.countedPortfolios,
+                                               stockService: stockService, storageService: storageService)
+        let totalValue = stats.value
+        let dailyPnl = stats.dailyPnl
+        let totalPnl = stats.pnl
+        let totalPnlPct = stats.pnlPercent
 
         // Find best/worst watchlist stock by daily change %
         let bestStock = storageService.watchlist.compactMap { stockService.quotes[$0] }
