@@ -60,15 +60,7 @@ extension AppDelegate {
     func recordSnapshots() {
         for portfolio in storageService.portfolios {
             guard !portfolio.holdings.isEmpty else { continue }
-            let inputs: [PortfolioValuation.Input] = portfolio.holdings.compactMap { holding in
-                guard let quote = stockService.quotes[holding.symbol] else { return nil }
-                return PortfolioValuation.Input(
-                    holding: holding,
-                    price: quote.displayPrice(extendedHours: storageService.showExtendedHours),
-                    rate: stockService.rate(from: quote.currency),
-                    costRate: stockService.rate(from: quote.currency, for: holding.purchaseDate)
-                )
-            }
+            let inputs = PortfolioValuation.inputs(for: portfolio.holdings, stockService: stockService, storageService: storageService)
             guard inputs.count == portfolio.holdings.count else { continue }
             let totals = PortfolioValuation.totals(inputs)
             storageService.recordSnapshot(for: portfolio.id, totalValue: totals.value, totalCost: totals.cost)
@@ -76,13 +68,7 @@ extension AppDelegate {
     }
 
     func collectSymbols() -> Set<String> {
-        var symbols = Set(storageService.watchlist)
-        for portfolio in storageService.portfolios {
-            for holding in portfolio.holdings {
-                symbols.insert(holding.symbol)
-            }
-        }
-        return symbols
+        StockService.collectSymbols(storageService: storageService)
     }
 
     // MARK: - Ticker Cycling

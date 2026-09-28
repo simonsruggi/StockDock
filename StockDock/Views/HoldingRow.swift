@@ -18,10 +18,6 @@ struct HoldingRow: View {
         return stockService.priceDisplay(for: quote.currency)
     }
 
-    private func formatQty(_ qty: Double) -> String {
-        qty == qty.rounded(.down) ? String(format: "%.0f", qty) : String(format: "%.2f", qty)
-    }
-
     var body: some View {
         HStack(spacing: 0) {
             // Col 1: Ticker + Qty@Avg
@@ -50,7 +46,7 @@ struct HoldingRow: View {
                 // #24: the avg price sits right under the Last column, so it has
                 // to be in the same currency — it was printed raw while Last was
                 // converted, which is what made people convert it by hand.
-                Text("\(formatQty(holding.quantity))\u{00D7}\(StorageService.formatNumber(holding.avgPrice * priced.rate, decimals: 2))")
+                Text("\(StorageService.formatQuantity(holding.quantity))\u{00D7}\(StorageService.formatNumber(holding.avgPrice * priced.rate, decimals: 2))")
                     .font(.inter(10, relativeTo: .caption).monospacedDigit())
                     .foregroundColor(.secondary)
                     .lineLimit(1)

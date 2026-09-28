@@ -17,25 +17,18 @@ struct PortfolioSection: View {
         StorageService.currencySymbol(for: storageService.preferredCurrency)
     }
 
-    var totalValue: Double {
-        portfolio.holdings.reduce(0) { sum, holding in
-            guard let quote = stockService.quotes[holding.symbol] else { return sum }
-            let rate = stockService.rate(from: quote.currency)
-            return sum + holding.marketValue(currentPrice: quote.displayPrice(extendedHours: storageService.showExtendedHours)) * rate
-        }
+    private var totals: (value: Double, cost: Double) {
+        PortfolioValuation.totals(PortfolioValuation.inputs(for: portfolio.holdings,
+                                                             stockService: stockService, storageService: storageService))
     }
+
+    var totalValue: Double { totals.value }
 
     var totalPnl: Double {
         totalValue - totalCost
     }
 
-    var totalCost: Double {
-        portfolio.holdings.reduce(0) { sum, holding in
-            guard let quote = stockService.quotes[holding.symbol] else { return sum }
-            let rate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
-            return sum + holding.costBasisLocal * rate
-        }
-    }
+    var totalCost: Double { totals.cost }
 
     var totalPnlPercent: Double {
         guard abs(totalCost) >= 0.01 else { return 0 }

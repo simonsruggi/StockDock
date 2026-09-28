@@ -120,7 +120,7 @@ struct EditHoldingView: View {
             if let quote = stockService.quotes[holding.symbol], quote.currency != storageService.preferredCurrency, let info = costBasisInfo {
                 let stockSym = StorageService.currencySymbol(for: quote.currency)
                 let prefSym = StorageService.currencySymbol(for: storageService.preferredCurrency)
-                let dateStr = Self.dateFormatter.string(from: purchaseDate)
+                let dateStr = DateFormatter.mediumDate.string(from: purchaseDate)
                 Text("Cost basis: \(prefSym)\(String(format: "%.2f", info.costInPreferred)) (\(stockSym)\(String(format: "%.2f", info.costInStock)) × \(String(format: "%.4f", info.rate)) on \(dateStr))")
                     .font(.inter(10, relativeTo: .caption))
                     .foregroundColor(.secondary)
@@ -148,12 +148,6 @@ struct EditHoldingView: View {
             }
         }
     }
-
-    private static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        return f
-    }()
 
     private func save() {
         let advanced = storageService.advancedPositions

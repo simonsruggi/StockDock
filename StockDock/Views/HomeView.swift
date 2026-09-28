@@ -11,14 +11,7 @@ struct HomeView: View {
 
     /// Filters by headline, tickers (source + related) and publisher.
     private var filteredNews: [NewsArticle] {
-        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !q.isEmpty else { return stockService.news }
-        return stockService.news.filter { a in
-            a.title.lowercased().contains(q)
-            || a.publisher.lowercased().contains(q)
-            || (a.sourceSymbol?.lowercased().contains(q) ?? false)
-            || a.relatedTickers.contains { $0.lowercased().contains(q) }
-        }
+        NewsArticle.filter(stockService.news, query: query)
     }
 
     var body: some View {

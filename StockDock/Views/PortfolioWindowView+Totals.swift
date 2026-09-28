@@ -4,15 +4,8 @@ extension PortfolioWindowView {
     // MARK: - Aggregation helpers (reuse the shared valuation math)
 
     private func valued(_ portfolios: [Portfolio]) -> [PortfolioValuation.Input] {
-        portfolios.flatMap { $0.holdings }.compactMap { holding in
-            guard let quote = stockService.quotes[holding.symbol] else { return nil }
-            return PortfolioValuation.Input(
-                holding: holding,
-                price: quote.displayPrice(extendedHours: storageService.showExtendedHours),
-                rate: stockService.rate(from: quote.currency),
-                costRate: stockService.rate(from: quote.currency, for: holding.purchaseDate)
-            )
-        }
+        PortfolioValuation.inputs(for: portfolios.flatMap { $0.holdings },
+                                  stockService: stockService, storageService: storageService)
     }
 
     func aggregateValue(for portfolios: [Portfolio]) -> Double {

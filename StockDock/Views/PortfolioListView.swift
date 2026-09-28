@@ -248,22 +248,19 @@ struct PortfolioListView: View {
     // portfolios the user hasn't excluded.
     private var grandTotalValue: Double {
         storageService.countedPortfolios.reduce(0) { total, portfolio in
-            total + portfolio.holdings.reduce(0) { sum, holding in
-                guard let quote = stockService.quotes[holding.symbol] else { return sum }
-                let rate = stockService.rate(from: quote.currency)
-                return sum + holding.marketValue(currentPrice: quote.displayPrice(extendedHours: storageService.showExtendedHours)) * rate
-            }
+            total + portfolioTotals(portfolio).value
         }
     }
 
     private var grandTotalCost: Double {
         storageService.countedPortfolios.reduce(0) { total, portfolio in
-            total + portfolio.holdings.reduce(0) { sum, holding in
-                guard let quote = stockService.quotes[holding.symbol] else { return sum }
-                let rate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
-                return sum + holding.costBasisLocal * rate
-            }
+            total + portfolioTotals(portfolio).cost
         }
+    }
+
+    private func portfolioTotals(_ portfolio: Portfolio) -> (value: Double, cost: Double) {
+        PortfolioValuation.totals(PortfolioValuation.inputs(for: portfolio.holdings,
+                                                             stockService: stockService, storageService: storageService))
     }
 
     private var globalPositions: [GlobalPosition] {

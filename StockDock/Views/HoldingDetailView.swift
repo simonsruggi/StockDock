@@ -111,7 +111,7 @@ struct HoldingDetailView: View {
 
     private var statStrip: some View {
         HStack(spacing: 12) {
-            StatTile(label: "Position", value: "\(formatQty(holding.quantity)) sh", help: "Shares you hold")
+            StatTile(label: "Position", value: "\(StorageService.formatQuantity(holding.quantity)) sh", help: "Shares you hold")
             StatTile(label: "Avg price", value: StorageService.formatAmount(holding.avgPrice, symbol: priceSymbol), help: "Your average purchase price")
             StatTile(label: "Value", value: StorageService.formatAmount(value, symbol: currencySymbol), help: "Current market value of this position")
             StatTile(label: "P&L",
@@ -174,7 +174,7 @@ struct HoldingDetailView: View {
     private var factsCard: some View {
         Card(title: "Position facts") {
             VStack(spacing: 0) {
-                factRow("Purchase date", holding.purchaseDate.map { Self.dateFormatter.string(from: $0) } ?? "—")
+                factRow("Purchase date", holding.purchaseDate.map { DateFormatter.mediumDate.string(from: $0) } ?? "—")
                 divider
                 factRow("Cost basis", StorageService.formatAmount(cost, symbol: currencySymbol))
                 divider
@@ -198,15 +198,5 @@ struct HoldingDetailView: View {
             Text(value).font(DS.figure).foregroundStyle(DS.ink)
         }
         .padding(.vertical, 8)
-    }
-
-    private static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        return f
-    }()
-
-    private func formatQty(_ qty: Double) -> String {
-        qty == qty.rounded(.down) ? String(format: "%.0f", qty) : String(format: "%.2f", qty)
     }
 }

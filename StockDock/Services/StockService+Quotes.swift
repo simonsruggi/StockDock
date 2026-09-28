@@ -120,10 +120,8 @@ extension StockService {
             default: marketState = "CLOSED" // PREPRE, POSTPOST, etc.
             }
 
-            let preChg: Double? = if let pm = q.preMarketPrice { pm - price } else { nil }
-            let prePct: Double? = if let ch = preChg, price > 0 { (ch / price) * 100 } else { nil }
-            let postChg: Double? = if let pm = q.postMarketPrice { pm - price } else { nil }
-            let postPct: Double? = if let ch = postChg, price > 0 { (ch / price) * 100 } else { nil }
+            let pre = Self.extendedMove(q.preMarketPrice, from: price)
+            let post = Self.extendedMove(q.postMarketPrice, from: price)
 
             let quote = StockQuote(
                 symbol: q.symbol,
@@ -138,11 +136,11 @@ extension StockService {
                 fiftyTwoWeekHigh: q.fiftyTwoWeekHigh,
                 fiftyTwoWeekLow: q.fiftyTwoWeekLow,
                 preMarketPrice: q.preMarketPrice,
-                preMarketChange: preChg,
-                preMarketChangePercent: prePct,
+                preMarketChange: pre.change,
+                preMarketChangePercent: pre.percent,
                 postMarketPrice: q.postMarketPrice,
-                postMarketChange: postChg,
-                postMarketChangePercent: postPct
+                postMarketChange: post.change,
+                postMarketChangePercent: post.percent
             )
 
             quotes.append(quote)
@@ -226,10 +224,8 @@ extension StockService {
                 }
             }
 
-            let preChg: Double? = if let pm = preMarketPrice { pm - price } else { nil }
-            let prePct: Double? = if let ch = preChg, price > 0 { (ch / price) * 100 } else { nil }
-            let postChg: Double? = if let pm = postMarketPrice { pm - price } else { nil }
-            let postPct: Double? = if let ch = postChg, price > 0 { (ch / price) * 100 } else { nil }
+            let pre = Self.extendedMove(preMarketPrice, from: price)
+            let post = Self.extendedMove(postMarketPrice, from: price)
 
             let quote = StockQuote(
                 symbol: meta.symbol,
@@ -244,16 +240,24 @@ extension StockService {
                 fiftyTwoWeekHigh: meta.fiftyTwoWeekHigh,
                 fiftyTwoWeekLow: meta.fiftyTwoWeekLow,
                 preMarketPrice: preMarketPrice,
-                preMarketChange: preChg,
-                preMarketChangePercent: prePct,
+                preMarketChange: pre.change,
+                preMarketChangePercent: pre.percent,
                 postMarketPrice: postMarketPrice,
-                postMarketChange: postChg,
-                postMarketChangePercent: postPct
+                postMarketChange: post.change,
+                postMarketChangePercent: post.percent
             )
 
             quotes[meta.symbol] = quote
             if let t = meta.instrumentType { StorageService.shared.setType(t, for: meta.symbol) }
         } catch {
         }
+    }
+
+    /// Pre/post-market move of `extendedPrice` against the regular `price`:
+    /// absolute change and percent, nil when there is no extended quote.
+    nonisolated static func extendedMove(_ extendedPrice: Double?, from price: Double) -> (change: Double?, percent: Double?) {
+        let change: Double? = if let pm = extendedPrice { pm - price } else { nil }
+        let percent: Double? = if let ch = change, price > 0 { (ch / price) * 100 } else { nil }
+        return (change, percent)
     }
 }

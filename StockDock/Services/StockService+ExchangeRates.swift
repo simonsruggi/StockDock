@@ -52,8 +52,7 @@ extension StockService {
                       let quote = quotes[holding.symbol],
                       quote.currency != preferredCurrency
                 else { continue }
-                let dayStart = Calendar.current.startOfDay(for: purchaseDate)
-                let ts = Int(dayStart.timeIntervalSince1970)
+                let ts = Self.dayTimestamp(purchaseDate)
                 let cacheKey = "\(quote.currency)\(preferredCurrency):\(ts)"
                 neededHistoricalKeys.insert(cacheKey)
                 if historicalRates[cacheKey] == nil {
@@ -85,8 +84,7 @@ extension StockService {
         let preferred = StorageService.shared.preferredCurrency
         if currency == preferred { return 1.0 }
         if let date = purchaseDate {
-            let dayStart = Calendar.current.startOfDay(for: date)
-            let ts = Int(dayStart.timeIntervalSince1970)
+            let ts = Self.dayTimestamp(date)
             let key = "\(currency)\(preferred):\(ts)"
             if let historical = historicalRates[key] { return historical }
         }
@@ -163,10 +161,15 @@ extension StockService {
               let quote = quotes[holding.symbol],
               quote.currency != StorageService.shared.preferredCurrency
         else { return }
-        let dayStart = Calendar.current.startOfDay(for: purchaseDate)
-        let ts = Int(dayStart.timeIntervalSince1970)
+        let ts = Self.dayTimestamp(purchaseDate)
         let key = "\(quote.currency)\(StorageService.shared.preferredCurrency):\(ts)"
         guard historicalRates[key] == nil else { return }
         await fetchHistoricalExchangeRate(from: quote.currency, to: StorageService.shared.preferredCurrency, dateTimestamp: ts)
+    }
+
+    /// Start of the local day as a Unix timestamp — the key historical rates
+    /// are cached under.
+    nonisolated static func dayTimestamp(_ date: Date) -> Int {
+        Int(Calendar.current.startOfDay(for: date).timeIntervalSince1970)
     }
 }

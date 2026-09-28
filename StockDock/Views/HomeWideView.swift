@@ -15,14 +15,7 @@ struct HomeWideView: View {
     /// Filters news by free text — matches the headline, the tickers (source +
     /// related), and the publisher — so you can search by name or by stock.
     private var filteredNews: [NewsArticle] {
-        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
-        guard !q.isEmpty else { return stockService.news }
-        return stockService.news.filter { a in
-            a.title.lowercased().contains(q)
-            || a.publisher.lowercased().contains(q)
-            || (a.sourceSymbol?.lowercased().contains(q) ?? false)
-            || a.relatedTickers.contains { $0.lowercased().contains(q) }
-        }
+        NewsArticle.filter(stockService.news, query: query)
     }
 
     var body: some View {
