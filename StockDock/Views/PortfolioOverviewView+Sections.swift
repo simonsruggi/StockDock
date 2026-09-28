@@ -1,7 +1,7 @@
 import SwiftUI
 import Charts
 
-extension PortfolioOverview {
+extension PortfolioOverviewView {
     // MARK: - Stats
 
     func statRow(_ d: Derived) -> some View {

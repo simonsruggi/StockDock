@@ -1,7 +1,7 @@
 import SwiftUI
 import Charts
 
-extension PortfolioOverview {
+extension PortfolioOverviewView {
     // MARK: - Hero (chart as the ground of the card)
 
     func heroCard(_ d: Derived) -> some View {

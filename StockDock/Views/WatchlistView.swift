@@ -91,7 +91,7 @@ struct WatchlistView: View {
             List {
                 ForEach(filteredSymbols, id: \.self) { symbol in
                     if let quote = stockService.quotes[symbol] {
-                        QuoteRow(quote: quote)
+                        WatchlistRow(quote: quote)
                             .contextMenu {
                                 watchlistContextMenu(symbol: symbol)
                             }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct PortfolioOverview: View {
+struct PortfolioOverviewView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
     @Environment(\.editHoldingAction) var editHoldingAction

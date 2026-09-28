@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct QuoteRow: View {
+struct WatchlistRow: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
     let quote: StockQuote

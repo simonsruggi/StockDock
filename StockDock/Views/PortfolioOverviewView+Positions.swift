@@ -1,6 +1,6 @@
 import SwiftUI
 
-extension PortfolioOverview {
+extension PortfolioOverviewView {
     // MARK: - Positions
 
     func positionsCard(_ d: Derived) -> some View {

@@ -1,6 +1,6 @@
 import SwiftUI
 
-extension PortfolioOverview {
+extension PortfolioOverviewView {
     /// Tooltip date label — time for intraday ranges, date for the rest.
     func tooltipDate(_ date: Date) -> String {
         switch chartRange {

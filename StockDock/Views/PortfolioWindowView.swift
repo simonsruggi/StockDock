@@ -317,9 +317,9 @@ struct PortfolioWindowView: View {
         case .settings:
             SettingsWideView()
         case .portfoliosAll:
-            NavigationStack { PortfolioOverview(scope: .all) }
+            NavigationStack { PortfolioOverviewView(scope: .all) }
         case .portfolio(let id):
-            NavigationStack { PortfolioOverview(scope: .portfolio(id)) }
+            NavigationStack { PortfolioOverviewView(scope: .portfolio(id)) }
         }
     }
 
