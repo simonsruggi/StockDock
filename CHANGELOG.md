@@ -4,6 +4,13 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.19 — 2026-09-28
+
+*A menu bar that adds up*
+
+- **The menu bar P&L now matches the window.** With short or leveraged positions, the profit and loss in the menu bar used the plain average price times quantity, while the window used the real cost basis. Both now use the same valuation.
+- **Short-only portfolios show their percentage.** A portfolio made only of short positions always showed 0% in the menu bar; it now shows its real change.
+
 ## 1.9.18 — 2026-09-22
 
 *StockDock speaks Chinese*
