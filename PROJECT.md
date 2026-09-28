@@ -23,31 +23,58 @@ StockDock/
 ├── Package.swift               # SPM config, single target, macOS 14+
 ├── StockDock/
 │   ├── StockDockApp.swift      # Entry point (@main), wires up AppDelegate
-│   ├── AppDelegate.swift       # NSStatusItem, popover, 5s refresh timer
-│   ├── Models/
-│   │   ├── StockQuote.swift    # Models: StockQuote (with 52w range), Portfolio, Holding, SearchResult
-│   │   ├── PriceAlert.swift    # PriceAlert, AlertCondition, AlertEvaluator (pure, testable logic)
-│   │   ├── PortfolioNotification.swift # PortfolioNotification(Mode) + PortfolioAlertEvaluator (pure, testable logic)
-│   │   └── NewsArticle.swift   # News model (decoded from the Yahoo search endpoint, no API key) for the Home tab
-│   ├── Services/
-│   │   ├── StockService.swift      # Fetches quotes and exchange rates from the Yahoo Finance REST API
+│   ├── AppDelegate.swift       # NSStatusItem, popover, launch/terminate wiring
+│   ├── AppDelegate+LiveData.swift # WSS ticks, REST polling (60s), snapshots, sleep/wake
+│   ├── AppDelegate+MenuBar.swift  # Menu bar title (all display modes, ticker slides)
+│   ├── AppDelegate+Window.swift   # Desktop window open/focus
+│   ├── SparkleDelegate.swift / UpdaterViewModel.swift # Sparkle updates
+│   ├── Notification+StockDock.swift, ColorHex.swift, FontRegistration.swift
+│   ├── Models/                 # One value type per file, pure and tested
+│   │   ├── StockQuote.swift, Portfolio.swift, Holding.swift, SearchResult.swift
+│   │   ├── PriceAlert.swift, AlertCondition.swift, AlertEvaluator.swift
+│   │   ├── PortfolioNotification.swift, PortfolioNotificationMode.swift, PortfolioAlertEvaluator.swift
+│   │   ├── PortfolioSnapshot.swift, PortfolioValuation.swift, SnapshotLog.swift
+│   │   ├── PortfolioBackfill.swift, ValuePoint.swift, PortfolioPeriodChange.swift
+│   │   ├── PriceHistory.swift, PricePoint.swift
+│   │   └── NewsArticle.swift, NewsArticle+Filter.swift # Home news model + free-text filter
+│   ├── Services/               # Same file layout as ios-apps/StockDockCore
+│   │   ├── StockService.swift            # Class, published state, refreshAll
+│   │   ├── StockService+Quotes.swift     # v7 batch quotes (cookie+crumb), v8 fallback
+│   │   ├── StockService+ExchangeRates.swift # Current + historical FX, rate/priceDisplay
+│   │   ├── StockService+History.swift    # Chart history (2y/max/intraday/7d) + sparklines
+│   │   ├── StockService+Ticks.swift      # applyTick (WSS)
+│   │   ├── StockService+News.swift       # Symbol search + Home news
+│   │   ├── YahooAPIModels.swift          # Yahoo Codable responses (chart, spark, v7, search, news)
+│   │   ├── StorageService.swift          # Settings (stored props), aliases/types, resetToDefaults
+│   │   ├── StorageService+Alerts.swift   # Price alerts, portfolio notifications, snapshots
+│   │   ├── StorageService+Portfolios.swift # Watchlist, portfolios, holdings, countedPortfolios
+│   │   ├── StorageService+Backup.swift   # Portfolio export/import
+│   │   ├── StorageService+Persistence.swift # data.json (debounced save, load)
+│   │   ├── StorageService+Formatting.swift  # formatNumber/formatAmount, tickerOrder, isIndex…
+│   │   ├── PortfolioValuation+Quotes.swift  # Valuation inputs from live quotes + FX
 │   │   ├── WebSocketService.swift  # Real-time streaming over WSS + protobuf + auto-reconnect
-│   │   ├── NotificationManager.swift # Local notifications (UN) + webhook forwarding + AlertMonitor
+│   │   ├── ConnectionSupervisor.swift # Pure reconnect/refresh recovery logic
+│   │   ├── NotificationManager.swift # Local notifications (UN) + webhook forwarding
+│   │   ├── AlertMonitor.swift      # Evaluates price alerts on every price update
 │   │   ├── PortfolioMonitor.swift  # Evaluates per-portfolio notifications and fires them
+│   │   ├── PortfolioIO.swift       # Export/import panels
 │   │   ├── WebhookNotifier.swift   # POSTs to Discord/Slack webhooks (auto-detect, https + host allowlist)
-│   │   ├── yaticker.pb.swift       # Swift code generated from yaticker.proto
-│   │   └── StorageService.swift    # Local persistence (JSON) + formatNumber/formatAmount (locale-aware thousands separator)
-│   ├── Views/
-│   │   ├── ContentView.swift   # Tab container (Home / Watchlist / Portfolios / Settings)
-│   │   ├── HomeView.swift      # Home tab: financial news feed (thumbnail, publisher, related tickers)
-│   │   ├── WatchlistView.swift # Ticker list with prices, daily change and the 52w range bar
-│   │   ├── RangeBar.swift      # 52-week bar with a position marker
-│   │   ├── PortfolioListView.swift # Portfolios with per-holding P&L
-│   │   ├── AddHoldingView.swift# Add/edit holding form
-│   │   ├── AlertEditView.swift # Price alert creation sheet
-│   │   ├── PortfolioNotificationsView.swift # Popover managing per-portfolio notifications
-│   │   ├── SearchView.swift    # Ticker search by symbol or name
-│   │   └── SettingsView.swift  # Currency, extended hours, menu bar, Notifications (webhook + price alert + portfolio), Sponsor section
+│   │   └── yaticker.pb.swift       # Swift code generated from yaticker.proto (don't edit)
+│   ├── Views/                  # One component per file; big views split in `View+Area.swift` extensions
+│   │   ├── ContentView.swift, Tab.swift, EnvironmentValues+Actions.swift # Popover tab container
+│   │   ├── HomeView.swift, NewsRow.swift, TickerChip.swift            # Popover Home (news)
+│   │   ├── WatchlistView(+Sorting).swift, WatchlistRow.swift, QuickAddHoldingView.swift, RangeBar.swift
+│   │   ├── PortfolioListView.swift, PortfolioSection.swift, HoldingRow.swift, GlobalPosition.swift
+│   │   ├── AddHoldingView.swift, EditHoldingView.swift, AlertEditView.swift, SearchView.swift
+│   │   ├── SettingsView.swift, SettingsGroup.swift, AlertGroupList.swift, AlertRow.swift, PortfolioNotifRow.swift
+│   │   ├── PortfolioWindowView(+Totals).swift, SupportButton.swift, TotalFooter.swift # Desktop window
+│   │   ├── PortfolioOverviewView(+Data/+Hero/+Sections/+Positions).swift, PositionRow.swift, ValuedHolding.swift
+│   │   ├── WatchlistWideView(+Rows).swift, WatchRowView.swift, WCol.swift
+│   │   ├── HomeWideView.swift, FeaturedNewsCard.swift, NewsCard.swift, NewsPlaceholder.swift
+│   │   ├── SettingsWideView.swift, SettingsCard.swift, SettingRow.swift, SettingToggle.swift
+│   │   ├── PriceChartCard(+Data).swift, Sparkline.swift, HoldingDetailView.swift, SymbolDetailSheet.swift
+│   │   ├── DesignSystem/       # DS tokens (DesignSystem.swift) + one file per DS component
+│   │   └── Sheets/             # Desktop-window sheets (SheetShell, PrimaryButton, forms)
 │   ├── Assets.xcassets
 │   └── Resources/AppIcon.icns
 └── screenshots/                # Screenshots for the README
@@ -58,7 +85,7 @@ StockDock/
 - **Home — financial news** (main tab): news feed from the same public Yahoo endpoints (`v1/finance/search?newsCount=…`, no API key). Personalised on the symbols you follow (watchlist + holdings, up to 6 concurrent queries via `withTaskGroup`), deduplicated by `uuid`, newest first (capped at 40); falls back to "stock market" if you follow nothing. Each row: thumbnail (`AsyncImage`), title, publisher · relative time (localised), related tickers; tap → opens the article in the browser (`NSWorkspace`). Throttled refresh (max once every 5 min) plus a forced one from the header refresh button while on Home. State lives in `StockService` (`news`, `isLoadingNews`, `refreshNews`), model `NewsArticle` with decoding tests
 - **Support**: Settings → "Enjoying StockDock?" section with a pink "Become a Sponsor" button → `github.com/sponsors/simonsruggi`. The README carries both funding links (GitHub Sponsors + Buy Me a Coffee) as badges, in the nav and in the dedicated section. The message stays the same: the app is free and open source forever
 - **Configurable menu bar**: absolute P&L, P&L %, P&L + %, total portfolio value, best/worst watchlist symbol, portfolio recap, daily P&L, **Ticker (cycles the watchlist)**, **Ticker + Portfolio (cycles the watchlist plus one portfolio recap slide)**, icon only
-- **Custom gain/loss colours (global)** (since 1.9.4): Settings → "Colors" section, gain/loss colour pickers that apply to **the whole app**, not just the menu bar. Implementation: `DS.up`/`DS.down` (and `upSoft`/`downSoft`/`pnlColor`) in `DesignSystem.swift` are **computed `@MainActor`** properties reading the custom colours from `StorageService.shared` (hex → `Color(nsColor:)`), **falling back to the defaults** `upDefault`/`downDefault` (emerald/terracotta) when the hex is empty; views showing P&L observe `StorageService`, so changing a colour re-renders them. The colour pickers are **always visible**. The **"Use system color in the menu bar"** toggle (`menuBarUseSystemColor`) affects **the bar only** (readability on any background; direction is carried by `+/−` and `▲▼`) and leaves in-app colours alone; used in `AppDelegate.updateMenuBarTitle`. Persisted as hex in `data.json`; helper `ColorHex.swift` (hex↔`NSColor`/`Color` bridge)
+- **Custom gain/loss colours (global)** (since 1.9.4): Settings → "Colors" section, gain/loss colour pickers that apply to **the whole app**, not just the menu bar. Implementation: `DS.up`/`DS.down` (and `upSoft`/`downSoft`/`pnlColor`) in `Views/DesignSystem/DesignSystem.swift` are **computed `@MainActor`** properties reading the custom colours from `StorageService.shared` (hex → `Color(nsColor:)`), **falling back to the defaults** `upDefault`/`downDefault` (emerald/terracotta) when the hex is empty; views showing P&L observe `StorageService`, so changing a colour re-renders them. The colour pickers are **always visible**. The **"Use system color in the menu bar"** toggle (`menuBarUseSystemColor`) affects **the bar only** (readability on any background; direction is carried by `+/−` and `▲▼`) and leaves in-app colours alone; used in `AppDelegate.updateMenuBarTitle`. Persisted as hex in `data.json`; helper `ColorHex.swift` (hex↔`NSColor`/`Color` bridge)
 - **Decimal places**: Settings control for percentages (0–4) and values (Auto or 0–4), applied everywhere a number appears (menu bar, watchlist, portfolios)
 - **Ticker: name vs symbol** (issue #8.2): "Show name instead of symbol" toggle (off by default) in the Ticker modes → the bar shows the readable name (e.g. "S&P 500") instead of the raw symbol ("^GSPC"). Implemented in `AppDelegate.watchlistSlide(...)`, falling back to the symbol when the name is empty; `tickerShowName` setting in `StorageService`
 - **Custom symbol names** (issue #12, since 1.9.12): right-click a watchlist symbol → "Rename…" gives it a display name of your choosing, for tickers that read badly in the menu bar (`CAD/USD` → `CAD`, `^GSPC` → `S&P`). Stored in `symbolAlias: [symbol: String]` in `data.json`; read through `StorageService.displayLabel(for:fallback:)`, which wins over both the raw ticker and the Yahoo company name — it was chosen precisely because neither reads well. The real ticker is never hidden: it moves to the secondary line in the compact list and prefixes the Name column in the window. Saving an empty field clears the alias (`setAlias` removes the entry rather than storing ""), so "no alias" has a single code path. Covered by `Tests/SymbolAliasTests.swift`
@@ -89,10 +116,10 @@ StockDock/
 
 Alongside the menu bar popover, StockDock has a **real desktop window** (1220×820, min 1000×680), opened from the **"Open"** button (emerald capsule) in the popover header, or from `AppDelegate.showPortfolioWindow()`. It's the app in expanded form: **the same tabs as the popover** (Home / Watchlist / Portfolios / Settings), **the same data and the same preferences** over the same `data.json` (shared `StockService`/`StorageService`) — a change in one place shows up instantly in the other and in the menu bar. It coexists with the popover: opening switches to `activationPolicy .regular` (Dock icon), closing returns to `.accessory`.
 
-- **"Private banking" design system** (`Views/DesignSystem.swift`): warm paper palette with restrained emerald, `premiumCard(elevated:)` (three elevation levels), Inter type scale (`DS.display/titleXL/figure/…`), shared components `PageScaffold`/`PageHeader`/`ScrollEdgeFade`/`Card`/`StatTile`/`ChangePill`/`Tag`/`BrandMark`/`NavRow` (sliding selection pill via `matchedGeometryEffect`)/`SegmentedRangePicker`/`RefreshButton`. Appearance follows the user's Theme preference (System / Light / Dark, issue #11). Every tab uses the same `PageScaffold` → identical title, column (max 1120), gutter and background (cross-tab consistency).
+- **"Private banking" design system** (`Views/DesignSystem/`: tokens in `DesignSystem.swift`, one file per component): warm paper palette with restrained emerald, `premiumCard(elevated:)` (three elevation levels), Inter type scale (`DS.display/titleXL/figure/…`), shared components `PageScaffold`/`PageHeader`/`ScrollEdgeFade`/`Card`/`StatTile`/`ChangePill`/`Tag`/`BrandMark`/`NavRow` (sliding selection pill via `matchedGeometryEffect`)/`SegmentedRangePicker`/`RefreshButton`. Appearance follows the user's Theme preference (System / Light / Dark, issue #11). Every tab uses the same `PageScaffold` → identical title, column (max 1120), gutter and background (cross-tab consistency).
 - **Chrome**: transparent titlebar + `titleVisibility .hidden` + `fullSizeContentView`; no system toolbar (the "+" for a new portfolio/holding lives in the sidebar's "PORTFOLIOS" header); `isMovableByWindowBackground`.
 - **Shortcuts**: ⌘1 Home · ⌘2 Watchlist · ⌘3 Portfolios · ⌘4 Settings · ⌘R Refresh · ⌘N New portfolio (invisible buttons in `PortfolioWindowView`).
-- **Overview** (`PortfolioOverview.swift`): full-bleed hero with the value chart as the card's background + `SegmentedRangePicker` + `contentTransition(.numericText())`; stat tiles; **Allocation** (donut with asset count + legend + per-type diversification strip, hovering highlights the sector); **movers** with a gauge; **positions** with a weight bar, the share count next to the company name, and hover. The value chart uses **real snapshots** when there are ≥2 days, otherwise an **"ESTIMATED" backfill** (dashed grey line) reconstructed from price history × current positions (`Models/PortfolioBackfill.swift`, pure + tested). The estimated curve **starts at the oldest purchase** and each position enters from **its own** `purchaseDate` (holdings with no date are valued across the whole window): without this, "All" projected today's quantities back to the earliest quote Yahoo happened to have and drew a 2026 portfolio starting in 2005. Consequently "All" uses the **daily 2y** series when the oldest purchase fits inside it (the monthly `range=max` only for genuinely older portfolios), and the X-axis label follows the **drawn span** — `6 lug` under a year, four-digit `gen 2005` above (`gen 05` read as the 5th of January).
+- **Overview** (`PortfolioOverviewView.swift` + `+Data/+Hero/+Sections/+Positions` extensions): full-bleed hero with the value chart as the card's background + `SegmentedRangePicker` + `contentTransition(.numericText())`; stat tiles; **Allocation** (donut with asset count + legend + per-type diversification strip, hovering highlights the sector); **movers** with a gauge; **positions** with a weight bar, the share count next to the company name, and hover. The value chart uses **real snapshots** when there are ≥2 days, otherwise an **"ESTIMATED" backfill** (dashed grey line) reconstructed from price history × current positions (`Models/PortfolioBackfill.swift`, pure + tested). The estimated curve **starts at the oldest purchase** and each position enters from **its own** `purchaseDate` (holdings with no date are valued across the whole window): without this, "All" projected today's quantities back to the earliest quote Yahoo happened to have and drew a 2026 portfolio starting in 2005. Consequently "All" uses the **daily 2y** series when the oldest purchase fits inside it (the monthly `range=max` only for genuinely older portfolios), and the X-axis label follows the **drawn span** — `6 lug` under a year, four-digit `gen 2005` above (`gen 05` read as the 5th of January).
 - **Real price charts** (`Views/PriceChartCard.swift`, `Models/PriceHistory.swift`): Yahoo v8 history (1 year daily, 1h cache) + 5m intraday for **24H** (5min cache); 24H/7D/1M/1Y/All range picker, tint following the period's direction, endpoint dot, gridlines on both axes and a hover crosshair with tooltip. Used in the **holding detail** (`HoldingDetailView.swift`, with the 52-week bar, a "you bought here" tick, Position facts, **Related news** and an alert button) and in the **symbol sheet** (double-click a watchlist row → `SymbolDetailSheet.swift`).
 - **Wide watchlist** (`WatchlistWideView.swift`): custom sortable list (clickable headers) inside a card. Columns **Symbol / Name / Price / After hrs / Trend 1M / 52-week**. Each price is paired with **its own** % in the same cell on the same baseline (Price → the day's move vs the previous close; After hrs → the pre/post move vs the regular close), so price and % always agree — no more detached "Change" pill. **Session-aware hierarchy** (`extendedSession`): during pre/post-market the After hrs column takes precedence (ink price + coloured `ChangePill`) and Price drops to context (grey); during regular hours it's the reverse. Headers **sort by the % you see** — Price by the day's %, After hrs by the pre/post move (never by the raw extended price), via the pure helper `StorageService.sortedByExtendedPercent(_:ascending:percent:)`, with rows lacking extended data always last. The After hrs column (and its sort) respects the **Show extended hours** setting: OFF ⇒ column hidden, only regular-market values remain. **Sparklines in a single batched request** (`ensureSparklines`, Yahoo multi-symbol `spark` endpoint). Double-click or right-click → "View Chart".
 - **Wide Home** (`HomeWideView.swift`): news card with a full-width **Featured** lead + grid; **wide Settings** (`SettingsWideView.swift`): native two-column cards (not the system Form), emerald tint.
@@ -138,6 +165,7 @@ The app doesn't appear in the Dock (`.accessory` policy): the icon shows up in t
 
 ## Important notes
 
+- **File layout (rule)**: one component per file, view files under ~450 lines; derived data, sorting and formatting live outside the view body (`Type+Area.swift` extensions or helper types like `GlobalPosition`, `NewsArticle.filter`, `PortfolioValuation.inputs`). Service files mirror `ios-apps/StockDockCore/Sources/StockDockCore/Services/` name for name, and shared components use the iOS app's names (`WatchlistRow`, `PortfolioOverviewView`, `GlobalPosition`). `yaticker.pb.swift` is generated
 - **No API key required**: Yahoo Finance needs no authentication, but does use a cookie+crumb mechanism, handled automatically by `StockService`
 - **API fallback**: if the v7 batch quote fails, the v8 chart API is used for each symbol individually
 - **Protobuf**: the `yaticker.proto` schema in the root generates `yaticker.pb.swift` via `protoc --swift_out`. Regenerate if the schema changes: `protoc --swift_out=StockDock/Services/ yaticker.proto`
