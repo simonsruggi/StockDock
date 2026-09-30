@@ -107,9 +107,11 @@ The app updates itself automatically via Sparkle — no need to run `brew upgrad
 
 ### Download
 
-1. Download the latest `StockDock.zip` from [Releases](https://github.com/simonsruggi/StockDock/releases/latest)
-2. Unzip and move `StockDock.app` to `/Applications`
+1. Download [`StockDock.dmg`](https://github.com/simonsruggi/StockDock/releases/latest/download/StockDock.dmg) (or `StockDock.zip` from [Releases](https://github.com/simonsruggi/StockDock/releases/latest))
+2. Open it and drag `StockDock.app` into `Applications`
 3. Launch — the app appears in the menu bar (no Dock icon)
+
+All versions and their changelogs: [stockdockapp.com/downloads](https://stockdockapp.com/downloads).
 
 ### Build from source
 
