@@ -54,7 +54,7 @@ enum PortfolioIO {
         panel.allowedContentTypes = [.json]
         panel.allowsMultipleSelection = false
         panel.title = "Import Portfolios"
-        let appDelegate = NSApp.delegate as? AppDelegate
+        let appDelegate = AppDelegate.shared
         if fromPopover {
             appDelegate?.holdPopoverOpen(true)
             panel.level = .floating
@@ -66,6 +66,9 @@ enum PortfolioIO {
             let data = try? Data(contentsOf: url)
             Task { @MainActor in
                 if fromPopover {
+                    // The panel is still animating out when this runs; reopening
+                    // right away lets its dismissal close the popover again.
+                    try? await Task.sleep(nanoseconds: 300_000_000)
                     appDelegate?.showPopoverIfHidden()
                     // Let the popover finish appearing before a sheet or alert attaches to it.
                     try? await Task.sleep(nanoseconds: 250_000_000)

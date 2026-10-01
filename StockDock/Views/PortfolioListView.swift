@@ -250,7 +250,7 @@ struct PortfolioListView: View {
         }
         // The popover would close on the first click inside the sheet otherwise.
         .onChange(of: importCandidates == nil) { _, closed in
-            (NSApp.delegate as? AppDelegate)?.holdPopoverOpen(!closed)
+            AppDelegate.shared?.holdPopoverOpen(!closed)
         }
         .sheet(item: $importCandidates) { c in
             ImportPortfoliosSheet(candidates: c.portfolios, width: 360) { count in

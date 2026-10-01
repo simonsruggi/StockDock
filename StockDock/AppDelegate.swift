@@ -4,6 +4,10 @@ import SwiftUI
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
+    /// `NSApp.delegate` is SwiftUI's adaptor wrapper, not this class, so views
+    /// and helpers that need the popover reach it through here.
+    static private(set) weak var shared: AppDelegate?
+
     var statusItem: NSStatusItem?
     private var popover: NSPopover?
     var portfolioWindow: NSWindow?
@@ -56,6 +60,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppDelegate.shared = self
         FontRegistration.registerFonts()
 
         // Ask for notification permission (no-op in dev without a bundle)
@@ -218,7 +223,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     /// Brings the popover back after a panel, so what follows (the import
     /// selection, an error) is visible.
     func showPopoverIfHidden() {
-        if popover?.isShown != true { togglePopover() }
+        guard let popover else { return }
+        let visible = popover.contentViewController?.view.window?.isVisible == true
+        if popover.isShown && visible {
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        // Can report "shown" while its window is gone after the panel closed.
+        if popover.isShown { popover.close() }
+        togglePopover()
     }
 }
 
