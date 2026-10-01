@@ -6,22 +6,23 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.19</title>
-            <pubDate>Mon, 28 Sep 2026 11:58:06 +0200</pubDate>
-            <sparkle:version>42</sparkle:version>
-            <sparkle:shortVersionString>1.9.19</sparkle:shortVersionString>
+            <title>Version 1.9.20</title>
+            <pubDate>Thu, 01 Oct 2026 12:48:03 +0200</pubDate>
+            <sparkle:version>43</sparkle:version>
+            <sparkle:shortVersionString>1.9.20</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>A menu bar that adds up</h2>
+<h2>Import what you want</h2>
 <ul>
-    <li><strong>The menu bar P&amp;L now matches the window.</strong> With short or leveraged positions, the profit and loss in the menu bar used the plain average price times quantity, while the window used the real cost basis. Both now use the same valuation.</li>
-    <li><strong>Short-only portfolios show their percentage.</strong> A portfolio made only of short positions always showed 0% in the menu bar; it now shows its real change.</li>
+    <li><strong>Choose what to import.</strong> Importing a file now lists its portfolios: tick the ones you want, then keep your current portfolios or replace them with the imported ones.</li>
+    <li><strong>Delete all portfolios at once.</strong> A new "Delete All Portfolios…" action, in the window's + menu and as a trash button in the menu bar, clears everything after a confirmation.</li>
+    <li><strong>Import stays in the menu bar.</strong> Importing from the menu bar no longer turns StockDock into a Dock app: the menu reopens after you pick the file, with the list ready.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.19/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.20/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="UsPXQ03BMPVPcYF5YX8KWwXOo++tCuJAD4vQ1FsjR53hRvqPo23cvMjEWSyDc+lHTixzxskap5dMzHWk8L44Aw=="
-                       length="9921072"/>
+                       sparkle:edSignature="2IhdZr5tpm951PJ5lYzkVKuoPjooKJfH/XY+xDH4Bg3miNpkilNPt5/mwUT27AyjzkA57ttLC8WKdKdXh0SQBw=="
+                       length="10008281"/>
         </item>
     </channel>
 </rss>
