@@ -63,11 +63,17 @@ enum PortfolioIO {
         panel.begin { response in
             if fromPopover { appDelegate?.holdPopoverOpen(false) }
             guard response == .OK, let url = panel.url else { return }
-            guard let data = try? Data(contentsOf: url) else {
-                Task { @MainActor in onAlert("Could not read file.") }
-                return
-            }
+            let data = try? Data(contentsOf: url)
             Task { @MainActor in
+                if fromPopover {
+                    appDelegate?.showPopoverIfHidden()
+                    // Let the popover finish appearing before a sheet or alert attaches to it.
+                    try? await Task.sleep(nanoseconds: 250_000_000)
+                }
+                guard let data else {
+                    onAlert("Could not read file.")
+                    return
+                }
                 guard let imported = storageService.importPortfolios(from: data) else {
                     onAlert("Invalid file format.")
                     return

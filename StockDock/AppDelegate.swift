@@ -214,6 +214,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func holdPopoverOpen(_ hold: Bool) {
         popover?.behavior = hold ? .applicationDefined : .transient
     }
+
+    /// Brings the popover back after a panel, so what follows (the import
+    /// selection, an error) is visible.
+    func showPopoverIfHidden() {
+        if popover?.isShown != true { togglePopover() }
+    }
 }
 
 // MARK: - NSWindowDelegate
