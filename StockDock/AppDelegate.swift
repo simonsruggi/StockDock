@@ -207,6 +207,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func closePopover() {
         popover?.performClose(nil)
     }
+
+    /// Keeps the popover on screen while one of our own panels (e.g. the import
+    /// file picker) is in front, so the flow can continue inside the popover
+    /// instead of it closing behind the panel.
+    func holdPopoverOpen(_ hold: Bool) {
+        popover?.behavior = hold ? .applicationDefined : .transient
+    }
 }
 
 // MARK: - NSWindowDelegate

@@ -42,26 +42,26 @@ enum PortfolioIO {
 
     /// Presents an NSOpenPanel and decodes the chosen file. The portfolios go to
     /// `onLoaded`, where the caller lets the user pick which ones to import;
-    /// read/format errors go to `onAlert`. See `exportAll` for
-    /// `restoreActivationPolicy`.
-    static func pickImportFile(_ storageService: StorageService, restoreActivationPolicy: Bool,
+    /// read/format errors go to `onAlert`.
+    ///
+    /// - Parameter fromPopover: the menu-bar popover stays open (and the app
+    ///   stays menu-bar only, no Dock icon) while the panel floats above it, so
+    ///   the selection sheet that follows appears in the popover itself.
+    static func pickImportFile(_ storageService: StorageService, fromPopover: Bool,
                                onLoaded: @escaping ([Portfolio]) -> Void,
                                onAlert: @escaping (String) -> Void) {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.json]
         panel.allowsMultipleSelection = false
         panel.title = "Import Portfolios"
-        if restoreActivationPolicy {
-            NSApp.setActivationPolicy(.regular)
+        let appDelegate = NSApp.delegate as? AppDelegate
+        if fromPopover {
+            appDelegate?.holdPopoverOpen(true)
+            panel.level = .floating
             NSApp.activate(ignoringOtherApps: true)
         }
         panel.begin { response in
-            if restoreActivationPolicy {
-                Task { @MainActor in
-                    try? await Task.sleep(nanoseconds: 500_000_000)
-                    NSApp.setActivationPolicy(.accessory)
-                }
-            }
+            if fromPopover { appDelegate?.holdPopoverOpen(false) }
             guard response == .OK, let url = panel.url else { return }
             guard let data = try? Data(contentsOf: url) else {
                 Task { @MainActor in onAlert("Could not read file.") }
@@ -79,6 +79,7 @@ enum PortfolioIO {
                 onLoaded(imported)
             }
         }
+        if fromPopover { panel.orderFrontRegardless() }
     }
 
     static func importedMessage(_ count: Int) -> String {

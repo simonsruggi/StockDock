@@ -248,6 +248,10 @@ struct PortfolioListView: View {
             }
         }
         }
+        // The popover would close on the first click inside the sheet otherwise.
+        .onChange(of: importCandidates == nil) { _, closed in
+            (NSApp.delegate as? AppDelegate)?.holdPopoverOpen(!closed)
+        }
         .sheet(item: $importCandidates) { c in
             ImportPortfoliosSheet(candidates: c.portfolios, width: 360) { count in
                 importCandidates = nil
@@ -296,7 +300,7 @@ struct PortfolioListView: View {
     }
 
     private func importPortfolios() {
-        PortfolioIO.pickImportFile(storageService, restoreActivationPolicy: true,
+        PortfolioIO.pickImportFile(storageService, fromPopover: true,
                                    onLoaded: { importCandidates = ImportCandidates(portfolios: $0) },
                                    onAlert: { importAlert = $0 })
     }

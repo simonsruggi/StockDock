@@ -381,7 +381,7 @@ struct PortfolioWindowView: View {
     }
 
     private func importPortfolios() {
-        PortfolioIO.pickImportFile(storageService, restoreActivationPolicy: false,
+        PortfolioIO.pickImportFile(storageService, fromPopover: false,
                                    onLoaded: { importCandidates = ImportCandidates(portfolios: $0) },
                                    onAlert: { importAlert = $0 })
     }
