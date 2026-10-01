@@ -4,6 +4,11 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## Unreleased
+
+- **Choose what to import.** Importing a file now lists its portfolios: tick the ones you want, then keep your current portfolios or replace them with the imported ones.
+- **Delete all portfolios at once.** A new "Delete All Portfolios…" action, in the window's + menu and as a trash button in the menu bar, clears everything after a confirmation.
+
 ## 1.9.19 — 2026-09-28
 
 *A menu bar that adds up*

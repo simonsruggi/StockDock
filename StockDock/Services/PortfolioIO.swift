@@ -40,10 +40,13 @@ enum PortfolioIO {
         }
     }
 
-    /// Presents an NSOpenPanel, reads and merges the imported portfolios, and
-    /// reports the result via `onAlert` (mirrors the exact alert wording used
-    /// at both call sites). See `exportAll` for `restoreActivationPolicy`.
-    static func importInto(_ storageService: StorageService, restoreActivationPolicy: Bool, onAlert: @escaping (String) -> Void) {
+    /// Presents an NSOpenPanel and decodes the chosen file. The portfolios go to
+    /// `onLoaded`, where the caller lets the user pick which ones to import;
+    /// read/format errors go to `onAlert`. See `exportAll` for
+    /// `restoreActivationPolicy`.
+    static func pickImportFile(_ storageService: StorageService, restoreActivationPolicy: Bool,
+                               onLoaded: @escaping ([Portfolio]) -> Void,
+                               onAlert: @escaping (String) -> Void) {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.json]
         panel.allowsMultipleSelection = false
@@ -73,9 +76,18 @@ enum PortfolioIO {
                     onAlert("No portfolios found in file.")
                     return
                 }
-                storageService.mergeImportedPortfolios(imported)
-                onAlert("Imported \(imported.count) portfolio\(imported.count == 1 ? "" : "s").")
+                onLoaded(imported)
             }
         }
     }
+
+    static func importedMessage(_ count: Int) -> String {
+        "Imported \(count) portfolio\(count == 1 ? "" : "s")."
+    }
+}
+
+/// The portfolios read from an import file, waiting for the user's selection.
+struct ImportCandidates: Identifiable {
+    let id = UUID()
+    let portfolios: [Portfolio]
 }

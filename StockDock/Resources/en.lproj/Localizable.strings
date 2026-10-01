@@ -256,3 +256,19 @@
 "you bought here" = "you bought here";
 "Your average purchase price" = "Your average purchase price";
 "Your first trend appears tomorrow." = "Your first trend appears tomorrow.";
+
+/* Import selection / delete all portfolios */
+"Import Portfolios" = "Import Portfolios";
+"Portfolios in file" = "Portfolios in file";
+"Select all" = "Select all";
+"Current portfolios" = "Current portfolios";
+"Keep them" = "Keep them";
+"Delete them and keep only the imported ones" = "Delete them and keep only the imported ones";
+"Replace portfolios" = "Replace portfolios";
+"Your current portfolios, with their notifications and history, will be deleted. This cannot be undone." = "Your current portfolios, with their notifications and history, will be deleted. This cannot be undone.";
+"Replace" = "Replace";
+"Delete all portfolios" = "Delete all portfolios";
+"Every portfolio, with its notifications and history, will be deleted. This cannot be undone." = "Every portfolio, with its notifications and history, will be deleted. This cannot be undone.";
+"Delete all" = "Delete all";
+"Delete All Portfolios…" = "Delete All Portfolios…";
+"%lld holdings" = "%lld holdings";

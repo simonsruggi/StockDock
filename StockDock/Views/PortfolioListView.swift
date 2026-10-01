@@ -8,6 +8,8 @@ struct PortfolioListView: View {
     @State private var newPortfolioName = ""
     @State private var searchText = ""
     @State private var importAlert: String?
+    @State private var importCandidates: ImportCandidates?
+    @State private var confirmDeleteAll = false
     /// Quanto è alto davvero l'elenco aggregato, per non riservargli spazio vuoto.
     @State private var globalsHeight: CGFloat = 0
 
@@ -232,10 +234,32 @@ struct PortfolioListView: View {
                     }
                     .buttonStyle(.borderless)
                     .disabled(storageService.portfolios.isEmpty)
+
+                    Button(action: { confirmDeleteAll = true }) {
+                        Image(systemName: "trash")
+                            .font(.inter(10, relativeTo: .caption))
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundColor(DS.down)
+                    .disabled(storageService.portfolios.isEmpty)
+                    .help("Delete all portfolios")
                 }
                 .padding(8)
             }
         }
+        }
+        .sheet(item: $importCandidates) { c in
+            ImportPortfoliosSheet(candidates: c.portfolios, width: 360) { count in
+                importCandidates = nil
+                if let count { importAlert = PortfolioIO.importedMessage(count) }
+            }
+            .environmentObject(storageService)
+        }
+        .alert("Delete all portfolios", isPresented: $confirmDeleteAll) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete all", role: .destructive) { storageService.deleteAllPortfolios() }
+        } message: {
+            Text("Every portfolio, with its notifications and history, will be deleted. This cannot be undone.")
         }
         .alert("Import", isPresented: Binding(get: { importAlert != nil }, set: { if !$0 { importAlert = nil } })) {
             Button("OK") { importAlert = nil }
@@ -272,9 +296,9 @@ struct PortfolioListView: View {
     }
 
     private func importPortfolios() {
-        PortfolioIO.importInto(storageService, restoreActivationPolicy: true) { message in
-            self.importAlert = message
-        }
+        PortfolioIO.pickImportFile(storageService, restoreActivationPolicy: true,
+                                   onLoaded: { importCandidates = ImportCandidates(portfolios: $0) },
+                                   onAlert: { importAlert = $0 })
     }
 
     private func createPortfolio() {

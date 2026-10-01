@@ -45,6 +45,8 @@ struct PortfolioWindowView: View {
     @State private var renameTarget: PortfolioRef?
     @State private var notifTarget: PortfolioRef?
     @State private var importAlert: String?
+    @State private var importCandidates: ImportCandidates?
+    @State private var confirmDeleteAll = false
 
     /// Wraps the edit-holding tuple so it can drive a `.sheet(item:)`.
     struct EditTarget: Identifiable {
@@ -107,6 +109,22 @@ struct PortfolioWindowView: View {
         .sheet(item: $notifTarget) { t in
             PortfolioNotificationsSheet(portfolioId: t.id, portfolioName: t.name) { notifTarget = nil }
                 .environmentObject(storageService)
+        }
+        .sheet(item: $importCandidates) { c in
+            ImportPortfoliosSheet(candidates: c.portfolios) { count in
+                importCandidates = nil
+                if case .portfolio(let id) = selection, !storageService.portfolios.contains(where: { $0.id == id }) {
+                    selection = .portfoliosAll
+                }
+                if let count { importAlert = PortfolioIO.importedMessage(count) }
+            }
+            .environmentObject(storageService)
+        }
+        .dsAlert($confirmDeleteAll, title: "Delete all portfolios",
+                 message: "Every portfolio, with its notifications and history, will be deleted. This cannot be undone.",
+                 confirmTitle: "Delete all", destructive: true) {
+            storageService.deleteAllPortfolios()
+            selection = .portfoliosAll
         }
         .dsAlert(Binding(get: { importAlert != nil }, set: { if !$0 { importAlert = nil } }),
                  title: "Import", message: importAlert ?? "", confirmTitle: "OK", cancelTitle: nil)
@@ -285,6 +303,9 @@ struct PortfolioWindowView: View {
             io.append(DSMenuAction(title: "Export All…", icon: "square.and.arrow.up") { exportPortfolios(storageService.portfolios) })
         }
         s.append(io)
+        if !storageService.portfolios.isEmpty {
+            s.append([DSMenuAction(title: "Delete All Portfolios…", icon: "trash", destructive: true) { confirmDeleteAll = true }])
+        }
         return s
     }
 
@@ -360,9 +381,9 @@ struct PortfolioWindowView: View {
     }
 
     private func importPortfolios() {
-        PortfolioIO.importInto(storageService, restoreActivationPolicy: false) { message in
-            importAlert = message
-        }
+        PortfolioIO.pickImportFile(storageService, restoreActivationPolicy: false,
+                                   onLoaded: { importCandidates = ImportCandidates(portfolios: $0) },
+                                   onAlert: { importAlert = $0 })
     }
 
 }

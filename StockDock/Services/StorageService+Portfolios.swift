@@ -65,6 +65,12 @@ extension StorageService {
         portfolioSnapshots[id.uuidString] = nil
     }
 
+    func deleteAllPortfolios() {
+        portfolios.removeAll()
+        portfolioNotifications = [:]
+        portfolioSnapshots = [:]
+    }
+
     func addHolding(to portfolioId: UUID, symbol: String, quantity: Double, avgPrice: Double, purchaseDate: Date? = nil, leverage: Double? = nil) {
         guard let index = portfolios.firstIndex(where: { $0.id == portfolioId }) else { return }
         let holding = Holding(symbol: symbol, quantity: quantity, avgPrice: avgPrice, purchaseDate: purchaseDate, leverage: leverage)

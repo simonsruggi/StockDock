@@ -256,3 +256,19 @@
 "you bought here" = "hai comprato qui";
 "Your average purchase price" = "Il tuo prezzo medio di acquisto";
 "Your first trend appears tomorrow." = "Il tuo primo trend apparirà domani.";
+
+/* Import selection / delete all portfolios */
+"Import Portfolios" = "Importa portafogli";
+"Portfolios in file" = "Portafogli nel file";
+"Select all" = "Seleziona tutti";
+"Current portfolios" = "Portafogli attuali";
+"Keep them" = "Mantienili";
+"Delete them and keep only the imported ones" = "Eliminali e tieni solo quelli importati";
+"Replace portfolios" = "Sostituisci portafogli";
+"Your current portfolios, with their notifications and history, will be deleted. This cannot be undone." = "I portafogli attuali, con notifiche e storico, verranno eliminati. L'operazione non è reversibile.";
+"Replace" = "Sostituisci";
+"Delete all portfolios" = "Elimina tutti i portafogli";
+"Every portfolio, with its notifications and history, will be deleted. This cannot be undone." = "Tutti i portafogli, con notifiche e storico, verranno eliminati. L'operazione non è reversibile.";
+"Delete all" = "Elimina tutti";
+"Delete All Portfolios…" = "Elimina tutti i portafogli…";
+"%lld holdings" = "%lld posizioni";

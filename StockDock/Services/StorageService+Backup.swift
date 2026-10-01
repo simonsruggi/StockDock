@@ -22,6 +22,15 @@ extension StorageService {
         return export.portfolios
     }
 
+    /// Brings in only the portfolios the user ticked in the import sheet,
+    /// either next to the existing ones or in their place.
+    func applyImport(_ candidates: [Portfolio], selected: Set<UUID>, replaceExisting: Bool) {
+        let chosen = candidates.filter { selected.contains($0.id) }
+        guard !chosen.isEmpty else { return }
+        if replaceExisting { deleteAllPortfolios() }
+        mergeImportedPortfolios(chosen)
+    }
+
     func mergeImportedPortfolios(_ imported: [Portfolio]) {
         for var portfolio in imported {
             portfolio.id = UUID()

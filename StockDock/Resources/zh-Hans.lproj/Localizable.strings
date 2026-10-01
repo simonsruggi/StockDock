@@ -256,3 +256,19 @@
 "you bought here" = "你的买入点";
 "Your average purchase price" = "你的平均买入价";
 "Your first trend appears tomorrow." = "你的第一张趋势图将于明天显示。";
+
+/* Import selection / delete all portfolios */
+"Import Portfolios" = "导入投资组合";
+"Portfolios in file" = "文件中的投资组合";
+"Select all" = "全选";
+"Current portfolios" = "当前投资组合";
+"Keep them" = "保留";
+"Delete them and keep only the imported ones" = "删除并仅保留导入的";
+"Replace portfolios" = "替换投资组合";
+"Your current portfolios, with their notifications and history, will be deleted. This cannot be undone." = "当前的投资组合及其通知和历史记录将被删除。此操作无法撤销。";
+"Replace" = "替换";
+"Delete all portfolios" = "删除所有投资组合";
+"Every portfolio, with its notifications and history, will be deleted. This cannot be undone." = "所有投资组合及其通知和历史记录将被删除。此操作无法撤销。";
+"Delete all" = "全部删除";
+"Delete All Portfolios…" = "删除所有投资组合…";
+"%lld holdings" = "%lld 个持仓";
