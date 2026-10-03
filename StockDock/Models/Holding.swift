@@ -12,14 +12,29 @@ struct Holding: Identifiable, Codable {
     /// Leverage multiplier applied to P&L and exposure (1.0 = unlevered).
     /// Optional so portfolios saved before 1.7.1 decode cleanly as unlevered.
     var leverage: Double?
+    /// Exchange rate the cost was booked at, from the stock's currency to
+    /// `costRateCurrency`, when an imported portfolio file carries it. It wins
+    /// over the purchase-day rate: a position bought over several days has no
+    /// single day whose rate gives back what was paid.
+    var costRate: Double?
+    var costRateCurrency: String?
 
-    init(id: UUID = UUID(), symbol: String, quantity: Double, avgPrice: Double, purchaseDate: Date? = nil, leverage: Double? = nil) {
+    init(id: UUID = UUID(), symbol: String, quantity: Double, avgPrice: Double, purchaseDate: Date? = nil, leverage: Double? = nil,
+         costRate: Double? = nil, costRateCurrency: String? = nil) {
         self.id = id
         self.symbol = symbol
         self.quantity = quantity
         self.avgPrice = avgPrice
         self.purchaseDate = purchaseDate
         self.leverage = leverage
+        self.costRate = costRate
+        self.costRateCurrency = costRateCurrency
+    }
+
+    /// The booked cost rate, when it converts into `currency`.
+    func purchaseRate(to currency: String) -> Double? {
+        guard let rate = costRate, rate > 0, costRateCurrency == currency else { return nil }
+        return rate
     }
 
     /// Leverage multiplier, defaulting to 1x when unset or invalid.

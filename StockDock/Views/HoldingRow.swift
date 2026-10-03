@@ -82,7 +82,7 @@ struct HoldingRow: View {
                 // Col 3: Controvalore + P&L in preferred currency
                 let displayPrice = quote.displayPrice(extendedHours: storageService.showExtendedHours)
                 let marketVal = holding.marketValue(currentPrice: displayPrice) * rate
-                let costRate = stockService.rate(from: quote.currency, for: holding.purchaseDate)
+                let costRate = stockService.costRate(for: holding, currency: quote.currency)
                 let costBasis = holding.costBasisLocal * costRate
                 let pnl = marketVal - costBasis
                 let pnlPct = abs(costBasis) >= 0.01 ? (pnl / abs(costBasis)) * 100 : 0

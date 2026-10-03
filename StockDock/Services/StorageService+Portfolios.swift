@@ -86,6 +86,12 @@ extension StorageService {
         guard let pIndex = portfolios.firstIndex(where: { $0.id == portfolioId }),
               let hIndex = portfolios[pIndex].holdings.firstIndex(where: { $0.id == holdingId })
         else { return }
+        let old = portfolios[pIndex].holdings[hIndex]
+        // A hand-edited cost or date is no longer the broker's booking.
+        if old.avgPrice != avgPrice || old.purchaseDate != purchaseDate {
+            portfolios[pIndex].holdings[hIndex].costRate = nil
+            portfolios[pIndex].holdings[hIndex].costRateCurrency = nil
+        }
         portfolios[pIndex].holdings[hIndex].quantity = quantity
         portfolios[pIndex].holdings[hIndex].avgPrice = avgPrice
         portfolios[pIndex].holdings[hIndex].purchaseDate = purchaseDate

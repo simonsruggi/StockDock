@@ -12,7 +12,7 @@ extension PortfolioValuation {
                 holding: holding,
                 price: quote.displayPrice(extendedHours: storageService.showExtendedHours),
                 rate: stockService.rate(from: quote.currency),
-                costRate: stockService.rate(from: quote.currency, for: holding.purchaseDate)
+                costRate: stockService.costRate(for: holding, currency: quote.currency)
             )
         }
     }

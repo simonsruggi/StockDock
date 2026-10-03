@@ -91,6 +91,14 @@ extension StockService {
         return exchangeRates["\(currency)\(preferred)"] ?? 1.0
     }
 
+    /// Rate for a holding's cost: the one the broker booked, else the
+    /// purchase day's, else today's.
+    func costRate(for holding: Holding, currency: String) -> Double {
+        let preferred = StorageService.shared.preferredCurrency
+        if currency == preferred { return 1.0 }
+        return holding.purchaseRate(to: preferred) ?? rate(from: currency, for: holding.purchaseDate)
+    }
+
     func priceRate(from currency: String) -> Double {
         priceDisplay(for: currency).rate
     }

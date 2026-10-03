@@ -46,7 +46,7 @@ extension PortfolioOverviewView {
                 guard let quote = stockService.quotes[holding.symbol] else { return nil }
                 let price = quote.displayPrice(extendedHours: storageService.showExtendedHours)
                 let value = holding.marketValue(currentPrice: price) * stockService.rate(from: quote.currency)
-                let cost = holding.costBasisLocal * stockService.rate(from: quote.currency, for: holding.purchaseDate)
+                let cost = holding.costBasisLocal * stockService.costRate(for: holding, currency: quote.currency)
                 let priced = stockService.priceDisplay(for: quote.currency)
                 return ValuedHolding(id: holding.id, portfolioId: portfolio.id, holding: holding, quote: quote,
                                      value: value, cost: cost, dayChangePercent: quote.changePercent,
