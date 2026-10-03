@@ -6,23 +6,21 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.20</title>
-            <pubDate>Thu, 01 Oct 2026 12:48:03 +0200</pubDate>
-            <sparkle:version>43</sparkle:version>
-            <sparkle:shortVersionString>1.9.20</sparkle:shortVersionString>
+            <title>Version 1.9.21</title>
+            <pubDate>Sat, 03 Oct 2026 15:52:50 +0200</pubDate>
+            <sparkle:version>44</sparkle:version>
+            <sparkle:shortVersionString>1.9.21</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Import what you want</h2>
+<h2>Exact cost in your currency</h2>
 <ul>
-    <li><strong>Choose what to import.</strong> Importing a file now lists its portfolios: tick the ones you want, then keep your current portfolios or replace them with the imported ones.</li>
-    <li><strong>Delete all portfolios at once.</strong> A new "Delete All Portfolios…" action, in the window's + menu and as a trash button in the menu bar, clears everything after a confirmation.</li>
-    <li><strong>Import stays in the menu bar.</strong> Importing from the menu bar no longer turns StockDock into a Dock app: the menu reopens after you pick the file, with the list ready.</li>
+    <li><strong>Purchase exchange rate kept on import.</strong> When an imported portfolio file includes the exchange rate a position was bought at, StockDock now keeps it and values the cost with it, so the profit in your currency includes the currency effect.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.20/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.21/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="2IhdZr5tpm951PJ5lYzkVKuoPjooKJfH/XY+xDH4Bg3miNpkilNPt5/mwUT27AyjzkA57ttLC8WKdKdXh0SQBw=="
-                       length="10008281"/>
+                       sparkle:edSignature="NnfUgTPHCMntBDHO9RCZhw7q3g/kOR0o0AkpB8G80cOtHrDwAkO/lsFPrbkM2DXsaKQ+ZQ7FJPu6KICHYz5KAw=="
+                       length="10015032"/>
         </item>
     </channel>
 </rss>
