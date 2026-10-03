@@ -4,6 +4,12 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.21 — 2026-10-03
+
+*Exact cost in your currency*
+
+- **Purchase exchange rate kept on import.** When an imported portfolio file includes the exchange rate a position was bought at, StockDock now keeps it and values the cost with it, so the profit in your currency includes the currency effect.
+
 ## 1.9.20 — 2026-10-01
 
 *Import what you want*
