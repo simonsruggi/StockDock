@@ -22,7 +22,7 @@ ASC_ISSUER_ID="${ASC_ISSUER_ID:-}"
 ASC_KEY_PATH="${ASC_KEY_PATH:-$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8}"
 
 [[ -d "$APP" ]] || { echo "App not found: $APP" >&2; exit 1; }
-[[ -f dmg/background.tiff ]] || python3 dmg/make-background.py
+[[ -f dmg/background.tiff ]] || "$HOME/cli-tools/bin/claude-stockdock-make-background"
 
 rm -f "$OUT"
 uvx --quiet --from dmgbuild dmgbuild -s dmg/settings.py -D app="$APP" "StockDock" "$OUT"
