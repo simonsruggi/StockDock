@@ -4,6 +4,13 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.22 — 2026-10-12
+
+*Your profit after tax*
+
+- **P&L net of tax.** Set your capital-gains tax rate in Settings → Trading → "Tax on gains" and every profit figure — menu bar, portfolios, positions — is shown net. Losses stay as they are; 0 keeps the gross figures.
+- **Translated settings.** The explanations under the menu-bar settings now follow the app language.
+
 ## 1.9.21 — 2026-10-03
 
 *Exact cost in your currency*
