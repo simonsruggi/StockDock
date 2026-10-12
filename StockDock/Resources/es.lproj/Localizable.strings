@@ -272,3 +272,7 @@
 "Delete all" = "Eliminar todas";
 "Delete All Portfolios…" = "Eliminar todas las carteras…";
 "%lld holdings" = "%lld posiciones";
+
+"Tax on gains" = "Impuesto sobre ganancias";
+"P&L shown net of tax · 0 = gross" = "P&L neto de impuestos · 0 = bruto";
+"Net P&L" = "P&L neto";

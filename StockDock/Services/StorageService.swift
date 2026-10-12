@@ -119,6 +119,21 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    /// Capital-gains tax rate in percent (0–100) applied to every P&L figure,
+    /// so portfolios read net of tax. 0 = gross (the default).
+    @Published var taxRate: Double = 0 {
+        didSet {
+            let clamped = min(max(taxRate, 0), 100)
+            if clamped != taxRate { taxRate = clamped; return }
+            scheduleSave()
+        }
+    }
+
+    /// A P&L amount or percentage after `taxRate`.
+    func afterTax(_ pnl: Double) -> Double {
+        CapitalGainsTax.net(pnl, ratePercent: taxRate)
+    }
+
     /// Issue #8.2: show the human-readable name (e.g. "S&P 500") instead of the
     /// raw symbol ("^GSPC") in the menu bar ticker. Off keeps the bar compact.
     @Published var tickerShowName: Bool = false {
@@ -296,6 +311,7 @@ class StorageService: ObservableObject {
         menuBarHidePercent = false
         tickerShowName = false
         advancedPositions = false
+        taxRate = 0
         watchlistSort = "manual"
         appLanguage = "en"
         fontSizeLevel = 9

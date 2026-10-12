@@ -82,8 +82,8 @@ extension AppDelegate {
                                                stockService: stockService, storageService: storageService)
         let totalValue = stats.value
         let dailyPnl = stats.dailyPnl
-        let totalPnl = stats.pnl
-        let totalPnlPct = stats.pnlPercent
+        let totalPnl = storageService.afterTax(stats.pnl)
+        let totalPnlPct = storageService.afterTax(stats.pnlPercent)
 
         // Find best/worst watchlist stock by daily change %
         let bestStock = storageService.watchlist.compactMap { stockService.quotes[$0] }

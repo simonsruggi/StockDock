@@ -24,7 +24,7 @@ struct HoldingDetailView: View {
     private var priceSymbol: String {
         StorageService.currencySymbol(for: quote.currency)
     }
-    private var pnl: Double { value - cost }
+    private var pnl: Double { storageService.afterTax(value - cost) }
     private var pnlPercent: Double { abs(cost) >= 0.01 ? (pnl / abs(cost)) * 100 : 0 }
 
     private var relatedNews: [NewsArticle] {

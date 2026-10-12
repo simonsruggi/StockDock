@@ -91,6 +91,10 @@ struct SettingsWideView: View {
                           caption: "Unlocks negative quantity and a leverage field",
                           isOn: $storageService.advancedPositions)
             SettingDivider()
+            SettingRow("Tax on gains", caption: "P&L shown net of tax · 0 = gross") {
+                TaxRateField(rate: $storageService.taxRate)
+            }
+            SettingDivider()
             SettingToggle("Extended hours (Pre/Post)",
                           caption: "Show pre-market and after-hours prices",
                           isOn: $storageService.showExtendedHours)

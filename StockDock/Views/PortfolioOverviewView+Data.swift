@@ -23,8 +23,9 @@ extension PortfolioOverviewView {
         var dayChangeValue: Double = 0
         var allocation: [AllocationSlice] = []
         var typeBreakdown: [(label: String, fraction: Double)] = []
+        var taxRate: Double = 0
 
-        var totalPnl: Double { totalValue - totalCost }
+        var totalPnl: Double { CapitalGainsTax.net(totalValue - totalCost, ratePercent: taxRate) }
         var totalPnlPercent: Double { abs(totalCost) >= 0.01 ? (totalPnl / abs(totalCost)) * 100 : 0 }
         var dayChangePercent: Double {
             let base = totalValue - dayChangeValue
@@ -41,6 +42,7 @@ extension PortfolioOverviewView {
 
     var derived: Derived {
         var d = Derived()
+        d.taxRate = storageService.taxRate
         d.holdings = portfolios.flatMap { portfolio in
             portfolio.holdings.compactMap { holding -> ValuedHolding? in
                 guard let quote = stockService.quotes[holding.symbol] else { return nil }

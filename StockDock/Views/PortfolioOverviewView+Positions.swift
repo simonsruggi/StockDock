@@ -41,7 +41,8 @@ extension PortfolioOverviewView {
                                         topWeight: d.topWeight,
                                         decimals: decimals,
                                         valueDecimals: storageService.valueDecimals,
-                                        percentDecimals: storageService.percentDecimals)
+                                        percentDecimals: storageService.percentDecimals,
+                                        taxRate: storageService.taxRate)
                         }
                         .buttonStyle(.plain)
                         .help("View \(h.symbol) details · right-click to edit or delete")

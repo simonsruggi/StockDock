@@ -237,7 +237,8 @@ struct PortfolioWindowView: View {
             TotalFooter(value: aggregateValue(for: storageService.countedPortfolios),
                         cost: aggregateCost(for: storageService.countedPortfolios),
                         currency: storageService.preferredCurrency,
-                        decimals: storageService.amountDecimals)
+                        decimals: storageService.amountDecimals,
+                        taxRate: storageService.taxRate)
             quitRow
         }
         .background(DS.sidebarBG)

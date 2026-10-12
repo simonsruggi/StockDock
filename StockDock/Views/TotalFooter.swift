@@ -5,10 +5,11 @@ struct TotalFooter: View {
     let cost: Double
     let currency: String
     var decimals: Int = 2
+    var taxRate: Double = 0
 
     var body: some View {
         let symbol = StorageService.currencySymbol(for: currency)
-        let pnl = value - cost
+        let pnl = CapitalGainsTax.net(value - cost, ratePercent: taxRate)
         // Same convention as the popover: amount and percentage, always together.
         let pct: Double? = abs(cost) >= 0.01 ? (pnl / abs(cost)) * 100 : nil
         VStack(alignment: .leading, spacing: 3) {

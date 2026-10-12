@@ -25,7 +25,7 @@ struct PortfolioSection: View {
     var totalValue: Double { totals.value }
 
     var totalPnl: Double {
-        totalValue - totalCost
+        storageService.afterTax(totalValue - totalCost)
     }
 
     var totalCost: Double { totals.cost }

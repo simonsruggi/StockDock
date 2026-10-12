@@ -272,3 +272,7 @@
 "Delete all" = "Delete all";
 "Delete All Portfolios…" = "Delete All Portfolios…";
 "%lld holdings" = "%lld holdings";
+
+"Tax on gains" = "Tax on gains";
+"P&L shown net of tax · 0 = gross" = "P&L shown net of tax · 0 = gross";
+"Net P&L" = "Net P&L";

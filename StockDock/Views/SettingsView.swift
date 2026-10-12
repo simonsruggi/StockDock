@@ -23,7 +23,7 @@ struct SettingsView: View {
 
     /// Small secondary caption used throughout the settings list.
     private func caption(_ text: String) -> some View {
-        Text(text)
+        Text(LocalizedStringKey(text))
             .font(.inter(10, relativeTo: .caption))
             .foregroundColor(.secondary)
             .fixedSize(horizontal: false, vertical: true)
@@ -132,6 +132,13 @@ struct SettingsView: View {
                     Toggle("Enable short positions & leverage", isOn: $storageService.advancedPositions)
                         .toggleStyle(.switch)
                     caption("Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket.")
+
+                    HStack {
+                        Text("Tax on gains")
+                        Spacer()
+                        TaxRateField(rate: $storageService.taxRate)
+                    }
+                    caption("P&L shown net of tax · 0 = gross")
 
                     Toggle("Show extended hours (Pre/Post)", isOn: $storageService.showExtendedHours)
                         .toggleStyle(.switch)

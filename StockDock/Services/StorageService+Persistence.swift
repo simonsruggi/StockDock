@@ -37,6 +37,7 @@ extension StorageService {
         var showNewsTab: Bool?
         var lastSymbolChartRange: String?
         var lastPortfolioChartRange: String?
+        var taxRate: Double?
     }
 
     func scheduleSave() {
@@ -50,7 +51,7 @@ extension StorageService {
     }
 
     private func performSave() {
-        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, portfolioSnapshots: portfolioSnapshots, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: nil, percentDecimals: percentDecimals, valueDecimals: valueDecimals, menuBarHidePercent: menuBarHidePercent, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, symbolAlias: symbolAlias, appLanguage: appLanguage, advancedPositions: advancedPositions, appearanceRaw: appearanceRaw, showNewsTab: showNewsTab, lastSymbolChartRange: lastSymbolChartRange, lastPortfolioChartRange: lastPortfolioChartRange)
+        let data = AppData(watchlist: watchlist, portfolios: portfolios, preferredCurrency: preferredCurrency, stockPriceCurrency: stockPriceCurrency, showExtendedHours: showExtendedHours, menuBarDisplay: menuBarDisplay, isinMap: isinMap, fontSizeLevel: fontSizeLevel, fontFamily: fontFamily, alerts: alerts, showCompanyName: showCompanyName, showDayRange: showDayRange, show52WeekBar: show52WeekBar, showAbsoluteChange: showAbsoluteChange, portfolioNotifications: portfolioNotifications, portfolioSnapshots: portfolioSnapshots, discordWebhookURL: discordWebhookURL, discordEnabled: discordEnabled, gainColorHex: gainColorHex, lossColorHex: lossColorHex, menuBarUseSystemColor: menuBarUseSystemColor, percentTwoDecimals: nil, percentDecimals: percentDecimals, valueDecimals: valueDecimals, menuBarHidePercent: menuBarHidePercent, tickerShowName: tickerShowName, watchlistSort: watchlistSort, symbolType: symbolType, symbolAlias: symbolAlias, appLanguage: appLanguage, advancedPositions: advancedPositions, appearanceRaw: appearanceRaw, showNewsTab: showNewsTab, lastSymbolChartRange: lastSymbolChartRange, lastPortfolioChartRange: lastPortfolioChartRange, taxRate: taxRate)
         do {
             let encoded = try JSONEncoder().encode(data)
             try encoded.write(to: fileURL, options: .atomic)
@@ -91,6 +92,7 @@ extension StorageService {
             menuBarHidePercent = decoded.menuBarHidePercent ?? false
             tickerShowName = decoded.tickerShowName ?? false
             advancedPositions = decoded.advancedPositions ?? false
+            taxRate = decoded.taxRate ?? 0
             watchlistSort = decoded.watchlistSort ?? "manual"
             symbolType = decoded.symbolType ?? [:]
             symbolAlias = decoded.symbolAlias ?? [:]

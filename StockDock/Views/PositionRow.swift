@@ -8,6 +8,7 @@ struct PositionRow: View {
     let decimals: Int
     let valueDecimals: Int
     let percentDecimals: Int
+    let taxRate: Double
     @State private var hovered = false
 
     private var amountDec: Int { valueDecimals >= 0 ? valueDecimals : 2 }
@@ -62,10 +63,10 @@ struct PositionRow: View {
                 .font(DS.figure).foregroundStyle(DS.ink)
                 .contentTransition(.numericText())
             VStack(alignment: .trailing, spacing: 1) {
-                Text(StorageService.formatAmount(h.pnl, symbol: currencySymbol, decimals: amountDec, signed: true))
+                Text(StorageService.formatAmount(CapitalGainsTax.net(h.pnl, ratePercent: taxRate), symbol: currencySymbol, decimals: amountDec, signed: true))
                     .font(DS.figure)
                     .contentTransition(.numericText())
-                Text(String(format: "%+.\(decimals)f%%", h.pnlPercent))
+                Text(String(format: "%+.\(decimals)f%%", CapitalGainsTax.net(h.pnlPercent, ratePercent: taxRate)))
                     .font(DS.micro)
             }
             .foregroundStyle(DS.pnlColor(h.pnl))

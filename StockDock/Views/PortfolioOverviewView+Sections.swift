@@ -6,7 +6,7 @@ extension PortfolioOverviewView {
 
     func statRow(_ d: Derived) -> some View {
         HStack(spacing: 12) {
-            StatTile(label: "Total P&L",
+            StatTile(label: storageService.taxRate > 0 ? "Net P&L" : "Total P&L",
                      value: StorageService.formatAmount(d.totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
                      caption: String(format: "%+.\(decimals)f%% on cost", d.totalPnlPercent),
                      captionTint: DS.pnlColor(d.totalPnl), valueTint: DS.pnlColor(d.totalPnl),

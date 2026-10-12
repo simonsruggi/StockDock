@@ -272,3 +272,7 @@
 "Delete all" = "全部删除";
 "Delete All Portfolios…" = "删除所有投资组合…";
 "%lld holdings" = "%lld 个持仓";
+
+"Tax on gains" = "收益税率";
+"P&L shown net of tax · 0 = gross" = "盈亏按税后显示 · 0 = 税前";
+"Net P&L" = "税后盈亏";

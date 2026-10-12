@@ -81,7 +81,7 @@ struct PortfolioListView: View {
                     let currSym = StorageService.currencySymbol(for: storageService.preferredCurrency)
                     let grandTotal = grandTotalValue
                     let grandCost = grandTotalCost
-                    let grandPnl = grandTotal - grandCost
+                    let grandPnl = storageService.afterTax(grandTotal - grandCost)
                     // Use the magnitude of the cost basis so long/short baskets
                     // (where the signed cost can be near zero) still report a %.
                     let grandPnlPct = abs(grandCost) >= 0.01 ? (grandPnl / abs(grandCost)) * 100 : 0
