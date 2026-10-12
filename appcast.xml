@@ -6,21 +6,22 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.21</title>
-            <pubDate>Sat, 03 Oct 2026 15:52:50 +0200</pubDate>
-            <sparkle:version>44</sparkle:version>
-            <sparkle:shortVersionString>1.9.21</sparkle:shortVersionString>
+            <title>Version 1.9.22</title>
+            <pubDate>Mon, 12 Oct 2026 12:35:57 +0200</pubDate>
+            <sparkle:version>45</sparkle:version>
+            <sparkle:shortVersionString>1.9.22</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Exact cost in your currency</h2>
+<h2>Your profit after tax</h2>
 <ul>
-    <li><strong>Purchase exchange rate kept on import.</strong> When an imported portfolio file includes the exchange rate a position was bought at, StockDock now keeps it and values the cost with it, so the profit in your currency includes the currency effect.</li>
+    <li><strong>P&amp;L net of tax.</strong> Set your capital-gains tax rate in Settings → Trading → "Tax on gains" and every profit figure — menu bar, portfolios, positions — is shown net. Losses stay as they are; 0 keeps the gross figures.</li>
+    <li><strong>Translated settings.</strong> The explanations under the menu-bar settings now follow the app language.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.21/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.22/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="NnfUgTPHCMntBDHO9RCZhw7q3g/kOR0o0AkpB8G80cOtHrDwAkO/lsFPrbkM2DXsaKQ+ZQ7FJPu6KICHYz5KAw=="
-                       length="10015032"/>
+                       sparkle:edSignature="nymJQnoEdamp6jiGRnq0nj11Ztm1qC1sEiSyAnMn8Y2Ljdgtv13RVIhE+TzQdRSn4DAAugZNkkbVIPcfgvLkCA=="
+                       length="10049231"/>
         </item>
     </channel>
 </rss>
