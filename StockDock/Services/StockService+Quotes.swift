@@ -3,6 +3,7 @@ import Foundation
 extension StockService {
     func fetchQuotes(symbols: [String]) async {
         guard !symbols.isEmpty else { return }
+        await refreshRegularSessions(symbols: symbols)
 
         // Try v7 batch quote first (single HTTP call, live extended hours)
         if await fetchQuotesV7(symbols: symbols) {
@@ -72,7 +73,7 @@ extension StockService {
             guard !parsed.quotes.isEmpty else { return false }
 
             for quote in parsed.quotes {
-                quotes[quote.symbol] = quote
+                quotes[quote.symbol] = quote.withMarketState(clampedMarketState(quote.marketState, symbol: quote.symbol))
             }
             for (symbol, type) in parsed.types {
                 StorageService.shared.setType(type, for: symbol)
@@ -166,6 +167,7 @@ extension StockService {
             let dailyResponse = try JSONDecoder().decode(YahooChartResponse.self, from: dailyData)
             guard let dailyResult = dailyResponse.chart.result?.first else { return }
             let meta = dailyResult.meta
+            storeRegularSession(meta.currentTradingPeriod, symbol: meta.symbol)
 
             let price = meta.regularMarketPrice
             let previousClose = meta.chartPreviousClose ?? price

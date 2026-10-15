@@ -8,16 +8,12 @@ extension StockService {
 
         let existing = quotes[symbol]
 
-        let marketState: String
+        let tickSession: String
         switch ticker.marketHours {
-        case .preMarket: marketState = "PRE"
-        case .postMarket, .extendedHoursMarket: marketState = "POST"
-        case .regularMarket:
-            // During pre/post Yahoo re-sends the previous official close as a
-            // REGULAR_MARKET tick stamped at the close time. It's a valid regular
-            // price, but must not flip the session back to REGULAR.
-            marketState = Self.isStaleRegularTick(ticker) ? (existing?.marketState ?? "CLOSED") : "REGULAR"
-        default: marketState = existing?.marketState ?? "CLOSED"
+        case .preMarket: tickSession = "PRE"
+        case .postMarket, .extendedHoursMarket: tickSession = "POST"
+        case .regularMarket: tickSession = "REGULAR"
+        default: tickSession = existing?.marketState ?? "CLOSED"
         }
 
         let tickPrice = Double(ticker.price)
@@ -28,10 +24,16 @@ extension StockService {
         // must not overwrite it — otherwise a user with extended hours off would
         // see the pre/post price where they expect the last regular close. The
         // extended value is routed into the pre/post fields below instead.
-        let isRegular = (ticker.marketHours == .regularMarket)
+        let isRegular = (tickSession == "REGULAR")
         let price = isRegular ? tickPrice : (existing?.price ?? tickPrice)
         let change = isRegular ? tickChange : (existing?.change ?? tickChange)
         let changePercent = isRegular ? tickChangePercent : (existing?.changePercent ?? tickChangePercent)
+
+        // During pre/post Yahoo re-sends the previous official close as a
+        // REGULAR_MARKET tick stamped at the close time: a valid regular price,
+        // but not a sign the session is open.
+        let claimedState = (isRegular && Self.isStaleRegularTick(ticker)) ? (existing?.marketState ?? "CLOSED") : tickSession
+        let marketState = clampedMarketState(claimedState, symbol: symbol)
 
         // Keep extended hours data from existing quote if WSS doesn't provide it
         let quote = StockQuote(
@@ -46,12 +48,12 @@ extension StockService {
             dayLow: existing?.dayLow,
             fiftyTwoWeekHigh: existing?.fiftyTwoWeekHigh,
             fiftyTwoWeekLow: existing?.fiftyTwoWeekLow,
-            preMarketPrice: marketState == "PRE" ? tickPrice : existing?.preMarketPrice,
-            preMarketChange: marketState == "PRE" ? tickChange : existing?.preMarketChange,
-            preMarketChangePercent: marketState == "PRE" ? tickChangePercent : existing?.preMarketChangePercent,
-            postMarketPrice: marketState == "POST" ? tickPrice : existing?.postMarketPrice,
-            postMarketChange: marketState == "POST" ? tickChange : existing?.postMarketChange,
-            postMarketChangePercent: marketState == "POST" ? tickChangePercent : existing?.postMarketChangePercent
+            preMarketPrice: tickSession == "PRE" ? tickPrice : existing?.preMarketPrice,
+            preMarketChange: tickSession == "PRE" ? tickChange : existing?.preMarketChange,
+            preMarketChangePercent: tickSession == "PRE" ? tickChangePercent : existing?.preMarketChangePercent,
+            postMarketPrice: tickSession == "POST" ? tickPrice : existing?.postMarketPrice,
+            postMarketChange: tickSession == "POST" ? tickChange : existing?.postMarketChange,
+            postMarketChangePercent: tickSession == "POST" ? tickChangePercent : existing?.postMarketChangePercent
         )
 
         quotes[symbol] = quote

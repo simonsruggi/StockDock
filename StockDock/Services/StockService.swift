@@ -30,6 +30,7 @@ class StockService: ObservableObject {
     var intradayFetchedAt: [String: Date] = [:]
     var intradayWeekAt: [String: Date] = [:]
     var sparkFetchedAt: Date?
+    var regularSessions: [String: RegularSession] = [:]
 
     private init() {
         let config = URLSessionConfiguration.default

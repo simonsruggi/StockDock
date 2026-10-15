@@ -74,7 +74,22 @@ final class ApplyTickTests: XCTestCase {
 
         let q = StockService.shared.quotes["TSTX"]!
         XCTAssertEqual(q.marketState, "PRE")
+        XCTAssertEqual(q.preMarketPrice, 95, "the replayed close must not land in the pre-market price")
         XCTAssertEqual(q.displayPrice(extendedHours: true), 95)
+    }
+
+    /// REGULAR exists only between open and close.
+    func testClampToRegularSession() {
+        let open = Date(timeIntervalSince1970: 1_792_071_000)   // 09:30 ET
+        let close = Date(timeIntervalSince1970: 1_792_094_400)  // 16:00 ET
+        let s = RegularSession(start: open, end: close, fetchedAt: open)
+        XCTAssertEqual(StockService.clampToRegularSession("REGULAR", session: s, now: open.addingTimeInterval(-3600)), "PRE")
+        XCTAssertEqual(StockService.clampToRegularSession("REGULAR", session: s, now: open.addingTimeInterval(60)), "REGULAR")
+        XCTAssertEqual(StockService.clampToRegularSession("REGULAR", session: s, now: close.addingTimeInterval(60)), "POST")
+        XCTAssertEqual(StockService.clampToRegularSession("PRE", session: s, now: open.addingTimeInterval(60)), "PRE")
+        XCTAssertEqual(StockService.clampToRegularSession("REGULAR", session: nil, now: open), "REGULAR")
+        // A window from another trading day is ignored.
+        XCTAssertEqual(StockService.clampToRegularSession("REGULAR", session: s, now: open.addingTimeInterval(86_400)), "REGULAR")
     }
 
     /// A REGULAR tick updates the regular price as before.
