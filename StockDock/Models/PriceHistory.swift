@@ -47,7 +47,7 @@ enum PriceHistory {
             let previous = lastSession(Array(points[..<(points.count - last.count)]), gap: gap)
             result = previous + last
         }
-        if let first = result.first, lastDate.timeIntervalSince(first.date) > maxSpan, result.count == points.count {
+        if let first = result.first, lastDate.timeIntervalSince(first.date) > maxSpan, last.count == points.count {
             result = result.filter { lastDate.timeIntervalSince($0.date) <= maxSpan }
         }
         return result
