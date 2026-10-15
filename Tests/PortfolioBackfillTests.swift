@@ -110,4 +110,17 @@ final class PortfolioBackfillTests: XCTestCase {
         let series = PortfolioBackfill.series(holdings: holdings, historyBySymbol: history, rateBySymbol: ["A": 1])
         XCTAssertEqual(series.map(\.value), [1, 3])
     }
+
+    /// Symbols from different exchanges never share a bar timestamp: each keeps
+    /// its last close instead of the curve coming out empty.
+    func testMixedExchangesCarryLastClose() {
+        let t0 = Date(timeIntervalSince1970: 1_000_000)
+        let holdings = [h("MIL", qty: 1), h("US", qty: 1)]
+        let history = [
+            "MIL": [PricePoint(date: t0, close: 10), PricePoint(date: t0.addingTimeInterval(3600), close: 11)],
+            "US": [PricePoint(date: t0.addingTimeInterval(1800), close: 100), PricePoint(date: t0.addingTimeInterval(5400), close: 101)],
+        ]
+        let series = PortfolioBackfill.series(holdings: holdings, historyBySymbol: history, rateBySymbol: ["MIL": 1, "US": 1])
+        XCTAssertEqual(series.map(\.value), [110, 111, 112]) // from the first US bar on
+    }
 }

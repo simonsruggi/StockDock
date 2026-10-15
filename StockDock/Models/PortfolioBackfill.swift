@@ -11,19 +11,10 @@ enum PortfolioBackfill {
     static func series(holdings: [Holding],
                        historyBySymbol: [String: [PricePoint]],
                        rateBySymbol: [String: Double]) -> [ValuePoint] {
-        // Per-symbol date → close lookup, and the set of dates present for ALL
-        // holdings (a day missing any symbol would understate the total).
-        var closeBySymbol: [String: [Date: Double]] = [:]
+        var historyFor: [String: [PricePoint]] = [:]
         for holding in holdings {
             guard let points = historyBySymbol[holding.symbol], !points.isEmpty else { return [] }
-            closeBySymbol[holding.symbol] = Dictionary(points.map { ($0.date, $0.close) }, uniquingKeysWith: { a, _ in a })
-        }
-        guard let first = holdings.first,
-              let firstDates = closeBySymbol[first.symbol]?.keys else { return [] }
-
-        var commonDates = Set(firstDates)
-        for holding in holdings.dropFirst() {
-            commonDates.formIntersection(Set(closeBySymbol[holding.symbol]?.keys ?? [:].keys))
+            historyFor[holding.symbol] = points.sorted { $0.date < $1.date }
         }
 
         // Each position counts only from the day it was bought, and the curve as a
@@ -35,16 +26,37 @@ enum PortfolioBackfill {
         let ownedFrom: [UUID: Date] = holdings.reduce(into: [:]) { acc, holding in
             if let date = holding.purchaseDate { acc[holding.id] = Calendar.current.startOfDay(for: date) }
         }
-        if let start = ownedFrom.values.min() {
-            commonDates = commonDates.filter { $0 >= start }
-        }
-        guard !commonDates.isEmpty else { return [] }
 
-        return commonDates.sorted().map { date in
+        // The curve starts once every counted position has a price. Each symbol
+        // then keeps its last close until its next bar: symbols from different
+        // exchanges print at different times (Milan 09:00, New York 15:30 CET) and
+        // on different holidays, so requiring the same timestamp for all of them
+        // left 24H/7D empty for a mixed portfolio.
+        var start = ownedFrom.values.min() ?? .distantPast
+        for holding in holdings {
+            guard let first = historyFor[holding.symbol]?.first?.date else { continue }
+            if let from = ownedFrom[holding.id], first <= from { continue }
+            start = max(start, first)
+        }
+
+        let dates = Set(historyFor.values.flatMap { $0.map(\.date) }).filter { $0 >= start }.sorted()
+        guard !dates.isEmpty else { return [] }
+
+        var cursor: [String: Int] = [:]
+        var lastClose: [String: Double] = [:]
+        return dates.map { date in
+            for (symbol, points) in historyFor {
+                var i = cursor[symbol] ?? 0
+                while i < points.count, points[i].date <= date {
+                    lastClose[symbol] = points[i].close
+                    i += 1
+                }
+                cursor[symbol] = i
+            }
             var total = 0.0
             for holding in holdings {
                 if let from = ownedFrom[holding.id], date < from { continue }
-                let close = closeBySymbol[holding.symbol]?[date] ?? 0
+                let close = lastClose[holding.symbol] ?? 0
                 let rate = rateBySymbol[holding.symbol] ?? 1
                 total += close * holding.quantity * holding.effectiveLeverage * rate
             }

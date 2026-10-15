@@ -87,4 +87,16 @@ final class PriceHistoryTests: XCTestCase {
     func testLastSessionOnEmptyInput() {
         XCTAssertTrue(PriceHistory.lastSession([]).isEmpty)
     }
+
+    /// Pre-market: the latest block is a few minutes old, so the previous session
+    /// is kept in front of it.
+    func testRecentSessionsKeepsPreviousSessionDuringPreMarket() {
+        let t = { (h: Double) in PricePoint(date: Date(timeIntervalSince1970: h * 3600), close: h) }
+        let yesterday = stride(from: 4.0, through: 20.0, by: 1.0).map(t)
+        let preMarket = [t(28), t(29)]
+        XCTAssertEqual(PriceHistory.recentSessions(yesterday + preMarket).count, yesterday.count + 2)
+        // Once the block holds a full session the older one drops out.
+        let today = stride(from: 28.0, through: 38.0, by: 1.0).map(t)
+        XCTAssertEqual(PriceHistory.recentSessions(yesterday + today).count, today.count)
+    }
 }

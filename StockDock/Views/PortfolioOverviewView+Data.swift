@@ -147,26 +147,33 @@ extension PortfolioOverviewView {
     /// snapshots have no intraday resolution); 1M+ prefer real snapshots once
     /// they're as dense as the daily estimate. `isEstimated` drives the badge.
     func displaySeries(totalValue: Double) -> (points: [ValuePoint], isEstimated: Bool) {
+        let ds: (points: [ValuePoint], isEstimated: Bool)
         switch chartRange {
         case .day:
-            // Intraday value path. The reconstructed bars can lag the live quote
-            // (and omit the pre/post-market move), so pin the final point to the
-            // real current value — otherwise the curve ends below the headline
-            // total (e.g. €52.5k vs €55.2k) and understates the day.
-            var pts = valueSeries(from: stockService.intradayHistory)
-            if let last = pts.last, abs(last.value - totalValue) > 0.01 {
-                pts.append(ValuePoint(date: last.date.addingTimeInterval(1), value: totalValue))
-            }
-            return (pts, true)
+            let source = storageService.showExtendedHours ? stockService.intradayExtended : stockService.intradayHistory
+            ds = (valueSeries(from: source), true)
         case .week:
-            return (valueSeries(from: stockService.intradayWeek), true)
+            ds = (valueSeries(from: stockService.intradayWeek), true)
         default:
             let real = filteredSeries.map { ValuePoint(date: $0.date, value: $0.totalValue) }
             let est = estimatedFiltered
-            if real.count >= 2 && real.count >= est.count { return (real, false) }
-            if est.count >= 2 { return (est, true) }
-            return (real, false)
+            if real.count >= 2 && real.count >= est.count { ds = (real, false) }
+            else if est.count >= 2 { ds = (est, true) }
+            else { ds = (real, false) }
         }
+        // With extended hours off nothing trades between sessions, so the live
+        // value belongs right after the last bar, not stretched across the night.
+        let atLastBar = chartRange == .day && !storageService.showExtendedHours
+        return (Self.pinnedToLive(ds.points, totalValue: totalValue, now: atLastBar ? .distantPast : Date()), ds.isEstimated)
+    }
+
+    /// Ends the curve on the live portfolio value. The bars lag the live quote
+    /// (cached for minutes to an hour, and without the extended-hours move when
+    /// it is off), so without this the curve — and the period pill computed from
+    /// it — stopped at the last bar while the headline showed the live total.
+    static func pinnedToLive(_ points: [ValuePoint], totalValue: Double, now: Date = Date()) -> [ValuePoint] {
+        guard let last = points.last, abs(last.value - totalValue) > 0.01 else { return points }
+        return points + [ValuePoint(date: max(now, last.date.addingTimeInterval(1)), value: totalValue)]
     }
     /// Y domain with a little headroom so the line never touches the card edges.
     func valueDomain(_ points: [ValuePoint]) -> ClosedRange<Double> {

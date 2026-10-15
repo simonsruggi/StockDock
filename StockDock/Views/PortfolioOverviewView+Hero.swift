@@ -44,8 +44,7 @@ extension PortfolioOverviewView {
                                 .foregroundStyle(DS.gold)
                                 .help("Reconstructed from price history × current positions. Real daily tracking replaces it over time.")
                         }
-                        // No picker over an empty chart — it appears with the data.
-                        if !ds.points.isEmpty { rangePicker }
+                        rangePicker
                     }
                 }
                 Text(StorageService.formatAmount(d.totalValue, symbol: currencySymbol, decimals: storageService.amountDecimals))
@@ -180,6 +179,17 @@ extension PortfolioOverviewView {
             // Range switch replaces the chart; crossfade it rather than cut.
             .id(chartRange)
             .transition(.opacity.animation(.easeInOut(duration: 0.4)))
+        } else if isLoadingRange {
+            ZStack {
+                DS.cardAlt.opacity(0.6)
+                ProgressView().controlSize(.small)
+            }
+        } else if chartRange == .day || chartRange == .week {
+            ZStack {
+                DS.cardAlt.opacity(0.6)
+                Text("No intraday data")
+                    .font(.inter(11, weight: .medium, relativeTo: .caption)).foregroundStyle(DS.inkSecondary)
+            }
         } else {
             ZStack {
                 DS.cardAlt.opacity(0.6)

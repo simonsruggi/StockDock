@@ -21,6 +21,9 @@ class StockService: ObservableObject {
     @Published var intradayHistory: [String: [PricePoint]] = [:]
     /// Hourly closes over ~7 days for the "7D" chart range. Cached ~15min.
     @Published var intradayWeek: [String: [PricePoint]] = [:]
+    /// 5-minute closes including pre/post-market, for the portfolio "24H" range
+    /// with extended hours on. Cached ~5min.
+    @Published var intradayExtended: [String: [PricePoint]] = [:]
 
     let session: URLSession
     var crumb: String?
@@ -29,6 +32,7 @@ class StockService: ObservableObject {
     var priceHistoryMaxAt: [String: Date] = [:]
     var intradayFetchedAt: [String: Date] = [:]
     var intradayWeekAt: [String: Date] = [:]
+    var intradayExtendedAt: [String: Date] = [:]
     var sparkFetchedAt: Date?
     var regularSessions: [String: RegularSession] = [:]
 

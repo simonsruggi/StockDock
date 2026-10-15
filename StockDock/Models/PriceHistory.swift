@@ -32,4 +32,24 @@ enum PriceHistory {
         }
         return points
     }
+
+    /// The bars for a 24H range that includes pre/post-market: the most recent
+    /// trading block (pre + regular + post, split on the overnight gap), plus the
+    /// block before it while the latest one is still too short to hold a regular
+    /// session — i.e. during pre-market, when it would otherwise show only a few
+    /// minutes. Symbols with no gap at all (crypto) are cut to the last `maxSpan`.
+    static func recentSessions(_ points: [PricePoint], gap: TimeInterval = 3600,
+                               minSpan: TimeInterval = 6 * 3600, maxSpan: TimeInterval = 24 * 3600) -> [PricePoint] {
+        guard let lastDate = points.last?.date else { return points }
+        let last = lastSession(points, gap: gap)
+        var result = last
+        if let first = last.first, lastDate.timeIntervalSince(first.date) < minSpan, last.count < points.count {
+            let previous = lastSession(Array(points[..<(points.count - last.count)]), gap: gap)
+            result = previous + last
+        }
+        if let first = result.first, lastDate.timeIntervalSince(first.date) > maxSpan, result.count == points.count {
+            result = result.filter { lastDate.timeIntervalSince($0.date) <= maxSpan }
+        }
+        return result
+    }
 }

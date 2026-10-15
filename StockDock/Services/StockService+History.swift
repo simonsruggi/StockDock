@@ -42,6 +42,21 @@ extension StockService {
         intradayFetchedAt[symbol] = Date()
     }
 
+    /// Like `ensureIntraday`, with pre/post-market bars: the last regular session
+    /// plus what traded after it, so before the open the 24H range shows
+    /// yesterday's session followed by this morning's pre-market. Five days so
+    /// a Monday pre-market still reaches back to Friday.
+    func ensureIntradayExtended(for symbol: String) async {
+        if let at = intradayExtendedAt[symbol],
+           Date().timeIntervalSince(at) < 300,
+           intradayExtended[symbol]?.isEmpty == false { return }
+        guard let raw = await chartPoints(for: symbol, query: "interval=5m&range=5d&includePrePost=true") else { return }
+        let points = PriceHistory.recentSessions(raw)
+        guard !points.isEmpty else { return }
+        intradayExtended[symbol] = points
+        intradayExtendedAt[symbol] = Date()
+    }
+
     /// Hourly closes over ~7 days for the "7D" range. Cached ~15min.
     func ensureIntradayWeek(for symbol: String) async {
         if let at = intradayWeekAt[symbol],

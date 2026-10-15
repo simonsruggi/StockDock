@@ -41,6 +41,11 @@ struct PortfolioOverviewView: View {
         }
     }
 
+    /// Key of the range load in flight; the chart shows a spinner instead of the
+    /// empty-history message while it is set.
+    @State var loadingRangeKey: String?
+    var isLoadingRange: Bool { loadingRangeKey != nil }
+
     @State var hoveredSlice: String?
     @State var hoverPoint: ValuePoint?
 
@@ -63,7 +68,7 @@ struct PortfolioOverviewView: View {
     var currencySymbol: String { StorageService.currencySymbol(for: storageService.preferredCurrency) }
     var decimals: Int { storageService.percentDecimals }
 
-    private var symbols: [String] { Array(Set(portfolios.flatMap { $0.holdings.map(\.symbol) })) }
+    private var symbols: [String] { Array(Set(portfolios.flatMap { $0.holdings.map(\.symbol) })).sorted() }
 
     var body: some View {
         // Valued ONCE per render, then threaded into every section (see `Derived`).
@@ -94,17 +99,40 @@ struct PortfolioOverviewView: View {
         }
         .navigationTitle(title)
         .task(id: symbols) {
-            for symbol in symbols { await stockService.ensurePriceHistory(for: symbol) }
+            let service = stockService
+            await withTaskGroup(of: Void.self) { group in
+                for s in symbols { group.addTask { await service.ensurePriceHistory(for: s) } }
+            }
         }
-        .task(id: "\(symbols.joined())-\(chartRange.rawValue)") {
-            switch chartRange {
-            case .day: for s in symbols { await stockService.ensureIntraday(for: s) }
-            case .week: for s in symbols { await stockService.ensureIntradayWeek(for: s) }
-            case .all: for s in symbols { await stockService.ensurePriceHistoryMax(for: s) }
-            default: break
+        .task(id: rangeLoadKey) {
+            let key = rangeLoadKey
+            loadingRangeKey = key
+            defer { if loadingRangeKey == key { loadingRangeKey = nil } }
+            let service = stockService
+            let range = chartRange
+            let extended = storageService.showExtendedHours
+            await withTaskGroup(of: Void.self) { group in
+                for s in symbols {
+                    group.addTask {
+                        switch range {
+                        case .day:
+                            if extended { await service.ensureIntradayExtended(for: s) } else { await service.ensureIntraday(for: s) }
+                        case .week: await service.ensureIntradayWeek(for: s)
+                        case .month, .year: await service.ensurePriceHistory(for: s)
+                        case .all:
+                            await service.ensurePriceHistory(for: s)
+                            await service.ensurePriceHistoryMax(for: s)
+                        }
+                    }
+                }
             }
         }
     }
+
+    private var rangeLoadKey: String {
+        "\(symbols.joined(separator: ","))-\(chartRange.rawValue)-\(storageService.showExtendedHours)"
+    }
+
     var rangePicker: some View {
         SegmentedRangePicker(options: ChartRange.allCases, label: \.rawValue, selection: $chartRange)
             .onAppear(perform: restoreRange)
