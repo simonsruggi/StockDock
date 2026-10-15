@@ -35,6 +35,16 @@ final class StockQuoteTests: XCTestCase {
         XCTAssertEqual(q.effectiveChange(extendedHours: false), -0.5, accuracy: 1e-9) // regular only
     }
 
+    /// In pre-market `change` is yesterday's move: today is the pre-market move only.
+    func testEffectiveChangePreMarketExcludesPreviousSession() {
+        let q = StockQuote(symbol: "MU", name: "Micron", price: 914.13, change: -38.9, changePercent: -4.08,
+                           currency: "USD", marketState: "PRE", dayHigh: nil, dayLow: nil,
+                           fiftyTwoWeekHigh: nil, fiftyTwoWeekLow: nil,
+                           preMarketPrice: 879, preMarketChange: -35.13, preMarketChangePercent: -3.84,
+                           postMarketPrice: nil, postMarketChange: nil, postMarketChangePercent: nil)
+        XCTAssertEqual(q.effectiveChange(extendedHours: true), -35.13, accuracy: 1e-9)
+    }
+
     func testEffectiveChangeRegularSessionUnaffected() {
         let q = quote(price: 100, high: nil, low: nil)  // REGULAR, no extended
         XCTAssertEqual(q.effectiveChange(extendedHours: true), q.change, accuracy: 1e-9)

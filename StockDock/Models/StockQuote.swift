@@ -109,7 +109,9 @@ struct StockQuote: Identifiable, Codable {
     /// the regular session, giving opposite signs).
     func effectiveChange(extendedHours: Bool) -> Double {
         guard extendedHours, isExtendedHours, let ext = extendedChange else { return change }
-        return change + ext
+        // In pre-market `change` is the previous session's move: today's move is
+        // the pre-market one alone, measured from that session's close.
+        return marketState == "PRE" ? ext : change + ext
     }
 
     var marketStateLabel: String {
