@@ -12,7 +12,11 @@ extension StockService {
         switch ticker.marketHours {
         case .preMarket: marketState = "PRE"
         case .postMarket, .extendedHoursMarket: marketState = "POST"
-        case .regularMarket: marketState = "REGULAR"
+        case .regularMarket:
+            // During pre/post Yahoo re-sends the previous official close as a
+            // REGULAR_MARKET tick stamped at the close time. It's a valid regular
+            // price, but must not flip the session back to REGULAR.
+            marketState = Self.isStaleRegularTick(ticker) ? (existing?.marketState ?? "CLOSED") : "REGULAR"
         default: marketState = existing?.marketState ?? "CLOSED"
         }
 
@@ -24,7 +28,7 @@ extension StockService {
         // must not overwrite it — otherwise a user with extended hours off would
         // see the pre/post price where they expect the last regular close. The
         // extended value is routed into the pre/post fields below instead.
-        let isRegular = (marketState == "REGULAR")
+        let isRegular = (ticker.marketHours == .regularMarket)
         let price = isRegular ? tickPrice : (existing?.price ?? tickPrice)
         let change = isRegular ? tickChange : (existing?.change ?? tickChange)
         let changePercent = isRegular ? tickChangePercent : (existing?.changePercent ?? tickChangePercent)
@@ -52,5 +56,13 @@ extension StockService {
 
         quotes[symbol] = quote
         return true
+    }
+
+    /// A REGULAR_MARKET tick older than a few minutes is the replayed close,
+    /// not live trading. Ticks without a timestamp are taken as live.
+    nonisolated static func isStaleRegularTick(_ ticker: Yaticker, now: Date = Date()) -> Bool {
+        guard ticker.time > 0 else { return false }
+        let tickDate = Date(timeIntervalSince1970: Double(ticker.time) / 1000)
+        return now.timeIntervalSince(tickDate) > 15 * 60
     }
 }

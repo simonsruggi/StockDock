@@ -58,6 +58,25 @@ final class ApplyTickTests: XCTestCase {
         XCTAssertEqual(q.displayPrice(extendedHours: false), 100)
     }
 
+    /// Yahoo replays the previous close as a REGULAR_MARKET tick during pre-market.
+    /// It may refresh the regular price but must not switch the session off PRE.
+    func testReplayedCloseTickKeepsPreMarketSession() {
+        StockService.shared.quotes["TSTX"] = StockQuote(
+            symbol: "TSTX", name: "Test", price: 100, change: 1, changePercent: 1,
+            currency: "USD", marketState: "PRE", dayHigh: nil, dayLow: nil,
+            fiftyTwoWeekHigh: nil, fiftyTwoWeekLow: nil,
+            preMarketPrice: 95, preMarketChange: -5, preMarketChangePercent: -5,
+            postMarketPrice: nil, postMarketChange: nil, postMarketChangePercent: nil)
+
+        var t = makeTicker(id: "TSTX", price: 100, marketHours: .regularMarket)
+        t.time = Int64(Date().addingTimeInterval(-14 * 3600).timeIntervalSince1970 * 1000)
+        _ = StockService.shared.applyTick(t)
+
+        let q = StockService.shared.quotes["TSTX"]!
+        XCTAssertEqual(q.marketState, "PRE")
+        XCTAssertEqual(q.displayPrice(extendedHours: true), 95)
+    }
+
     /// A REGULAR tick updates the regular price as before.
     func testRegularTickUpdatesRegularPrice() {
         _ = StockService.shared.applyTick(makeTicker(id: "TSTX", price: 200, marketHours: .regularMarket))
