@@ -4,6 +4,17 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.23 — 2026-10-15
+
+*Steadier pre-market and charts*
+
+- **Pre-market stays pre-market.** Prices no longer jump back to the previous close now and then before the open: the regular price only shows between the exchange's opening and closing time.
+- **Correct "today" before the open.** In pre-market, today's change and the menu bar P&L count only the pre-market move, not the previous session as well.
+- **Reliable chart periods.** The 24H / 7D / 1M / 1Y / All buttons are always there, show a spinner while loading and load faster.
+- **Charts end at the live value.** Every period ends on your current portfolio value, so its change matches the headline figure.
+- **24H with extended hours.** Before the open, the 24H chart shows the last session followed by today's pre-market.
+- **Mixed exchanges.** Portfolios holding stocks from different exchanges (e.g. Milan and New York) now draw their 24H and 7D charts.
+
 ## 1.9.22 — 2026-10-12
 
 *Your profit after tax*
