@@ -3,6 +3,7 @@ import SwiftUI
 struct HoldingRow: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
+    @ObservedObject var allHoursService = HyperliquidService.shared
     @Environment(\.editHoldingAction) var editHoldingAction
     let holding: Holding
     let portfolioId: UUID
@@ -61,11 +62,14 @@ struct HoldingRow: View {
                 let prefSymbol = StorageService.currencySymbol(for: storageService.preferredCurrency)
 
                 // Col 2: Price + badge
+                let displayPrice = allHoursService.livePrice(for: quote, extendedHours: storageService.showExtendedHours)
                 HStack(spacing: 3) {
-                    Text("\(priceSymbol)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate)))")
+                    Text("\(priceSymbol)\(StorageService.formatNumber(displayPrice * pRate, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: displayPrice * pRate)))")
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
-                    if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
+                    if allHoursService.quote(for: quote) != nil {
+                        AllHoursBadge()
+                    } else if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
                         Text(quote.marketStateLabel)
                             .font(.inter(9, weight: .semibold, relativeTo: .caption2))
                             .foregroundColor(.white)
@@ -80,7 +84,6 @@ struct HoldingRow: View {
                 .frame(maxWidth: .infinity)
 
                 // Col 3: Controvalore + P&L in preferred currency
-                let displayPrice = quote.displayPrice(extendedHours: storageService.showExtendedHours)
                 let marketVal = holding.marketValue(currentPrice: displayPrice) * rate
                 let costRate = stockService.costRate(for: holding, currency: quote.currency)
                 let costBasis = holding.costBasisLocal * costRate

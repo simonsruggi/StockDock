@@ -46,7 +46,7 @@ extension PortfolioOverviewView {
         d.holdings = portfolios.flatMap { portfolio in
             portfolio.holdings.compactMap { holding -> ValuedHolding? in
                 guard let quote = stockService.quotes[holding.symbol] else { return nil }
-                let price = quote.displayPrice(extendedHours: storageService.showExtendedHours)
+                let price = HyperliquidService.shared.livePrice(for: quote, extendedHours: storageService.showExtendedHours)
                 let value = holding.marketValue(currentPrice: price) * stockService.rate(from: quote.currency)
                 let cost = holding.costBasisLocal * stockService.costRate(for: holding, currency: quote.currency)
                 let priced = stockService.priceDisplay(for: quote.currency)
@@ -66,7 +66,7 @@ extension PortfolioOverviewView {
             d.totalCost += h.cost
             // Use the change consistent with the price the value is computed at
             // (extended-hours-aware), so TODAY can't disagree in sign with the value.
-            let change = h.quote.effectiveChange(extendedHours: storageService.showExtendedHours)
+            let change = HyperliquidService.shared.liveChange(for: h.quote, extendedHours: storageService.showExtendedHours)
             d.dayChangeValue += h.holding.dailyPnl(priceChange: change) * stockService.rate(from: h.quote.currency)
 
             let weight = abs(h.value)

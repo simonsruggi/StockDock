@@ -24,6 +24,11 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
+    /// 24/7 Hyperliquid prices next to the regular quote while the market is closed.
+    @Published var showAllHoursPrices: Bool = false {
+        didSet { scheduleSave() }
+    }
+
     // MARK: - Watchlist row display toggles
     @Published var showCompanyName: Bool = true {
         didSet { scheduleSave() }
@@ -298,6 +303,7 @@ class StorageService: ObservableObject {
         preferredCurrency = "EUR"
         stockPriceCurrency = ""
         showExtendedHours = true
+        showAllHoursPrices = false
         showCompanyName = true
         showDayRange = true
         show52WeekBar = true

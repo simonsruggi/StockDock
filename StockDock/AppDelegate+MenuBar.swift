@@ -21,7 +21,7 @@ extension AppDelegate {
         var stats = MenuBarPortfolioStats(value: totals.value, cost: totals.cost)
         for holding in holdings {
             guard let quote = stockService.quotes[holding.symbol] else { continue }
-            let change = quote.effectiveChange(extendedHours: storageService.showExtendedHours)
+            let change = HyperliquidService.shared.liveChange(for: quote, extendedHours: storageService.showExtendedHours)
             stats.dailyPnl += holding.dailyPnl(priceChange: change) * stockService.rate(from: quote.currency)
         }
         return stats
@@ -50,7 +50,7 @@ extension AppDelegate {
         let fallback = (storageService.tickerShowName && !quote.name.isEmpty) ? quote.name : quote.symbol
         let label = storageService.displayLabel(for: quote.symbol, fallback: fallback)
         let sign = quote.changePercent >= 0 ? "+" : ""
-        let priceValue = quote.displayPrice(extendedHours: storageService.showExtendedHours) * pRate
+        let priceValue = HyperliquidService.shared.livePrice(for: quote, extendedHours: storageService.showExtendedHours) * pRate
         let price = StorageService.formatNumber(priceValue, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: priceValue))
         // Issue #10: optionally drop the percentage from the menu-bar ticker.
         let pctPart = storageService.menuBarHidePercent

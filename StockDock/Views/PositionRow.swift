@@ -9,6 +9,7 @@ struct PositionRow: View {
     let valueDecimals: Int
     let percentDecimals: Int
     let taxRate: Double
+    @ObservedObject var allHoursService = HyperliquidService.shared
     @State private var hovered = false
 
     private var amountDec: Int { valueDecimals >= 0 ? valueDecimals : 2 }
@@ -19,8 +20,18 @@ struct PositionRow: View {
     // #24: Last and Change are per-share prices, so they carry the stock's own
     // conversion — never `currencySymbol`, which belongs to Value and P&L.
     private var priceSymbol: String { StorageService.currencySymbol(for: h.priceCurrency) }
-    private var lastPrice: Double { h.quote.displayPrice(extendedHours: false) * h.priceRate }
-    private var lastChange: Double { h.quote.change * h.priceRate }
+    /// The 24/7 price replaces the close while the market is shut, with its
+    /// change measured from the same previous close.
+    private var isAllHours: Bool { allHoursService.quote(for: h.quote) != nil }
+    private var lastPrice: Double { allHoursService.livePrice(for: h.quote, extendedHours: false) * h.priceRate }
+    private var lastChangeLocal: Double { allHoursService.liveChange(for: h.quote, extendedHours: false) }
+    private var lastChange: Double { lastChangeLocal * h.priceRate }
+    private var lastChangePercent: Double {
+        guard isAllHours else { return h.quote.changePercent }
+        let live = allHoursService.livePrice(for: h.quote, extendedHours: false)
+        let base = live - lastChangeLocal
+        return base > 0 ? lastChangeLocal / base * 100 : 0
+    }
 
     var body: some View {
         HStack(spacing: 0) {
@@ -45,17 +56,21 @@ struct PositionRow: View {
             }
             .frame(width: 168, alignment: .leading)
 
-            Text(StorageService.formatAmount(lastPrice, symbol: priceSymbol, decimals: priceDec(lastPrice)))
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .font(DS.figure).foregroundStyle(DS.ink)
-                .contentTransition(.numericText())
+            HStack(spacing: 4) {
+                Spacer(minLength: 0)
+                if isAllHours { AllHoursBadge(size: 8) }
+                Text(StorageService.formatAmount(lastPrice, symbol: priceSymbol, decimals: priceDec(lastPrice)))
+                    .font(DS.figure).foregroundStyle(isAllHours ? DS.allHours : DS.ink)
+                    .contentTransition(.numericText())
+            }
+            .frame(maxWidth: .infinity, alignment: .trailing)
             VStack(alignment: .trailing, spacing: 1) {
                 ChangePill(value: lastChange,
                            text: StorageService.formatAmount(lastChange, symbol: "", decimals: priceDec(lastChange), signed: true, truncateZeros: true))
-                Text(String(format: "%+.\(percentDecimals)f%%", h.quote.changePercent))
+                Text(String(format: "%+.\(percentDecimals)f%%", lastChangePercent))
                     .font(DS.micro)
             }
-            .foregroundStyle(DS.pnlColor(h.quote.change))
+            .foregroundStyle(DS.pnlColor(lastChangeLocal))
             .frame(maxWidth: .infinity, alignment: .trailing)
 
             Text(StorageService.formatAmount(h.value, symbol: currencySymbol, decimals: amountDec))

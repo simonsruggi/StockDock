@@ -71,6 +71,12 @@ extension AppDelegate {
         StockService.collectSymbols(storageService: storageService)
     }
 
+    /// Hyperliquid runs only with the 24/7 setting on and a tracked symbol it lists.
+    func syncAllHoursFeed() {
+        HyperliquidService.shared.update(symbols: Array(collectSymbols()),
+                                         enabled: storageService.showAllHoursPrices)
+    }
+
     // MARK: - Ticker Cycling
 
     func startTickerTimer() {
@@ -128,6 +134,7 @@ extension AppDelegate {
         tickerTimer = nil
         pendingTicks.removeAll()
         webSocketService.disconnect()
+        HyperliquidService.shared.stop()
     }
 
     @objc func handleWake() {
@@ -140,6 +147,7 @@ extension AppDelegate {
             guard !Task.isCancelled else { return }
             updateMenuBarTitle()
             startWebSocket()
+            syncAllHoursFeed()
         }
         scheduleRESTPolling()
     }

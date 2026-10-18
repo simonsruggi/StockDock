@@ -13,6 +13,8 @@ extension WatchlistWideView {
         let extPrice: Double?        // pre/post-market price, if any
         let extChangePercent: Double? // pre/post-market % move vs regular close
         let extLabel: String         // "Pre" / "Post"
+        let allHoursPrice: Double?   // Hyperliquid 24/7 price, display currency
+        let allHoursChangePercent: Double?
         let change: Double
         let changePercent: Double
         let loaded: Bool
@@ -27,6 +29,7 @@ extension WatchlistWideView {
             let priced = q.map { stockService.priceDisplay(for: $0.currency) }
             let rate = priced?.rate ?? 1
             let ext: Double? = q.flatMap { $0.isExtendedHours ? $0.effectivePrice * rate : nil }
+            let allHours = q.flatMap { allHoursService.quote(for: $0) }
             return WatchRow(
                 id: symbol, order: index, symbol: symbol,
                 alias: storageService.alias(for: symbol),
@@ -36,6 +39,8 @@ extension WatchlistWideView {
                 extPrice: ext,
                 extChangePercent: ext != nil ? q?.extendedChangePercent : nil,
                 extLabel: q?.marketStateLabel ?? "",
+                allHoursPrice: allHours.map { $0.price * rate },
+                allHoursChangePercent: allHours?.changePercent,
                 change: (q?.change ?? 0) * rate,
                 changePercent: q?.changePercent ?? 0,
                 loaded: q != nil, quote: q

@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct PortfolioListView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
+    @ObservedObject var allHoursService = HyperliquidService.shared
     @State private var showNewPortfolio = false
     @State private var newPortfolioName = ""
     @State private var searchText = ""

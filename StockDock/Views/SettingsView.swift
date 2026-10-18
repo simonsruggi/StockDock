@@ -143,6 +143,10 @@ struct SettingsView: View {
                     Toggle("Show extended hours (Pre/Post)", isOn: $storageService.showExtendedHours)
                         .toggleStyle(.switch)
                     caption("Show pre-market and after-hours prices")
+
+                    Toggle("24/7 prices (Hyperliquid)", isOn: $storageService.showAllHoursPrices)
+                        .toggleStyle(.switch)
+                    caption("Perpetual futures price while the market is closed, not the official quote")
                 }
 
                 // MARK: - Watchlist Display

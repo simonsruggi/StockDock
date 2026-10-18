@@ -3,6 +3,7 @@ import SwiftUI
 struct WatchlistRow: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
+    @ObservedObject private var allHoursService = HyperliquidService.shared
     let quote: StockQuote
 
     /// #24: rate and currency are read together, so a row can never show a
@@ -103,6 +104,17 @@ struct WatchlistRow: View {
                     Text(String(format: "%+.2f (%.\(storageService.percentDecimals)f%%)", extChg * priceRate, extPct))
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
                         .foregroundColor(extChg >= 0 ? DS.up.opacity(0.8) : DS.down.opacity(0.8))
+                }
+
+                if storageService.showAllHoursPrices, let allHours = allHoursService.quote(for: quote) {
+                    HStack(spacing: 3) {
+                        AllHoursBadge(size: 8)
+                        Text("\(StorageService.formatNumber(allHours.price * priceRate, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: allHours.price * priceRate))) \(String(format: "%+.\(storageService.percentDecimals)f%%", allHours.changePercent))")
+                            .font(.inter(10, relativeTo: .caption).monospacedDigit())
+                            .foregroundColor(allHours.change >= 0 ? DS.up : DS.down)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
                 }
             }
             .frame(width: 120, alignment: .trailing)

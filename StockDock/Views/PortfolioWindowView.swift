@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 struct PortfolioWindowView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
+    @ObservedObject var allHoursService = HyperliquidService.shared
     @Namespace private var navNamespace
 
     /// Sidebar destinations — the dock tabs, with Portfolios expanded per portfolio.

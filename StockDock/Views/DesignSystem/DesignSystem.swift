@@ -64,6 +64,9 @@ enum DS {
     @MainActor static var downSoft: Color { down.opacity(0.10) }
     /// The one reserved luxury accent: FEATURED label and concentration warnings.
     static let gold = Color(red: 0.722, green: 0.573, blue: 0.247)
+    /// 24/7 prices from Hyperliquid: a separate market, so its own hue rather
+    /// than the Pre/Post colours.
+    static let allHours = Color(red: 0.42, green: 0.36, blue: 0.78)
 
     /// Categorical palette for allocation / series — muted, magazine-like.
     static let palette: [Color] = [

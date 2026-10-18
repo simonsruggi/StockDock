@@ -3,6 +3,7 @@ import SwiftUI
 struct PortfolioOverviewView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
+    @ObservedObject var allHoursService = HyperliquidService.shared
     @Environment(\.editHoldingAction) var editHoldingAction
     @Environment(\.addHoldingAction) var addHoldingAction
     @Environment(\.portfolioActions) private var portfolioActions

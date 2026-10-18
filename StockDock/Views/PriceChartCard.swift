@@ -7,6 +7,7 @@ import Charts
 struct PriceChartCard: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
+    @ObservedObject var allHoursService = HyperliquidService.shared
     let symbol: String
     let quote: StockQuote
 
@@ -86,13 +87,13 @@ struct PriceChartCard: View {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
                     SectionLabel("Last price")
-                    Text(StorageService.formatAmount(quote.displayPrice(extendedHours: storageService.showExtendedHours), symbol: priceSymbol))
+                    Text(StorageService.formatAmount(HyperliquidService.shared.livePrice(for: quote, extendedHours: storageService.showExtendedHours), symbol: priceSymbol))
                         .font(.inter(32, weight: .bold, relativeTo: .largeTitle).monospacedDigit())
                         .tracking(-0.4)
                         .foregroundStyle(DS.ink)
                         .contentTransition(.numericText())
                         // Price-driven: must settle between 1s tick flushes (see DS.tick).
-                        .animation(DS.tick, value: quote.displayPrice(extendedHours: storageService.showExtendedHours))
+                        .animation(DS.tick, value: HyperliquidService.shared.livePrice(for: quote, extendedHours: storageService.showExtendedHours))
                     HStack(spacing: 8) {
                         ChangePill(value: quote.change,
                                    text: String(format: "%+.\(storageService.percentDecimals)f%% today", quote.changePercent))

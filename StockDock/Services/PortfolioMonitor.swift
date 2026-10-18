@@ -143,7 +143,7 @@ final class PortfolioMonitor {
             guard let quote = stockService.quotes[holding.symbol] else { continue }
             m.hasData = true
             let rate = stockService.rate(from: quote.currency)
-            let displayPrice = quote.displayPrice(extendedHours: storage.showExtendedHours)
+            let displayPrice = HyperliquidService.shared.livePrice(for: quote, extendedHours: storage.showExtendedHours)
             let value = holding.marketValue(currentPrice: displayPrice) * rate
             // Today's change uses the regular-session change per share, scaled by
             // signed quantity and leverage so shorts and levered lots contribute

@@ -276,3 +276,6 @@
 "Tax on gains" = "Tax on gains";
 "P&L shown net of tax · 0 = gross" = "P&L shown net of tax · 0 = gross";
 "Net P&L" = "Net P&L";
+"24/7 prices (Hyperliquid)" = "24/7 prices (Hyperliquid)";
+"Perpetual futures price while the market is closed, not the official quote" = "Perpetual futures price while the market is closed, not the official quote";
+"Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price" = "Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price";

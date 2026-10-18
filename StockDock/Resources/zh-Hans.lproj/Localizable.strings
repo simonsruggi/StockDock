@@ -276,3 +276,6 @@
 "Tax on gains" = "收益税率";
 "P&L shown net of tax · 0 = gross" = "盈亏按税后显示 · 0 = 税前";
 "Net P&L" = "税后盈亏";
+"24/7 prices (Hyperliquid)" = "24/7 价格（Hyperliquid）";
+"Perpetual futures price while the market is closed, not the official quote" = "休市时的永续合约价格，非官方报价";
+"Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price" = "Hyperliquid 永续合约（trade.xyz），全天候交易——非交易所官方价格";

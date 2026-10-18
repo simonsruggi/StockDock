@@ -10,7 +10,7 @@ extension PortfolioValuation {
             guard let quote = stockService.quotes[holding.symbol] else { return nil }
             return Input(
                 holding: holding,
-                price: quote.displayPrice(extendedHours: storageService.showExtendedHours),
+                price: HyperliquidService.shared.livePrice(for: quote, extendedHours: storageService.showExtendedHours),
                 rate: stockService.rate(from: quote.currency),
                 costRate: stockService.costRate(for: holding, currency: quote.currency)
             )

@@ -26,7 +26,7 @@ struct GlobalPosition: Identifiable {
         return qty.compactMap { symbol, q -> GlobalPosition? in
             guard abs(q) >= 1e-9, let quote = stocks.quotes[symbol] else { return nil }
             let avg = qtyPrice[symbol, default: 0] / q
-            let price = quote.displayPrice(extendedHours: storage.showExtendedHours)
+            let price = HyperliquidService.shared.livePrice(for: quote, extendedHours: storage.showExtendedHours)
             let rawPct = abs(avg) >= 1e-6 ? (price / avg - 1) * 100 : 0
             // A short position gains when the price falls, so flip the sign.
             let pct = q >= 0 ? rawPct : -rawPct

@@ -30,6 +30,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var tickerTimer: Timer?
     private var storageServiceObserver: AnyCancellable?
     private var symbolsObserver: AnyCancellable?
+    private var allHoursObserver: AnyCancellable?
+    private var allHoursPriceObserver: AnyCancellable?
     lazy var alertMonitor = AlertMonitor(storage: storageService)
     lazy var portfolioMonitor = PortfolioMonitor(storage: storageService, stockService: stockService)
     let updaterViewModel = UpdaterViewModel()
@@ -98,6 +100,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             portfolioMonitor.check()
             recordSnapshots()
             startWebSocket()
+            syncAllHoursFeed()
         }
 
         // REST polling at low frequency for exchange rates and as WSS fallback
@@ -138,6 +141,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
+        allHoursObserver = storageService.$showAllHoursPrices
+            .dropFirst()
+            .removeDuplicates()
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.syncAllHoursFeed() }
+            }
+
+        // 24/7 prices move the portfolio value, so the menu-bar P&L follows them.
+        allHoursPriceObserver = HyperliquidService.shared.$mids
+            .dropFirst()
+            .sink { [weak self] _ in
+                Task { @MainActor in self?.updateMenuBarTitle() }
+            }
+
         symbolsObserver = storageService.$portfolios
             .combineLatest(storageService.$watchlist)
             .dropFirst()
@@ -146,6 +163,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self, !self.isRefreshing else { return }
                 let symbols = Array(self.collectSymbols())
                 self.webSocketService.updateSymbols(symbols)
+                self.syncAllHoursFeed()
                 self.refreshTask?.cancel()
                 let start = Date()
                 self.refreshStartedAt = start
@@ -161,6 +179,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        HyperliquidService.shared.stop()
         storageService.saveNow()
         timer?.invalidate()
         timer = nil

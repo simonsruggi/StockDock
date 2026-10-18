@@ -6,6 +6,7 @@ import SwiftUI
 struct WatchlistWideView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
+    @ObservedObject var allHoursService = HyperliquidService.shared
     @Binding var showSearch: Bool
 
     enum SortKey { case order, symbol, name, changePercent, extChangePercent }
@@ -130,6 +131,7 @@ struct WatchlistWideView: View {
                         WatchRowView(row: row,
                                      showExtended: storageService.showExtendedHours,
                                      extendedSession: extendedSession,
+                                     showAllHours: storageService.showAllHoursPrices,
                                      percentDecimals: storageService.percentDecimals,
                                      valueDecimals: storageService.valueDecimals,
                                      onOpen: { detailSymbol = DetailTarget(symbol: row.symbol) },
@@ -153,6 +155,9 @@ struct WatchlistWideView: View {
             if storageService.showExtendedHours {
                 headerCell("After hrs", .extChangePercent, width: WCol.ext, align: .trailing,
                            help: "Sort by the pre/post-market % move")
+            }
+            if storageService.showAllHoursPrices {
+                HStack { Spacer(minLength: 0); AllHoursBadge() }.frame(width: WCol.ext)
             }
             Text("Trend").font(DS.label).foregroundStyle(DS.inkTertiary).frame(width: WCol.trend)
             Text("52-week").font(DS.label).foregroundStyle(DS.inkTertiary).frame(width: WCol.range, alignment: .leading)

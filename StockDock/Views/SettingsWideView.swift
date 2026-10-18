@@ -98,6 +98,10 @@ struct SettingsWideView: View {
             SettingToggle("Extended hours (Pre/Post)",
                           caption: "Show pre-market and after-hours prices",
                           isOn: $storageService.showExtendedHours)
+            SettingDivider()
+            SettingToggle("24/7 prices (Hyperliquid)",
+                          caption: "Perpetual futures price while the market is closed, not the official quote",
+                          isOn: $storageService.showAllHoursPrices)
         }
     }
 
