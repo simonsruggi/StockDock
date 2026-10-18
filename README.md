@@ -86,6 +86,7 @@ Stocks, ETFs, indices (S&P 500, NASDAQ…), crypto, and forex — anything with 
 - **Long & Short + Leverage** — Track short positions and leveraged holdings with correct P&L math (optional, off by default)
 - **Export / Import** — Export single or all portfolios to JSON and import them back
 - **Extended Hours** — Pre-market and after-hours prices with PRE/POST badges
+- **Overnight & Weekends** — Optional Hyperliquid 24/7 prices when there's no Pre/Post session (overnight, weekends, holidays), so your portfolio keeps moving with the market (off by default, under Extended Hours)
 - **Currency Conversion** — Convert stock prices and portfolio values to your preferred currency
 - **Price Alerts** — One-shot alerts on price thresholds, daily change %, or proximity to 52-week high/low
 - **Portfolio Notifications** — Per-portfolio alerts for daily change %, change amount, value milestones, and a daily summary
@@ -229,7 +230,8 @@ StockDock checks for updates automatically on launch via [Sparkle](https://spark
 - Real-time prices via Yahoo Finance WebSocket (~1 update/sec per symbol)
 - REST polling every 5 min as fallback for exchange rates
 - All data is stored locally in `~/Library/Application Support/StockDock/data.json` (watchlist, portfolios, alerts, portfolio notifications, webhook, and preferences)
-- No data is sent anywhere — the app only talks to Yahoo Finance APIs (and your own Discord/Slack webhook, if you enable it)
+- Optional overnight & weekend prices from the public Hyperliquid API (trade.xyz perpetuals), only when you turn it on
+- No data is sent anywhere — the app only talks to Yahoo Finance APIs, Hyperliquid if enabled, and your own Discord/Slack webhook, if you enable it
 - No account required, no API keys needed
 
 ## FAQ
@@ -241,7 +243,7 @@ Yes — free and open source under the MIT license, with no paid tier or subscri
 Yes. StockDock ships as a universal binary for both Apple Silicon and Intel, on macOS 14 (Sonoma) and later.
 
 **Where does the data come from?**
-Public Yahoo Finance endpoints (WebSocket for live prices, REST for exchange rates). No API key needed.
+Public Yahoo Finance endpoints (WebSocket for live prices, REST for exchange rates). No API key needed. With **Overnight & weekends** on, off-hours prices come from the public Hyperliquid API: they are perpetual futures prices that track the stock, not official exchange quotes.
 
 **Can I track crypto, ETFs, or indices?**
 Yes — anything with a Yahoo Finance symbol, including crypto, ETFs, and market indices.
@@ -257,6 +259,7 @@ No. There's no analytics, no telemetry, no account. Everything stays local on yo
 - Swift 5.9 / SwiftUI
 - macOS 14+ (Sonoma) — Universal binary (Apple Silicon + Intel)
 - Yahoo Finance WebSocket (real-time) + REST API (fallback)
+- Hyperliquid WebSocket + REST API (optional overnight & weekend prices)
 - [Sparkle](https://sparkle-project.org/) for auto-updates
 - [swift-protobuf](https://github.com/apple/swift-protobuf) for WebSocket decoding
 
@@ -267,6 +270,10 @@ StockDock is **free and open source, and it will always stay that way** — no p
 If you find it useful, the best (and free) thing you can do is **[⭐️ star the repo](https://github.com/simonsruggi/StockDock)** — it's quick and it's the only signal I get that the app is worth maintaining.
 
 And if you'd like to go a step further, you can **[💛 sponsor me on GitHub](https://github.com/sponsors/simonsruggi)** or **[☕️ buy me a coffee](https://buymeacoffee.com/simonsruggi)**. It's completely optional and changes nothing about the app — every feature stays free for everyone — but it helps me keep building and maintaining StockDock and my other open-source projects. Thank you! 🙏
+
+## Disclaimer
+
+StockDock is an independent project. It is not affiliated with, endorsed by, or sponsored by Yahoo, Hyperliquid, trade.xyz, or any exchange or data provider. All trademarks belong to their respective owners. Prices are provided as-is for information only and may be delayed or inaccurate; nothing in the app is investment advice.
 
 ## License
 

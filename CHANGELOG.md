@@ -4,6 +4,17 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.24 — unreleased
+
+*Your portfolio, even on weekends*
+
+Tired of not being able to follow your portfolio on weekends, or between the after-hours close and the next pre-market? Now you can.
+
+- **Overnight & weekend prices.** Turn on *Settings → Extended hours → Overnight & weekends (Hyperliquid)* and, when there's no Pre/Post session (overnight, weekends, holidays), StockDock shows the 24/7 price from Hyperliquid, marked with a purple **24/7** badge.
+- **Your portfolio keeps moving.** Value, P&L, today's change and the menu bar follow the 24/7 price in those hours, just like they follow Pre/Post. Price alerts keep using the official price.
+- **Where it works.** Major US stocks, plus gold, silver, oil, copper, the S&P 500, Nasdaq 100, Nikkei and EUR/GBP/JPY. Symbols without a 24/7 market simply keep their last price.
+- Off by default. 24/7 prices are perpetual futures that track the stock, not official exchange quotes.
+
 ## 1.9.23 — 2026-10-15
 
 *Steadier pre-market and charts*
