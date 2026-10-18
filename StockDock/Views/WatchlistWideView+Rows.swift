@@ -13,8 +13,7 @@ extension WatchlistWideView {
         let extPrice: Double?        // pre/post-market price, if any
         let extChangePercent: Double? // pre/post-market % move vs regular close
         let extLabel: String         // "Pre" / "Post"
-        let allHoursPrice: Double?   // Hyperliquid 24/7 price, display currency
-        let allHoursChangePercent: Double?
+        let isAllHours: Bool         // ext* hold the Hyperliquid off-hours price
         let change: Double
         let changePercent: Double
         let loaded: Bool
@@ -28,8 +27,9 @@ extension WatchlistWideView {
             // symbol agree even while the FX pair is still loading.
             let priced = q.map { stockService.priceDisplay(for: $0.currency) }
             let rate = priced?.rate ?? 1
-            let ext: Double? = q.flatMap { $0.isExtendedHours ? $0.effectivePrice * rate : nil }
             let allHours = q.flatMap { allHoursService.quote(for: $0) }
+            let ext: Double? = allHours.map { $0.price * rate }
+                ?? q.flatMap { $0.isExtendedHours ? $0.effectivePrice * rate : nil }
             return WatchRow(
                 id: symbol, order: index, symbol: symbol,
                 alias: storageService.alias(for: symbol),
@@ -37,10 +37,9 @@ extension WatchlistWideView {
                 currency: priced?.currency ?? "",
                 price: (q?.price ?? 0) * rate,
                 extPrice: ext,
-                extChangePercent: ext != nil ? q?.extendedChangePercent : nil,
+                extChangePercent: allHours?.changePercent ?? (ext != nil ? q?.extendedChangePercent : nil),
                 extLabel: q?.marketStateLabel ?? "",
-                allHoursPrice: allHours.map { $0.price * rate },
-                allHoursChangePercent: allHours?.changePercent,
+                isAllHours: allHours != nil,
                 change: (q?.change ?? 0) * rate,
                 changePercent: q?.changePercent ?? 0,
                 loaded: q != nil, quote: q
@@ -60,7 +59,10 @@ extension WatchlistWideView {
     /// regular price dims to context; during regular hours it's the reverse.
     var extendedSession: Bool {
         storageService.showExtendedHours &&
-        storageService.watchlist.contains { stockService.quotes[$0]?.isExtendedHours == true }
+        storageService.watchlist.contains { sym in
+            guard let q = stockService.quotes[sym] else { return false }
+            return q.isExtendedHours || allHoursService.quote(for: q) != nil
+        }
     }
 
     private func sortedRows() -> [WatchRow] {

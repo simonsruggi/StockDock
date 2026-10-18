@@ -74,7 +74,7 @@ extension AppDelegate {
     /// Hyperliquid runs only with the 24/7 setting on and a tracked symbol it lists.
     func syncAllHoursFeed() {
         HyperliquidService.shared.update(symbols: Array(collectSymbols()),
-                                         enabled: storageService.showAllHoursPrices)
+                                         enabled: storageService.allHoursActive)
     }
 
     // MARK: - Ticker Cycling

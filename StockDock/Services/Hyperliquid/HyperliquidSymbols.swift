@@ -38,6 +38,20 @@ enum HyperliquidSymbols {
         explicit[symbol] != nil || currency == "USD"
     }
 
+    private static let newYork = TimeZone(identifier: "America/New_York")!
+
+    /// Off-hours = no Yahoo session to show: overnight 20:00–04:00 New York
+    /// (02:00–10:00 in Italy), weekends and holidays. Pre/Post keep Yahoo's prices.
+    static func isOffHours(marketState: String, now: Date) -> Bool {
+        if marketState == "REGULAR" { return false }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = newYork
+        if cal.isDateInWeekend(now) { return true }
+        let hour = cal.component(.hour, from: now)
+        if hour < 4 || hour >= 20 { return true }
+        return marketState != "PRE" && marketState != "POST"
+    }
+
     /// Guard against a coin that shares the ticker but tracks something else:
     /// the perp must sit within 25% of the last regular close.
     static func isPlausible(_ price: Double, reference: Double) -> Bool {

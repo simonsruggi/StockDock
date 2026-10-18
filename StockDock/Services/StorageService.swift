@@ -24,10 +24,11 @@ class StorageService: ObservableObject {
         didSet { scheduleSave() }
     }
 
-    /// 24/7 Hyperliquid prices next to the regular quote while the market is closed.
+    /// Sub-option of extended hours: Hyperliquid prices overnight and on weekends.
     @Published var showAllHoursPrices: Bool = false {
         didSet { scheduleSave() }
     }
+    var allHoursActive: Bool { showExtendedHours && showAllHoursPrices }
 
     // MARK: - Watchlist row display toggles
     @Published var showCompanyName: Bool = true {

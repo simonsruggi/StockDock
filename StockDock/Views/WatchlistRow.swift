@@ -14,6 +14,12 @@ struct WatchlistRow: View {
 
     private var displayCurrency: String { priced.currency }
 
+    private var allHours: AllHoursQuote? { allHoursService.quote(for: quote) }
+
+    private var livePrice: Double {
+        allHoursService.livePrice(for: quote, extendedHours: storageService.showExtendedHours)
+    }
+
     private var priceRate: Double { priced.rate }
 
     private var currSymbol: String {
@@ -47,10 +53,13 @@ struct WatchlistRow: View {
             // Col 2: Price + day range
             VStack(spacing: 1) {
                 HStack(spacing: 3) {
-                    Text("\(currSymbol)\(StorageService.formatNumber(quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: quote.displayPrice(extendedHours: storageService.showExtendedHours) * priceRate)))")
+                    Text("\(currSymbol)\(StorageService.formatNumber(livePrice * priceRate, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: livePrice * priceRate)))")
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.medium)
-                    if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
+                        .foregroundColor(allHours != nil ? DS.allHours : nil)
+                    if allHours != nil {
+                        AllHoursBadge()
+                    } else if storageService.showExtendedHours, quote.isExtendedHours, !quote.marketStateLabel.isEmpty {
                         Text(quote.marketStateLabel)
                             .font(.inter(9, weight: .semibold, relativeTo: .caption2))
                             .foregroundColor(.white)
@@ -99,23 +108,13 @@ struct WatchlistRow: View {
                     .foregroundColor(quote.isPositive ? DS.up : DS.down)
 
                 if storageService.showExtendedHours,
-                   let extChg = quote.extendedChange,
-                   let extPct = quote.extendedChangePercent {
+                   let extChg = allHours?.change ?? quote.extendedChange,
+                   let extPct = allHours?.changePercent ?? quote.extendedChangePercent {
                     Text(String(format: "%+.2f (%.\(storageService.percentDecimals)f%%)", extChg * priceRate, extPct))
                         .font(.inter(10, relativeTo: .caption).monospacedDigit())
                         .foregroundColor(extChg >= 0 ? DS.up.opacity(0.8) : DS.down.opacity(0.8))
                 }
 
-                if storageService.showAllHoursPrices, let allHours = allHoursService.quote(for: quote) {
-                    HStack(spacing: 3) {
-                        AllHoursBadge(size: 8)
-                        Text("\(StorageService.formatNumber(allHours.price * priceRate, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: allHours.price * priceRate))) \(String(format: "%+.\(storageService.percentDecimals)f%%", allHours.changePercent))")
-                            .font(.inter(10, relativeTo: .caption).monospacedDigit())
-                            .foregroundColor(allHours.change >= 0 ? DS.up : DS.down)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                    }
-                }
             }
             .frame(width: 120, alignment: .trailing)
         }

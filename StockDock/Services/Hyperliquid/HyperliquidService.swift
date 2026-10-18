@@ -38,9 +38,9 @@ final class HyperliquidService: ObservableObject {
 
     private init() {}
 
-    /// The 24/7 price for a quote, shown only while its regular session is closed.
+    /// The 24/7 price for a quote, only off-hours (see `HyperliquidSymbols.isOffHours`).
     func quote(for q: StockQuote) -> AllHoursQuote? {
-        guard enabled, q.marketState != "REGULAR",
+        guard enabled, HyperliquidSymbols.isOffHours(marketState: q.marketState, now: Date()),
               HyperliquidSymbols.accepts(symbol: q.symbol, currency: q.currency),
               let coin = HyperliquidSymbols.coin(for: q.symbol), activeCoins.contains(coin),
               let mid = mids[coin], HyperliquidSymbols.isPlausible(mid, reference: q.price) else { return nil }
@@ -48,8 +48,7 @@ final class HyperliquidService: ObservableObject {
         return AllHoursQuote(coin: coin, price: mid, change: change, changePercent: change / q.price * 100)
     }
 
-    /// Price a position is valued at: the 24/7 price while the regular session
-    /// is closed, the usual (extended-hours aware) price otherwise.
+    /// Price a position is valued at: the 24/7 price off-hours, the usual (extended-hours aware) price otherwise.
     func livePrice(for q: StockQuote, extendedHours: Bool) -> Double {
         quote(for: q)?.price ?? q.displayPrice(extendedHours: extendedHours)
     }

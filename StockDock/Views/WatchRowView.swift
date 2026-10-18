@@ -5,7 +5,6 @@ struct WatchRowView<Menu: View>: View {
     let row: WatchlistWideView.WatchRow
     let showExtended: Bool
     let extendedSession: Bool
-    let showAllHours: Bool
     let percentDecimals: Int
     let valueDecimals: Int
     let onOpen: () -> Void
@@ -28,15 +27,17 @@ struct WatchRowView<Menu: View>: View {
     /// `emphasised` = the live session: the price goes ink-dark and the % becomes
     /// a coloured pill. Otherwise both dim so the active session reads first.
     @ViewBuilder
-    private func pairedCell(price: Double, pct: Double?, label: String?, emphasised: Bool) -> some View {
+    private func pairedCell(price: Double, pct: Double?, label: String?, emphasised: Bool, allHours: Bool = false) -> some View {
         VStack(alignment: .trailing, spacing: 2) {
             Text("\(StorageService.currencySymbol(for: row.currency))\(StorageService.formatNumber(price, decimals: priceDec(price)))")
                 .font(DS.figure)
-                .foregroundStyle(emphasised ? DS.ink : DS.inkTertiary)
+                .foregroundStyle(allHours ? DS.allHours : emphasised ? DS.ink : DS.inkTertiary)
                 .contentTransition(.numericText())
             if let pct {
                 HStack(spacing: 4) {
-                    if let label, !label.isEmpty {
+                    if allHours {
+                        AllHoursBadge(size: 8)
+                    } else if let label, !label.isEmpty {
                         Text(LocalizedStringKey(label)).font(DS.micro).foregroundStyle(DS.inkTertiary)
                     }
                     if emphasised {
@@ -90,25 +91,8 @@ struct WatchRowView<Menu: View>: View {
                     Group {
                         if let ext = row.extPrice {
                             pairedCell(price: ext, pct: row.extChangePercent,
-                                       label: row.extLabel, emphasised: extendedSession)
-                        } else {
-                            Text("—").font(DS.figure).foregroundStyle(DS.inkTertiary)
-                        }
-                    }
-                    .frame(width: WCol.ext, alignment: .trailing)
-                }
-
-                // Hyperliquid 24/7: a separate market, so its own column and colour.
-                if showAllHours {
-                    Group {
-                        if let px = row.allHoursPrice, let pct = row.allHoursChangePercent {
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text("\(StorageService.currencySymbol(for: row.currency))\(StorageService.formatNumber(px, decimals: priceDec(px)))")
-                                    .font(DS.figure).foregroundStyle(DS.allHours)
-                                    .contentTransition(.numericText())
-                                Text(String(format: "%+.\(percentDecimals)f%%", pct))
-                                    .font(DS.micro).foregroundStyle(DS.pnlColor(pct))
-                            }
+                                       label: row.extLabel, emphasised: extendedSession,
+                                       allHours: row.isAllHours)
                         } else {
                             Text("—").font(DS.figure).foregroundStyle(DS.inkTertiary)
                         }

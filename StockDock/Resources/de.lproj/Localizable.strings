@@ -276,6 +276,6 @@
 "Tax on gains" = "Steuer auf Gewinne";
 "P&L shown net of tax · 0 = gross" = "P&L nach Steuern · 0 = brutto";
 "Net P&L" = "Netto-P&L";
-"24/7 prices (Hyperliquid)" = "24/7-Kurse (Hyperliquid)";
-"Perpetual futures price while the market is closed, not the official quote" = "Kurs des Perpetual Futures bei geschlossenem Markt, nicht der offizielle Kurs";
 "Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price" = "Hyperliquid-Perpetual (trade.xyz), rund um die Uhr gehandelt — nicht der offizielle Börsenkurs";
+"Overnight & weekends (Hyperliquid)" = "Nachts & am Wochenende (Hyperliquid)";
+"Perpetual futures price when there is no Pre/Post session, not the official quote" = "Kurs des Perpetual Futures, wenn keine Pre/Post-Sitzung läuft, nicht der offizielle Kurs";

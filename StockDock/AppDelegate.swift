@@ -142,8 +142,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         allHoursObserver = storageService.$showAllHoursPrices
-            .dropFirst()
+            .combineLatest(storageService.$showExtendedHours)
+            .map { $0 && $1 }
             .removeDuplicates()
+            .dropFirst()
             .sink { [weak self] _ in
                 Task { @MainActor in self?.syncAllHoursFeed() }
             }
