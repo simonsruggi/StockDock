@@ -4,7 +4,7 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
-## 1.9.24 — unreleased
+## 1.9.24 — 2026-10-19
 
 *Your portfolio, even on weekends*
 
