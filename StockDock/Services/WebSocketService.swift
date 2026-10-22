@@ -187,6 +187,9 @@ final class WebSocketService: NSObject, ObservableObject {
         guard let ticker = try? Yaticker(serializedBytes: protoData) else { return }
         if ticker.quoteType == .heartbeat { return }
 
+        // Reset the backoff on a real tick, not on open: a socket the server
+        // closes right after the handshake would otherwise reconnect every 2s.
+        reconnectAttempts = 0
         lastTickTime = Date()
         onTick?(ticker)
     }
@@ -261,7 +264,6 @@ extension WebSocketService: URLSessionWebSocketDelegate {
             self.connectWatchdogTimer?.invalidate()
             self.connectWatchdogTimer = nil
             self.isConnected = true
-            self.reconnectAttempts = 0
             self.lastTickTime = Date() // count "opened" as activity until first tick
             self.sendJSON(["subscribe": self.subscribedSymbols])
             self.startHeartbeat()

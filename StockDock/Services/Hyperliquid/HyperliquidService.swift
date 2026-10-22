@@ -71,12 +71,17 @@ final class HyperliquidService: ObservableObject {
         if !wasRunning {
             Task { await refreshSnapshot(); connect() }
             snapshotTimer = Timer.scheduledTimer(withTimeInterval: Self.snapshotInterval, repeats: true) { [weak self] _ in
-                Task { @MainActor in await self?.refreshSnapshot() }
+                Task { @MainActor in
+                    await self?.refreshSnapshot()
+                    self?.connect()
+                }
             }
         } else if changed {
-            Task { await refreshSnapshot() }
-            disconnectSocket()
-            connect()
+            Task {
+                await refreshSnapshot()
+                disconnectSocket()
+                connect()
+            }
         }
     }
 
@@ -123,12 +128,16 @@ final class HyperliquidService: ObservableObject {
 
     // MARK: - WebSocket
 
+    /// Subscribes only to coins the snapshot lists: the server drops the whole
+    /// socket on a subscription to an unknown coin, so one unlisted ticker would
+    /// otherwise keep the feed reconnecting forever.
     private func connect() {
-        guard enabled, task == nil else { return }
+        let listed = coins.filter(activeCoins.contains)
+        guard enabled, task == nil, reconnectTimer == nil, !listed.isEmpty else { return }
         let t = session.webSocketTask(with: Self.wsURL)
         task = t
         t.resume()
-        for coin in coins {
+        for coin in listed {
             send(["method": "subscribe", "subscription": ["type": "bbo", "coin": coin]])
         }
         receive(on: t)
@@ -157,7 +166,6 @@ final class HyperliquidService: ObservableObject {
                 guard let self, self.task === t else { return }
                 switch result {
                 case .success(let message):
-                    self.reconnectAttempts = 0
                     if case .string(let text) = message { self.handle(text) }
                     self.receive(on: t)
                 case .failure:
@@ -180,6 +188,9 @@ final class HyperliquidService: ObservableObject {
               msg.channel == "bbo", let payload = msg.data else { return }
         let sides = payload.bbo.compactMap { $0.flatMap { Double($0.px) } }
         guard !sides.isEmpty else { return }
+        // Only real prices prove the socket healthy: the subscription ack
+        // arrives even right before the server closes it.
+        reconnectAttempts = 0
         pending[payload.coin] = sides.reduce(0, +) / Double(sides.count)
         scheduleFlush()
     }
