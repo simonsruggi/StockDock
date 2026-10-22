@@ -6,25 +6,23 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.9.24</title>
-            <pubDate>Mon, 19 Oct 2026 01:09:28 +0200</pubDate>
-            <sparkle:version>47</sparkle:version>
-            <sparkle:shortVersionString>1.9.24</sparkle:shortVersionString>
+            <title>Version 1.9.25</title>
+            <pubDate>Thu, 22 Oct 2026 15:56:19 +0200</pubDate>
+            <sparkle:version>48</sparkle:version>
+            <sparkle:shortVersionString>1.9.25</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Your portfolio, even on weekends</h2>
-<p>Tired of not being able to follow your portfolio on weekends, or between the after-hours close and the next pre-market? Now you can.</p>
+<h2>Lighter on memory</h2>
+<p>Fixed a memory leak that could make StockDock use several GB of RAM after a few days running.</p>
 <ul>
-    <li><strong>Overnight &amp; weekend prices.</strong> Turn on <em>Settings → Extended hours → Overnight &amp; weekends (Hyperliquid)</em> and, when there's no Pre/Post session (overnight, weekends, holidays), StockDock shows the 24/7 price from Hyperliquid, marked with a purple <strong>24/7</strong> badge.</li>
-    <li><strong>Your portfolio keeps moving.</strong> Value, P&amp;L, today's change and the menu bar follow the 24/7 price in those hours, just like they follow Pre/Post. Price alerts keep using the official price.</li>
-    <li><strong>Where it works.</strong> Major US stocks, plus gold, silver, oil, copper, the S&amp;P 500, Nasdaq 100, Nikkei and EUR/GBP/JPY. Symbols without a 24/7 market simply keep their last price.</li>
-    <li>Off by default. 24/7 prices are perpetual futures that track the stock, not official exchange quotes.</li>
+    <li><strong>Memory leak fixed.</strong> With <em>Overnight &amp; weekends (Hyperliquid)</em> on, a symbol without a 24/7 market kept the live connection reconnecting in a loop, and memory grew over time. StockDock now stays light no matter how long it runs.</li>
+    <li><strong>Steadier live prices.</strong> When a live feed drops, StockDock now waits longer between retries instead of reconnecting every few seconds.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.24/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.9.25/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="ArbtQeefXknfIIoBuLb++lnuIzZ6VI1SMbJn18l9DDpq0jZ7Y7ryeMOFR2OGoYb6SiSBPctXPWsoQLdEePOzAQ=="
-                       length="10236470"/>
+                       sparkle:edSignature="MrZasTp1rtaeRWrf39kG7bJ8s3rNxOl8KtJrMqFudPWhwFChGZAr66dToRq84M8i0Uu0nQk2i4TC0u4FRvGvCQ=="
+                       length="10231294"/>
         </item>
     </channel>
 </rss>
