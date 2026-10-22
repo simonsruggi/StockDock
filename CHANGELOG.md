@@ -4,6 +4,15 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.9.25 — 2026-10-22
+
+*Lighter on memory*
+
+Fixed a memory leak that could make StockDock use several GB of RAM after a few days running.
+
+- **Memory leak fixed.** With *Overnight & weekends (Hyperliquid)* on, a symbol without a 24/7 market kept the live connection reconnecting in a loop, and memory grew over time. StockDock now stays light no matter how long it runs.
+- **Steadier live prices.** When a live feed drops, StockDock now waits longer between retries instead of reconnecting every few seconds.
+
 ## 1.9.24 — 2026-10-19
 
 *Your portfolio, even on weekends*
