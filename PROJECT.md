@@ -165,6 +165,13 @@ The app doesn't appear in the Dock (`.accessory` policy): the icon shows up in t
 - **Resilient auto-reconnect**: exponential backoff (2s, 4s, 8s… capped at 120s). The pure, testable recovery logic is isolated in `ConnectionSupervisor` (`refreshIsBlocking`, `shouldReconnect`). Additional defences: `didCompleteWithError` (catches failures before the socket opens), a connection watchdog (12s), identity guards on the delegates (no double reconnect), and a self-healing timestamped refresh flag (never wedged again after a sleep/wake race). Covered by `Tests/ConnectionSupervisorTests`.
 - **applyTick (WSS)**: a tick updates the *regular* price only during the REGULAR session; PRE/POST ticks go to their own fields, so with extended hours OFF you always see the last regular close (`Tests/ApplyTickTests`).
 
+## MCP server (`--mcp`)
+
+Launched with `--mcp`, the binary skips the UI and the Sparkle updater (`MCPServer.requested`) and runs a Model Context Protocol server over stdio: newline-delimited JSON-RPC, written by hand in `MCP/MCPServer.swift` with no dependencies. The file is identical in RamDock, MRRDock and StockDock: change it in one and copy it to the others. Requests are read on a background thread while `dispatchMain()` keeps the main queue free, so tools can await `@MainActor` services through `MCPServer.wait`.
+
+All tools are read-only and never save the app's data file. Tools in `MCP/StockDockTools.swift` reuse `StockService` for quotes and FX, and compute value and daily P&L the same way as the menu bar (`AppDelegate+MenuBar`).
+Check with the official client: `npx @modelcontextprotocol/inspector --cli <binary> --mcp --method tools/list`.
+
 ## Important notes
 
 - **File layout (rule)**: one component per file, view files under ~450 lines; derived data, sorting and formatting live outside the view body (`Type+Area.swift` extensions or helper types like `GlobalPosition`, `NewsArticle.filter`, `PortfolioValuation.inputs`). Service files mirror `ios-apps/StockDockCore/Sources/StockDockCore/Services/` name for name, and shared components use the iOS app's names (`WatchlistRow`, `PortfolioOverviewView`, `GlobalPosition`). `yaticker.pb.swift` is generated

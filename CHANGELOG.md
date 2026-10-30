@@ -4,6 +4,12 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.10.0 — unreleased
+
+*Ask your AI assistant*
+
+- **MCP server**: Claude, Cursor and other MCP clients can read your portfolios, P&L and watchlist and get live quotes for any ticker (`StockDock --mcp`). Read-only: nothing is saved or changed
+
 ## 1.9.25 — 2026-10-22
 
 *Lighter on memory*

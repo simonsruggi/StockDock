@@ -126,6 +126,45 @@ xcodebuild -scheme StockDock -configuration Release -destination 'platform=macOS
 
 The app bundle will be at `.build/xcode/Build/Products/Release/`.
 
+## Use it with Claude and other AI assistants (MCP)
+
+StockDock 1.10.0 and later is also an [MCP server](https://modelcontextprotocol.io): AI assistants that support the Model Context Protocol can read its data and answer questions about it.
+
+| Tool | What it returns |
+|---|---|
+| `get_portfolio` | Holdings with live value, cost, total P&L and today's change, per portfolio and combined |
+| `get_watchlist` | Live quotes for your watchlist |
+| `get_quote` | Live quote for any Yahoo Finance ticker: stocks, ETFs, crypto (`BTC-USD`), forex (`EURUSD=X`) |
+
+Try asking:
+
+- *"How is my portfolio doing today?"*
+- *"Which of my holdings lost the most this week vs today?"*
+- *"What's the price of NVDA and BTC right now?"*
+
+**Claude Code**
+
+```bash
+claude mcp add stockdock -- /Applications/StockDock.app/Contents/MacOS/StockDock --mcp
+```
+
+**Claude Desktop, Cursor and other MCP clients** — add this to the client's MCP config (Claude Desktop: *Settings → Developer → Edit Config*; Cursor: `~/.cursor/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "stockdock": {
+      "command": "/Applications/StockDock.app/Contents/MacOS/StockDock",
+      "args": ["--mcp"]
+    }
+  }
+}
+```
+
+The menu bar app doesn't need to be running: the client starts StockDock in the background with `--mcp`, without any window or menu bar icon.
+
+Portfolios and watchlist are read from StockDock's local file and never changed; quotes come from Yahoo Finance, as in the app. Your holdings do reach the AI service you connect, so connect only one you trust with them.
+
 ## Usage
 
 ### Watchlist

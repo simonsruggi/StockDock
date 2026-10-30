@@ -14,7 +14,8 @@ final class UpdaterViewModel: ObservableObject {
     }
 
     init() {
-        if Bundle.main.infoDictionary?["SUFeedURL"] != nil {
+        // Never in MCP mode: a background server must not check for updates or show Sparkle's window.
+        if Bundle.main.infoDictionary?["SUFeedURL"] != nil, !MCPServer.requested {
             let c = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: sparkleDelegate, userDriverDelegate: nil)
             self.controller = c
         } else {
