@@ -271,6 +271,10 @@ If you find it useful, the best (and free) thing you can do is **[⭐️ star th
 
 And if you'd like to go a step further, you can **[💛 sponsor me on GitHub](https://github.com/sponsors/simonsruggi)** or **[☕️ buy me a coffee](https://buymeacoffee.com/simonsruggi)**. It's completely optional and changes nothing about the app — every feature stays free for everyone — but it helps me keep building and maintaining StockDock and my other open-source projects. Thank you! 🙏
 
+## More open source Mac apps
+
+Looking for other free, open source apps for your Mac? I keep **[Awesome Mac Open Source](https://github.com/simonsruggi/awesome-mac-open-source)**: 1,000+ maintained macOS apps sorted by GitHub stars, with the Homebrew command to install each one, refreshed every week.
+
 ## Disclaimer
 
 StockDock is an independent project. It is not affiliated with, endorsed by, or sponsored by Yahoo, Hyperliquid, trade.xyz, or any exchange or data provider. All trademarks belong to their respective owners. Prices are provided as-is for information only and may be delayed or inaccurate; nothing in the app is investment advice.
