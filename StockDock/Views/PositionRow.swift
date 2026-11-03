@@ -9,6 +9,13 @@ struct PositionRow: View {
     let valueDecimals: Int
     let percentDecimals: Int
     let taxRate: Double
+    /// Overrides for grouped rows: the merged row reads "avg … · 2 portfolios",
+    /// a row inside it is named after its portfolio.
+    var title: String? = nil
+    var note: String? = nil
+    /// nil = navigates (chevron right); true/false = expands in place.
+    var expanded: Bool? = nil
+    var nested = false
     @ObservedObject var allHoursService = HyperliquidService.shared
     @State private var hovered = false
 
@@ -33,24 +40,39 @@ struct PositionRow: View {
         return base > 0 ? lastChangeLocal / base * 100 : 0
     }
 
+    /// Grouped rows trade the company name for the average price, in the
+    /// currency of the Last column, so the lots can be compared at a glance.
+    private var subtitleText: String {
+        let shares = "\(StorageService.formatQuantity(h.holding.quantity)) sh"
+        guard expanded != nil || nested else { return "\(shares) · \(h.name)" }
+        let avg = h.holding.avgPrice * h.priceRate
+        let parts = [shares, "avg \(StorageService.formatAmount(avg, symbol: priceSymbol, decimals: priceDec(avg)))", note]
+        return parts.compactMap { $0 }.joined(separator: " · ")
+    }
+
     var body: some View {
         HStack(spacing: 0) {
             HStack(spacing: 10) {
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(DS.brand.opacity(0.10))
-                    .frame(width: 30, height: 30)
-                    .overlay(Text(h.symbol.prefix(2))
-                        .font(.inter(10, weight: .bold, relativeTo: .caption2))
-                        .foregroundStyle(DS.brand))
+                if nested {
+                    Rectangle().fill(DS.hairline).frame(width: 2, height: 24).padding(.leading, 14).padding(.trailing, 4)
+                } else {
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(DS.brand.opacity(0.10))
+                        .frame(width: 30, height: 30)
+                        .overlay(Text(h.symbol.prefix(2))
+                            .font(.inter(10, weight: .bold, relativeTo: .caption2))
+                            .foregroundStyle(DS.brand))
+                }
                 VStack(alignment: .leading, spacing: 1) {
                     HStack(spacing: 5) {
-                        Text(h.symbol).font(DS.figure).foregroundStyle(DS.ink)
+                        Text(title ?? h.symbol).font(nested ? DS.caption : DS.figure)
+                            .foregroundStyle(nested ? DS.inkSecondary : DS.ink).lineLimit(1)
                         if h.holding.isShort { Tag(text: "S", color: DS.down) }
                     }
                     // #14: the share count belongs on the row people actually look
                     // at — until now it only existed in the compact list and the
                     // holding detail. Shares lead; the name fills what's left.
-                    Text("\(StorageService.formatQuantity(h.holding.quantity)) sh · \(h.name)")
+                    Text(subtitleText)
                         .font(DS.micro).foregroundStyle(DS.inkTertiary).lineLimit(1)
                 }
             }
@@ -80,6 +102,7 @@ struct PositionRow: View {
             VStack(alignment: .trailing, spacing: 1) {
                 Text(StorageService.formatAmount(CapitalGainsTax.net(h.pnl, ratePercent: taxRate), symbol: currencySymbol, decimals: amountDec, signed: true))
                     .font(DS.figure)
+                    .lineLimit(1).minimumScaleFactor(0.7)
                     .contentTransition(.numericText())
                 Text(String(format: "%+.\(decimals)f%%", CapitalGainsTax.net(h.pnlPercent, ratePercent: taxRate)))
                     .font(DS.micro)
@@ -101,6 +124,8 @@ struct PositionRow: View {
             .frame(width: 110, alignment: .trailing)
 
             Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold))
+                .rotationEffect(.degrees(expanded == true ? 90 : 0))
+                .animation(.easeOut(duration: 0.18), value: expanded)
                 .foregroundStyle(hovered ? DS.brand : DS.inkTertiary)
                 .frame(width: 16)
         }

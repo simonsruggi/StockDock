@@ -4,31 +4,8 @@ import Charts
 extension PortfolioOverviewView {
     // MARK: - Hero (chart as the ground of the card)
 
-    func heroCard(_ d: Derived) -> some View {
-        // Compute the (expensive) value series ONCE per render — it was being
-        // recomputed 5× (badge, picker, chart points, chart dash), which showed
-        // up as lag when switching portfolios (each switch rebuilds this view).
-        let ds = displaySeries(totalValue: d.totalValue)
-        // Pill reflects the SELECTED range: change across the drawn curve. When
-        // the curve is too sparse to span a period (e.g. day one), fall back to
-        // the day-over-day figure so the pill is never empty.
-        //
-        // 24H → the real "today" (extended-hours-aware day change), so the pill
-        // matches the TODAY stat exactly and reflects the same price basis as the
-        // value (incl. any pre/post-market move). All → the real all-time P&L, not
-        // the reconstructed-curve span (which starts near €0 and reads a bogus
-        // "+2202%"). 7D/1M/1Y → the curve span over that bounded window.
-        let useRealDay = chartRange == .day
-        let useRealAllTime = chartRange == .all
-        let periodValue = useRealDay ? d.dayChangeValue
-            : useRealAllTime ? d.totalPnl
-            : (PortfolioPeriodChange.value(ds.points) ?? d.dayChangeValue)
-        let periodPercent = useRealDay ? d.dayChangePercent
-            : useRealAllTime ? d.totalPnlPercent
-            : (PortfolioPeriodChange.percent(ds.points) ?? d.dayChangePercent)
-        let periodLabel = useRealDay ? "today"
-            : useRealAllTime ? "all-time"
-            : (PortfolioPeriodChange.percent(ds.points) != nil ? chartRange.changeLabel : "today")
+    func heroCard(_ d: Derived, _ ds: (points: [ValuePoint], isEstimated: Bool), _ period: PeriodSummary) -> some View {
+        let useRealAllTime = period.isAllTime
         // Header sits ABOVE the chart (not over it) so the curve can never rise
         // behind the value/pill text — on 24H the peak often lands top-left, right
         // where the text is, and no Y-domain trick can avoid that overlap.
@@ -54,8 +31,8 @@ extension PortfolioOverviewView {
                     // Price-driven: must settle between 1s tick flushes (see DS.tick).
                     .animation(DS.tick, value: d.totalValue)
                 HStack(spacing: 10) {
-                    ChangePill(value: periodValue,
-                               text: String(format: "%+.\(decimals)f%% %@", periodPercent, periodLabel))
+                    ChangePill(value: period.value,
+                               text: String(format: "%+.\(decimals)f%% %@", period.percent, period.label))
                     // The all-time figure alongside — hidden on the All range,
                     // where the pill already shows exactly this (no duplicate).
                     if !useRealAllTime {

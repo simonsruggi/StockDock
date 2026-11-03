@@ -47,6 +47,8 @@ struct PortfolioOverviewView: View {
     @State var loadingRangeKey: String?
     var isLoadingRange: Bool { loadingRangeKey != nil }
 
+    /// Symbols held more than once whose per-portfolio rows are shown.
+    @State var expandedGroups: Set<String> = []
     @State var hoveredSlice: String?
     @State var hoverPoint: ValuePoint?
 
@@ -74,6 +76,9 @@ struct PortfolioOverviewView: View {
     var body: some View {
         // Valued ONCE per render, then threaded into every section (see `Derived`).
         let d = derived
+        // The value series is expensive: built once, shared by hero and period.
+        let ds = displaySeries(totalValue: d.totalValue)
+        let period = periodSummary(d, ds)
         return PageScaffold(title, caption: "\(d.holdings.count) positions · \(storageService.preferredCurrency)") {
             HStack(spacing: 12) {
                 portfolioMenu
@@ -85,11 +90,11 @@ struct PortfolioOverviewView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: DS.gap) {
-                        heroCard(d)
-                        statRow(d)
+                        heroCard(d, ds, period)
+                        statRow(d, period)
                         HStack(alignment: .top, spacing: DS.gap) {
                             allocationCard(d).frame(maxWidth: .infinity)
-                            moversCard(proxy: proxy, d).frame(width: 340)
+                            moversCard(proxy: proxy, d, period).frame(width: 340)
                         }
                         positionsCard(d).id("positions")
                     }

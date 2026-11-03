@@ -34,25 +34,14 @@ extension PortfolioOverviewView {
                     .tracking(0.8).textCase(.uppercase)
                     .padding(.bottom, 12)
                     Divider().overlay(DS.hairline)
-                    ForEach(d.holdings) { h in
-                        NavigationLink(value: h.id) {
-                            PositionRow(h: h, currencySymbol: currencySymbol,
-                                        weight: abs(d.totalValue) >= 0.01 ? abs(h.value) / abs(d.totalValue) * 100 : 0,
-                                        topWeight: d.topWeight,
-                                        decimals: decimals,
-                                        valueDecimals: storageService.valueDecimals,
-                                        percentDecimals: storageService.percentDecimals,
-                                        taxRate: storageService.taxRate)
+                    let groups = PositionGrouping.groups(d.holdings)
+                    ForEach(groups) { g in
+                        if g.isGrouped {
+                            groupRows(g, d)
+                        } else {
+                            holdingLink(g.combined, d)
                         }
-                        .buttonStyle(.plain)
-                        .help("View \(h.symbol) details · right-click to edit or delete")
-                        .contextMenu {
-                            Button { editHoldingAction.perform(h.portfolioId, h.holding) } label: { Label("Edit", systemImage: "pencil") }
-                            Button(role: .destructive) {
-                                storageService.removeHolding(from: h.portfolioId, holdingId: h.holding.id)
-                            } label: { Label("Delete", systemImage: "trash") }
-                        }
-                        if h.id != d.holdings.last?.id {
+                        if g.id != groups.last?.id {
                             Divider().overlay(DS.hairline.opacity(0.6)).padding(.horizontal, 8)
                         }
                     }
@@ -69,6 +58,53 @@ extension PortfolioOverviewView {
         .padding(DS.pad)
         .frame(maxWidth: .infinity, alignment: .leading)
         .premiumCard()
+    }
+
+    private func weight(_ h: ValuedHolding, _ d: Derived) -> Double {
+        abs(d.totalValue) >= 0.01 ? abs(h.value) / abs(d.totalValue) * 100 : 0
+    }
+
+    private func row(_ h: ValuedHolding, _ d: Derived, title: String? = nil, note: String? = nil,
+                     expanded: Bool? = nil, nested: Bool = false) -> PositionRow {
+        PositionRow(h: h, currencySymbol: currencySymbol, weight: weight(h, d), topWeight: d.topWeight,
+                    decimals: decimals, valueDecimals: storageService.valueDecimals,
+                    percentDecimals: storageService.percentDecimals, taxRate: storageService.taxRate,
+                    title: title, note: note, expanded: expanded, nested: nested)
+    }
+
+    private func holdingLink(_ h: ValuedHolding, _ d: Derived, nested: Bool = false) -> some View {
+        let portfolioName = storageService.portfolios.first { $0.id == h.portfolioId }?.name
+        return NavigationLink(value: h.id) {
+            row(h, d, title: nested ? portfolioName : nil, nested: nested)
+        }
+        .buttonStyle(.plain)
+        .help("View \(h.symbol) details · right-click to edit or delete")
+        .contextMenu {
+            Button { editHoldingAction.perform(h.portfolioId, h.holding) } label: { Label("Edit", systemImage: "pencil") }
+            Button(role: .destructive) {
+                storageService.removeHolding(from: h.portfolioId, holdingId: h.holding.id)
+            } label: { Label("Delete", systemImage: "trash") }
+        }
+    }
+
+    /// The same symbol held more than once: one averaged row that expands into
+    /// one row per portfolio (or per lot, inside a single portfolio).
+    @ViewBuilder private func groupRows(_ g: PositionGroup, _ d: Derived) -> some View {
+        let isOpen = expandedGroups.contains(g.id)
+        let note = g.portfolioCount > 1 ? "\(g.portfolioCount) portfolios" : "\(g.items.count) lots"
+        Button {
+            withAnimation(.easeOut(duration: 0.2)) {
+                if isOpen { expandedGroups.remove(g.id) } else { expandedGroups.insert(g.id) }
+            }
+        } label: {
+            row(g.combined, d, note: note, expanded: isOpen)
+        }
+        .buttonStyle(.plain)
+        .help(isOpen ? "Collapse \(g.combined.symbol)" : "Show \(g.combined.symbol) in each portfolio")
+        if isOpen {
+            ForEach(g.items) { h in holdingLink(h, d, nested: true) }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+        }
     }
 
     /// Visible "+ Add holding" affordance. Adds directly to the focused portfolio;

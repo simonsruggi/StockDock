@@ -4,6 +4,11 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## Unreleased
+
+- **Same stock in several portfolios, one row.** Positions held more than once (e.g. INTC in two brokers) show a single row with total shares, average price, value and P&L; click it to see each portfolio's position
+- **The overview follows the chart range.** On 7D / 1M / 1Y the change tile and the movers card show what happened over that period — how much each stock gained or lost you — instead of always today
+
 ## 1.10.0 — 2026-10-30
 
 *Ask your AI assistant*

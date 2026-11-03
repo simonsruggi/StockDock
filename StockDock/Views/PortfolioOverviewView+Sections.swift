@@ -4,18 +4,23 @@ import Charts
 extension PortfolioOverviewView {
     // MARK: - Stats
 
-    func statRow(_ d: Derived) -> some View {
+    func statRow(_ d: Derived, _ period: PeriodSummary) -> some View {
         HStack(spacing: 12) {
             StatTile(label: storageService.taxRate > 0 ? "Net P&L" : "Total P&L",
                      value: StorageService.formatAmount(d.totalPnl, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
                      caption: String(format: "%+.\(decimals)f%% on cost", d.totalPnlPercent),
                      captionTint: DS.pnlColor(d.totalPnl), valueTint: DS.pnlColor(d.totalPnl),
                      help: "Total profit/loss vs your cost basis")
-            StatTile(label: "Today",
-                     value: StorageService.formatAmount(d.dayChangeValue, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
-                     caption: String(format: "%+.\(decimals)f%%", d.dayChangePercent),
-                     captionTint: DS.pnlColor(d.dayChangeValue), valueTint: DS.pnlColor(d.dayChangeValue),
-                     help: "Change since the previous close")
+            // Follows the chart range; on All the first tile already is the
+            // all-time figure, so this one stays on today.
+            let showsRange = !period.isAllTime && period.tileLabel != "Today"
+            let changeValue = showsRange ? period.value : d.dayChangeValue
+            let changePercent = showsRange ? period.percent : d.dayChangePercent
+            StatTile(label: showsRange ? period.tileLabel : "Today",
+                     value: StorageService.formatAmount(changeValue, symbol: currencySymbol, decimals: storageService.amountDecimals, signed: true),
+                     caption: String(format: "%+.\(decimals)f%%", changePercent),
+                     captionTint: DS.pnlColor(changeValue), valueTint: DS.pnlColor(changeValue),
+                     help: showsRange ? "Change over the selected range, at today's share counts" : "Change since the previous close")
             StatTile(label: "Invested",
                      value: StorageService.formatAmount(d.totalCost, symbol: currencySymbol, decimals: storageService.amountDecimals),
                      caption: "\(d.holdings.count) holdings",
@@ -100,62 +105,6 @@ extension PortfolioOverviewView {
                     }
                 }
                 Spacer()
-            }
-        }
-    }
-
-    // MARK: - Movers
-
-    func moversCard(proxy: ScrollViewProxy, _ d: Derived) -> some View {
-        Card(title: "Today's movers") {
-            var seen = Set<String>()
-            let movers = d.holdings.filter { seen.insert($0.symbol).inserted }
-                .sorted { abs($0.dayChangePercent) > abs($1.dayChangePercent) }
-            let maxAbs = movers.map { abs($0.dayChangePercent) }.max() ?? 1
-            if movers.isEmpty {
-                emptyLine
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(movers.prefix(5)) { h in
-                        HStack(spacing: 10) {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(DS.brand.opacity(0.10))
-                                .frame(width: 24, height: 24)
-                                .overlay(Text(h.symbol.prefix(1))
-                                    .font(DS.micro).foregroundStyle(DS.brand))
-                            VStack(alignment: .leading, spacing: 1) {
-                                Text(h.symbol).font(DS.figure).foregroundStyle(DS.ink)
-                                Text(h.name).font(DS.micro).foregroundStyle(DS.inkTertiary).lineLimit(1)
-                            }
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 4) {
-                                Text(String(format: "%+.\(decimals)f%%", h.dayChangePercent))
-                                    .font(.inter(12, weight: .semibold, relativeTo: .body).monospacedDigit())
-                                    .foregroundStyle(DS.pnlColor(h.dayChangePercent))
-                                ZStack(alignment: h.dayChangePercent >= 0 ? .leading : .trailing) {
-                                    Capsule().fill(DS.cardAlt).frame(width: 48, height: 4)
-                                    Capsule().fill(DS.pnlColor(h.dayChangePercent))
-                                        .frame(width: max(4, 48 * abs(h.dayChangePercent) / max(maxAbs, 0.01)), height: 4)
-                                }
-                            }
-                        }
-                        .padding(.vertical, 8)
-                        if h.id != movers.prefix(5).last?.id {
-                            Divider().overlay(DS.hairline.opacity(0.6)).padding(.horizontal, 8)
-                        }
-                    }
-                    if d.holdings.count > 5 {
-                        Button {
-                            withAnimation(.easeOut(duration: 0.3)) { proxy.scrollTo("positions", anchor: .top) }
-                        } label: {
-                            Text("View all positions ↓")
-                                .font(.inter(10.5, weight: .medium, relativeTo: .caption2))
-                                .foregroundStyle(DS.brand)
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.top, 10)
-                    }
-                }
             }
         }
     }
