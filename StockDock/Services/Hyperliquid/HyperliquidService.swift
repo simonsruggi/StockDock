@@ -60,6 +60,13 @@ final class HyperliquidService: ObservableObject {
         return q.marketState == "PRE" ? a.change : q.change + a.change
     }
 
+    /// Today's change in percent, measured from the same previous close as `liveChange`.
+    func liveChangePercent(for q: StockQuote, extendedHours: Bool) -> Double {
+        let change = liveChange(for: q, extendedHours: extendedHours)
+        let base = livePrice(for: q, extendedHours: extendedHours) - change
+        return base > 0 ? change / base * 100 : q.changePercent
+    }
+
     /// Starts, resubscribes or stops the feed for the tracked symbols.
     func update(symbols: [String], enabled: Bool) {
         let wanted = Array(Set(symbols.compactMap(HyperliquidSymbols.coin(for:)))).sorted()

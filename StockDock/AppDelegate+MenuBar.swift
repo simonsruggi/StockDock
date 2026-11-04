@@ -49,15 +49,16 @@ extension AppDelegate {
         // precisely because neither the ticker nor Yahoo's name reads well up here.
         let fallback = (storageService.tickerShowName && !quote.name.isEmpty) ? quote.name : quote.symbol
         let label = storageService.displayLabel(for: quote.symbol, fallback: fallback)
-        let sign = quote.changePercent >= 0 ? "+" : ""
+        let pct = HyperliquidService.shared.liveChangePercent(for: quote, extendedHours: storageService.showExtendedHours)
+        let sign = pct >= 0 ? "+" : ""
         let priceValue = HyperliquidService.shared.livePrice(for: quote, extendedHours: storageService.showExtendedHours) * pRate
         let price = StorageService.formatNumber(priceValue, decimals: storageService.resolvedPriceDecimals(symbol: quote.symbol, price: priceValue))
         // Issue #10: optionally drop the percentage from the menu-bar ticker.
         let pctPart = storageService.menuBarHidePercent
             ? ""
-            : " \(sign)\(String(format: "%.\(storageService.percentDecimals)f", quote.changePercent))%"
+            : " \(sign)\(String(format: "%.\(storageService.percentDecimals)f", pct))%"
         let title = " \(label) \(sym)\(price)\(pctPart)"
-        return (title, quote.changePercent >= 0 ? upColor : downColor)
+        return (title, pct >= 0 ? upColor : downColor)
     }
 
     func updateMenuBarTitle() {
@@ -86,10 +87,12 @@ extension AppDelegate {
         let totalPnlPct = storageService.afterTax(stats.pnlPercent)
 
         // Find best/worst watchlist stock by daily change %
-        let bestStock = storageService.watchlist.compactMap { stockService.quotes[$0] }
-            .max(by: { $0.changePercent < $1.changePercent })
-        let worstStock = storageService.watchlist.compactMap { stockService.quotes[$0] }
-            .min(by: { $0.changePercent < $1.changePercent })
+        let extended = storageService.showExtendedHours
+        let movers = storageService.watchlist.compactMap { stockService.quotes[$0] }
+            .map { (symbol: $0.symbol,
+                    changePercent: HyperliquidService.shared.liveChangePercent(for: $0, extendedHours: extended)) }
+        let bestStock = movers.max(by: { $0.changePercent < $1.changePercent })
+        let worstStock = movers.min(by: { $0.changePercent < $1.changePercent })
 
         let currSymbol = StorageService.currencySymbol(for: storageService.preferredCurrency)
         let title: String

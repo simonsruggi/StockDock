@@ -145,17 +145,19 @@ final class PortfolioMonitor {
             let rate = stockService.rate(from: quote.currency)
             let displayPrice = HyperliquidService.shared.livePrice(for: quote, extendedHours: storage.showExtendedHours)
             let value = holding.marketValue(currentPrice: displayPrice) * rate
-            // Today's change uses the regular-session change per share, scaled by
-            // signed quantity and leverage so shorts and levered lots contribute
-            // correctly.
+            // Today's change per share matches the price shown (extended/24-7 aware),
+            // scaled by signed quantity and leverage so shorts and levered lots
+            // contribute correctly.
             let exposure = holding.quantity * holding.effectiveLeverage
-            let contribution = holding.dailyPnl(priceChange: quote.change) * rate
-            let prevClose = quote.price - quote.change
+            let change = HyperliquidService.shared.liveChange(for: quote, extendedHours: storage.showExtendedHours)
+            let changePercent = HyperliquidService.shared.liveChangePercent(for: quote, extendedHours: storage.showExtendedHours)
+            let contribution = holding.dailyPnl(priceChange: change) * rate
+            let prevClose = displayPrice - change
             m.totalValue += value
             m.dayChange += contribution
             m.prevValue += exposure * prevClose * rate
-            var entry = acc[quote.symbol] ?? (quote.changePercent, 0, 0)
-            entry.changePercent = quote.changePercent
+            var entry = acc[quote.symbol] ?? (changePercent, 0, 0)
+            entry.changePercent = changePercent
             entry.value += value
             entry.contribution += contribution
             acc[quote.symbol] = entry

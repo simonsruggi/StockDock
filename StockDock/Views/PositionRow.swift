@@ -37,10 +37,7 @@ struct PositionRow: View {
     private var lastPrice: Double { liveLocal * h.priceRate }
     private var lastChangeLocal: Double { allHoursService.liveChange(for: h.quote, extendedHours: extended) }
     private var lastChange: Double { lastChangeLocal * h.priceRate }
-    private var lastChangePercent: Double {
-        let base = liveLocal - lastChangeLocal
-        return base > 0 ? lastChangeLocal / base * 100 : 0
-    }
+    private var lastChangePercent: Double { allHoursService.liveChangePercent(for: h.quote, extendedHours: extended) }
 
     /// Grouped rows trade the company name for the average price, in the
     /// currency of the Last column, so the lots can be compared at a glance.
