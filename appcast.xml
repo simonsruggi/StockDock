@@ -6,23 +6,24 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.11.0</title>
-            <pubDate>Tue, 03 Nov 2026 20:27:09 +0100</pubDate>
-            <sparkle:version>50</sparkle:version>
-            <sparkle:shortVersionString>1.11.0</sparkle:shortVersionString>
+            <title>Version 1.11.1</title>
+            <pubDate>Wed, 04 Nov 2026 11:12:29 +0100</pubDate>
+            <sparkle:version>51</sparkle:version>
+            <sparkle:shortVersionString>1.11.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>See the whole position</h2>
-<p>Positions and movers now tell you more at a glance.</p>
+<h2>Same numbers everywhere</h2>
+<p>The menu bar and the window now agree before and after market hours.</p>
 <ul>
-    <li><strong>Same stock, one row.</strong> A stock held in several portfolios shows once, with total shares, average price and P&amp;L. Click it to see each portfolio's position.</li>
-    <li><strong>What happened this week.</strong> On 7D, 1M and 1Y the change tile and the movers show how much each stock gained or lost you over that period.</li>
+    <li><strong>Positions show the price you're valued at.</strong> Last and Change follow the extended-hours setting, like Value and P&amp;L already did.</li>
+    <li><strong>Menu bar percentages match.</strong> The ticker, best and worst mover and portfolio notifications measure today's move on the price shown.</li>
+    <li><strong>Same P&amp;L % in the menu and the window.</strong> The per-stock list in the menu uses the same calculation as the Positions table, including currency and tax.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.11.0/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.11.1/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="/mQ+AjwBnLGQriVcM2MbasnyAoEu8i6ngdplYwe6HXgrV6gFEHPqAH14YA9ChkQjErYXyY+JWyDJ7fNj3KdlCA=="
-                       length="10395208"/>
+                       sparkle:edSignature="gNvSEs9ko7u/U3imWRbRwqpag+nNXVyKIOdesfj0ih5Nfdw/bx3TJakDqovqQl67J6IgOqtY2hUa2keTdpgpBg=="
+                       length="10398664"/>
         </item>
     </channel>
 </rss>
