@@ -4,6 +4,14 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.11.1 — 2026-11-04
+
+*Same numbers everywhere*
+
+- **Positions show the price you're valued at.** Last and Change in the window follow the extended-hours setting, as Value and P&L already did — before, they showed the regular close during pre/post-market
+- **Menu bar percentages match.** The ticker, best/worst mover and portfolio notifications measure today's move on the price shown, not the regular session's
+- **Same P&L % in the menu and the window.** The per-stock list in the menu uses the Positions table's calculation (preferred currency, purchase-date FX, after tax)
+
 ## 1.11.0 — 2026-11-03
 
 *See the whole position*
