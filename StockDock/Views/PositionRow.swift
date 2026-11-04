@@ -17,6 +17,7 @@ struct PositionRow: View {
     var expanded: Bool? = nil
     var nested = false
     @ObservedObject var allHoursService = HyperliquidService.shared
+    @ObservedObject var storage = StorageService.shared
     @State private var hovered = false
 
     private var amountDec: Int { valueDecimals >= 0 ? valueDecimals : 2 }
@@ -27,16 +28,17 @@ struct PositionRow: View {
     // #24: Last and Change are per-share prices, so they carry the stock's own
     // conversion — never `currencySymbol`, which belongs to Value and P&L.
     private var priceSymbol: String { StorageService.currencySymbol(for: h.priceCurrency) }
-    /// The 24/7 price replaces the close while the market is shut, with its
-    /// change measured from the same previous close.
+    /// Same price Value, P&L and the menu bar use: the 24/7 price while the
+    /// market is shut, otherwise the extended-hours one when that setting is on.
+    /// The change is measured from the previous regular close.
     private var isAllHours: Bool { allHoursService.quote(for: h.quote) != nil }
-    private var lastPrice: Double { allHoursService.livePrice(for: h.quote, extendedHours: false) * h.priceRate }
-    private var lastChangeLocal: Double { allHoursService.liveChange(for: h.quote, extendedHours: false) }
+    private var extended: Bool { storage.showExtendedHours }
+    private var liveLocal: Double { allHoursService.livePrice(for: h.quote, extendedHours: extended) }
+    private var lastPrice: Double { liveLocal * h.priceRate }
+    private var lastChangeLocal: Double { allHoursService.liveChange(for: h.quote, extendedHours: extended) }
     private var lastChange: Double { lastChangeLocal * h.priceRate }
     private var lastChangePercent: Double {
-        guard isAllHours else { return h.quote.changePercent }
-        let live = allHoursService.livePrice(for: h.quote, extendedHours: false)
-        let base = live - lastChangeLocal
+        let base = liveLocal - lastChangeLocal
         return base > 0 ? lastChangeLocal / base * 100 : 0
     }
 
