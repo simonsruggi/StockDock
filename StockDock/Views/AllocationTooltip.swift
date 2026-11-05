@@ -17,9 +17,17 @@ struct AllocationTooltip: View {
     private var invested: Double { holdings.reduce(0) { $0 + $1.cost } }
     private var value: Double { holdings.reduce(0) { $0 + $1.value } }
     private var quantity: Double { holdings.reduce(0) { $0 + $1.holding.quantity } }
-    /// Shares × leverage: cost basis is leverage-scaled, so dividing it by the
-    /// bare share count would overstate the price paid on leveraged lots.
     private var exposure: Double { holdings.reduce(0) { $0 + abs($1.holding.quantity) * $1.holding.effectiveLeverage } }
+    /// Per-share price follows the "stock price currency" setting like Last in
+    /// Positions (native by default), so it reads against the broker's average.
+    private var avgPrice: Double {
+        guard exposure > 0 else { return 0 }
+        let paid = holdings.reduce(0) { $0 + $1.holding.avgPrice * abs($1.holding.quantity) * $1.holding.effectiveLeverage * $1.priceRate }
+        return paid / exposure
+    }
+    private var priceSymbol: String {
+        StorageService.currencySymbol(for: holdings.first?.priceCurrency ?? "")
+    }
     private var pnl: Double { CapitalGainsTax.net(value - invested, ratePercent: taxRate) }
     private var pnlPercent: Double { abs(invested) >= 0.01 ? pnl / abs(invested) * 100 : 0 }
     private var name: String { holdings.first?.name ?? symbol }
@@ -44,7 +52,7 @@ struct AllocationTooltip: View {
             Divider().overlay(DS.hairline)
             row("Shares", StorageService.formatQuantity(quantity))
             if exposure > 0 {
-                row("Avg cost", amount(abs(invested) / exposure))
+                row("Avg price", StorageService.formatAmount(avgPrice, symbol: priceSymbol, decimals: 2))
             }
             if holdings.count > 1 {
                 row(portfolioCount > 1 ? "Lots · portfolios" : "Lots",
