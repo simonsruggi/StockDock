@@ -56,6 +56,16 @@ extension PortfolioOverviewView {
                             }
                         }
                         .frame(width: 136, height: 136)
+                        .onContinuousHover { phase in
+                            switch phase {
+                            case .active(let loc):
+                                hoveredSlice = DonutHitTest.slice(
+                                    at: loc, in: CGSize(width: 136, height: 136), innerRatio: 0.64,
+                                    fractions: d.allocation.map { ($0.symbol, $0.fraction) })
+                            case .ended:
+                                hoveredSlice = nil
+                            }
+                        }
 
                         VStack(alignment: .leading, spacing: 9) {
                             ForEach(d.allocation.prefix(6)) { slice in
@@ -67,7 +77,10 @@ extension PortfolioOverviewView {
                                         .font(DS.figure).foregroundStyle(DS.inkSecondary)
                                 }
                                 .contentShape(Rectangle())
-                                .onHover { hoveredSlice = $0 ? slice.symbol : nil }
+                                .onHover { inside in
+                                    if inside { hoveredSlice = slice.symbol }
+                                    else if hoveredSlice == slice.symbol { hoveredSlice = nil }
+                                }
                             }
                         }
                         .frame(maxWidth: .infinity)
@@ -78,7 +91,35 @@ extension PortfolioOverviewView {
                         typeStrip(d)
                     }
                 }
+                .onContinuousHover { phase in
+                    if case .active(let loc) = phase { allocationHover = loc } else { allocationHover = nil }
+                }
+                .overlay { allocationTooltip(d) }
             }
+        }
+    }
+
+    @ViewBuilder private func allocationTooltip(_ d: Derived) -> some View {
+        if let symbol = hoveredSlice, let loc = allocationHover,
+           let slice = d.allocation.first(where: { $0.symbol == symbol }) {
+            GeometryReader { geo in
+                let toLeft = loc.x + 16 + AllocationTooltip.width > geo.size.width
+                let above = loc.y > geo.size.height / 2
+                ZStack(alignment: .topLeading) {
+                    Color.clear
+                    AllocationTooltip(symbol: symbol,
+                                      holdings: d.holdings.filter { $0.symbol == symbol },
+                                      weight: slice.fraction * 100,
+                                      tint: d.color(for: symbol),
+                                      currencySymbol: currencySymbol,
+                                      amountDecimals: storageService.amountDecimals,
+                                      percentDecimals: decimals,
+                                      taxRate: d.taxRate)
+                        .alignmentGuide(.leading) { toLeft ? $0.width - (loc.x - 16) : -(loc.x + 16) }
+                        .alignmentGuide(.top) { above ? $0.height - (loc.y - 12) : -(loc.y + 16) }
+                }
+            }
+            .allowsHitTesting(false)
         }
     }
 

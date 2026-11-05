@@ -50,6 +50,7 @@ struct PortfolioOverviewView: View {
     /// Symbols held more than once whose per-portfolio rows are shown.
     @State var expandedGroups: Set<String> = []
     @State var hoveredSlice: String?
+    @State var allocationHover: CGPoint?
     @State var hoverPoint: ValuePoint?
 
     var portfolios: [Portfolio] {
@@ -96,6 +97,8 @@ struct PortfolioOverviewView: View {
                             allocationCard(d).frame(maxWidth: .infinity)
                             moversCard(proxy: proxy, d, period).frame(width: 340)
                         }
+                        // The allocation hover card can reach past the card's edge.
+                        .zIndex(1)
                         positionsCard(d).id("positions")
                     }
                     .pageColumn()
