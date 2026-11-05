@@ -24,6 +24,9 @@ extension PortfolioOverviewView {
         var allocation: [AllocationSlice] = []
         var typeBreakdown: [(label: String, fraction: Double)] = []
         var taxRate: Double = 0
+        /// Sum of |cost basis|: allocation weights are shares of what was invested,
+        /// not of today's market value, so they don't drift with prices.
+        var weightBase: Double = 0
 
         var totalPnl: Double { CapitalGainsTax.net(totalValue - totalCost, ratePercent: taxRate) }
         var totalPnlPercent: Double { abs(totalCost) >= 0.01 ? (totalPnl / abs(totalCost)) * 100 : 0 }
@@ -69,12 +72,13 @@ extension PortfolioOverviewView {
             let change = HyperliquidService.shared.liveChange(for: h.quote, extendedHours: storageService.showExtendedHours)
             d.dayChangeValue += h.holding.dailyPnl(priceChange: change) * stockService.rate(from: h.quote.currency)
 
-            let weight = abs(h.value)
+            let weight = abs(h.cost)
             absTotal += weight
             bySymbol[h.symbol, default: 0] += weight
             byType[Self.typeLabel(h.type), default: 0] += weight
         }
 
+        d.weightBase = absTotal
         if absTotal >= 0.01 {
             d.allocation = bySymbol
                 .map { AllocationSlice(id: $0.key, symbol: $0.key, value: $0.value, fraction: $0.value / absTotal) }

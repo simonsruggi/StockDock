@@ -50,7 +50,7 @@ extension PortfolioOverviewView {
                     if let h = d.holdings.first(where: { $0.id == id }) {
                         HoldingDetailView(portfolioId: h.portfolioId, holding: h.holding, quote: h.quote,
                                           value: h.value, cost: h.cost,
-                                          weight: abs(d.totalValue) >= 0.01 ? abs(h.value) / abs(d.totalValue) * 100 : 0)
+                                          weight: d.weightBase >= 0.01 ? abs(h.cost) / d.weightBase * 100 : 0)
                     }
                 }
             }
@@ -61,7 +61,7 @@ extension PortfolioOverviewView {
     }
 
     private func weight(_ h: ValuedHolding, _ d: Derived) -> Double {
-        abs(d.totalValue) >= 0.01 ? abs(h.value) / abs(d.totalValue) * 100 : 0
+        d.weightBase >= 0.01 ? abs(h.cost) / d.weightBase * 100 : 0
     }
 
     private func row(_ h: ValuedHolding, _ d: Derived, title: String? = nil, note: String? = nil,

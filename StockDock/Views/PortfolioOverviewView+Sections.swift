@@ -29,7 +29,7 @@ extension PortfolioOverviewView {
                      value: String(format: "%.1f%%", d.topWeight),
                      caption: d.topSymbol.map { d.topWeight > 40 ? "high · top \($0)" : "top · \($0)" } ?? "—",
                      captionTint: d.topWeight > 40 ? DS.gold : DS.inkTertiary,
-                     help: "Weight of your largest position — a diversification risk gauge")
+                     help: "Share of your invested capital in your largest position")
         }
     }
 
