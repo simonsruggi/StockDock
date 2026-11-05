@@ -6,24 +6,23 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.11.1</title>
-            <pubDate>Wed, 04 Nov 2026 11:12:29 +0100</pubDate>
-            <sparkle:version>51</sparkle:version>
-            <sparkle:shortVersionString>1.11.1</sparkle:shortVersionString>
+            <title>Version 1.12.0</title>
+            <pubDate>Thu, 05 Nov 2026 16:52:07 +0100</pubDate>
+            <sparkle:version>52</sparkle:version>
+            <sparkle:shortVersionString>1.12.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Same numbers everywhere</h2>
-<p>The menu bar and the window now agree before and after market hours.</p>
+<h2>Allocation by what you invested</h2>
+<p>Portfolio weights now reflect where your money went, and every slice tells you more.</p>
 <ul>
-    <li><strong>Positions show the price you're valued at.</strong> Last and Change follow the extended-hours setting, like Value and P&amp;L already did.</li>
-    <li><strong>Menu bar percentages match.</strong> The ticker, best and worst mover and portfolio notifications measure today's move on the price shown.</li>
-    <li><strong>Same P&amp;L % in the menu and the window.</strong> The per-stock list in the menu uses the same calculation as the Positions table, including currency and tax.</li>
+    <li><strong>Weights follow your cost basis.</strong> The allocation donut, the Concentration tile and the weight in Positions are shares of what you invested, so they no longer drift with prices.</li>
+    <li><strong>Hover a slice for the details.</strong> Hovering a donut sector or a legend row shows invested, value, P&amp;L, shares, average price and how many lots and portfolios hold the stock.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.11.1/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.12.0/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="gNvSEs9ko7u/U3imWRbRwqpag+nNXVyKIOdesfj0ih5Nfdw/bx3TJakDqovqQl67J6IgOqtY2hUa2keTdpgpBg=="
-                       length="10398664"/>
+                       sparkle:edSignature="Mqn6DX7tMzgBLZmd+THohwloWp3JAddj7x0lxWQC3qdILWh1iYlEJ4olLsTpTh1YEl/XjEmbrNuYfwXui32BBQ=="
+                       length="10461147"/>
         </item>
     </channel>
 </rss>
