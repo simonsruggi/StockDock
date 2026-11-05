@@ -17,6 +17,9 @@ struct AllocationTooltip: View {
     private var invested: Double { holdings.reduce(0) { $0 + $1.cost } }
     private var value: Double { holdings.reduce(0) { $0 + $1.value } }
     private var quantity: Double { holdings.reduce(0) { $0 + $1.holding.quantity } }
+    /// Shares × leverage: cost basis is leverage-scaled, so dividing it by the
+    /// bare share count would overstate the price paid on leveraged lots.
+    private var exposure: Double { holdings.reduce(0) { $0 + abs($1.holding.quantity) * $1.holding.effectiveLeverage } }
     private var pnl: Double { CapitalGainsTax.net(value - invested, ratePercent: taxRate) }
     private var pnlPercent: Double { abs(invested) >= 0.01 ? pnl / abs(invested) * 100 : 0 }
     private var name: String { holdings.first?.name ?? symbol }
@@ -40,8 +43,8 @@ struct AllocationTooltip: View {
                 tint: DS.pnlColor(pnl))
             Divider().overlay(DS.hairline)
             row("Shares", StorageService.formatQuantity(quantity))
-            if abs(quantity) > 0 {
-                row("Avg cost", amount(invested / abs(quantity)))
+            if exposure > 0 {
+                row("Avg cost", amount(abs(invested) / exposure))
             }
             if holdings.count > 1 {
                 row(portfolioCount > 1 ? "Lots · portfolios" : "Lots",
