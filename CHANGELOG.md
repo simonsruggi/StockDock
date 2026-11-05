@@ -4,6 +4,13 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.12.0 — 2026-11-05
+
+*Allocation by what you invested*
+
+- **Weights follow your cost basis.** The allocation donut, the Concentration tile and the weight in Positions are shares of what you invested, so they no longer drift with prices
+- **Hover a slice for the details.** Hovering a donut sector or a legend row shows invested, value, P&L, shares, average price and how many lots and portfolios hold the stock
+
 ## 1.11.1 — 2026-11-04
 
 *Same numbers everywhere*
