@@ -6,23 +6,22 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.12.0</title>
-            <pubDate>Thu, 05 Nov 2026 16:52:07 +0100</pubDate>
-            <sparkle:version>52</sparkle:version>
-            <sparkle:shortVersionString>1.12.0</sparkle:shortVersionString>
+            <title>Version 1.12.1</title>
+            <pubDate>Wed, 11 Nov 2026 13:15:25 +0100</pubDate>
+            <sparkle:version>53</sparkle:version>
+            <sparkle:shortVersionString>1.12.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Allocation by what you invested</h2>
-<p>Portfolio weights now reflect where your money went, and every slice tells you more.</p>
+<h2>Alerts around the clock</h2>
+<p>Price alerts now fire on the 24/7 prices too.</p>
 <ul>
-    <li><strong>Weights follow your cost basis.</strong> The allocation donut, the Concentration tile and the weight in Positions are shares of what you invested, so they no longer drift with prices.</li>
-    <li><strong>Hover a slice for the details.</strong> Hovering a donut sector or a legend row shows invested, value, P&amp;L, shares, average price and how many lots and portfolios hold the stock.</li>
+    <li><strong>Alerts follow 24/7 prices.</strong> With 24/7 prices on, alerts and portfolio notifications check the Hyperliquid price you see off-hours, not the last regular close.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.12.0/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.12.1/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="Mqn6DX7tMzgBLZmd+THohwloWp3JAddj7x0lxWQC3qdILWh1iYlEJ4olLsTpTh1YEl/XjEmbrNuYfwXui32BBQ=="
-                       length="10461147"/>
+                       sparkle:edSignature="q4UEFKeYZKg9qjraQUp5eKRXzY+rV2VP/TOgYQfX53ExNLBXAu90bNGnFcSO+WbZQl84oDfEKB9g7Zy7zY6oAw=="
+                       length="10462908"/>
         </item>
     </channel>
 </rss>
