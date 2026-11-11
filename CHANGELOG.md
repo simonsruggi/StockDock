@@ -4,6 +4,12 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.12.1 — 2026-11-11
+
+*Alerts around the clock*
+
+- **Alerts follow 24/7 prices.** With 24/7 prices on, alerts and portfolio notifications check the Hyperliquid price shown off-hours, not the last regular close — before, they never fired outside market hours
+
 ## 1.12.0 — 2026-11-05
 
 *Allocation by what you invested*
