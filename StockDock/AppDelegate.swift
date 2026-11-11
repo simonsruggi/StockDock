@@ -150,11 +150,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 Task { @MainActor in self?.syncAllHoursFeed() }
             }
 
-        // 24/7 prices move the portfolio value, so the menu-bar P&L follows them.
+        // 24/7 prices move the portfolio value and can trigger alerts, so the
+        // menu-bar P&L and both monitors follow them.
         allHoursPriceObserver = HyperliquidService.shared.$mids
             .dropFirst()
             .sink { [weak self] _ in
-                Task { @MainActor in self?.updateMenuBarTitle() }
+                Task { @MainActor in
+                    guard let self else { return }
+                    self.updateMenuBarTitle()
+                    self.alertMonitor.check(quotes: self.stockService.quotes)
+                    self.portfolioMonitor.check()
+                }
             }
 
         symbolsObserver = storageService.$portfolios

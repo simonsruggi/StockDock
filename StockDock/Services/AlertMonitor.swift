@@ -16,10 +16,24 @@ final class AlertMonitor {
     func check(quotes: [String: StockQuote]) {
         for alert in storage.alerts where alert.isEnabled {
             guard let quote = quotes[alert.symbol] else { continue }
-            guard AlertEvaluator.shouldFire(alert, quote: quote) else { continue }
+            let live = livePrice(for: quote)
+            let fires: Bool
+            if let live {
+                fires = AlertEvaluator.shouldFire(condition: alert.condition,
+                                                  threshold: alert.threshold,
+                                                  isEnabled: alert.isEnabled,
+                                                  price: live.price,
+                                                  changePercent: live.changePercent,
+                                                  fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
+                                                  fiftyTwoWeekLow: quote.fiftyTwoWeekLow)
+            } else {
+                fires = AlertEvaluator.shouldFire(alert, quote: quote)
+            }
+            guard fires else { continue }
 
             let currency = StorageService.currencySymbol(for: quote.currency)
-            let priceStr = "\(currency)\(StorageService.formatNumber(quote.effectivePrice, decimals: 2))"
+            let shownPrice = live?.price ?? quote.effectivePrice
+            let priceStr = "\(currency)\(StorageService.formatNumber(shownPrice, decimals: 2))"
             let sentiment: NotificationManager.Sentiment
             switch alert.condition {
             case .priceAbove, .dailyChangeUp, .near52WeekHigh: sentiment = .positive
@@ -33,5 +47,13 @@ final class AlertMonitor {
             )
             storage.markAlertTriggered(id: alert.id)
         }
+    }
+
+    /// Off-hours the price the user sees is Hyperliquid's 24/7 one, so alerts
+    /// are evaluated against that same price and daily change.
+    private func livePrice(for quote: StockQuote) -> (price: Double, changePercent: Double)? {
+        let hl = HyperliquidService.shared
+        guard let allHours = hl.quote(for: quote) else { return nil }
+        return (allHours.price, hl.liveChangePercent(for: quote, extendedHours: storage.showExtendedHours))
     }
 }
