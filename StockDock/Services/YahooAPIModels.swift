@@ -15,6 +15,14 @@ struct YahooSparkResponse: Codable {
     }
 }
 
+/// Current shape of `/v8/finance/spark`: a flat object keyed by symbol,
+/// `{"NVDA": {"timestamp": [...], "close": [...]}}`. Yahoo dropped the
+/// `spark.result` wrapper that `YahooSparkResponse` decodes.
+struct YahooSparkSeries: Codable {
+    let timestamp: [Int]?
+    let close: [Double?]?
+}
+
 struct YahooChartResponse: Codable {
     let chart: ChartData
 
