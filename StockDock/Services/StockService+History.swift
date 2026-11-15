@@ -79,19 +79,34 @@ extension StockService {
         guard let url = URL(string: "https://query1.finance.yahoo.com/v8/finance/spark?symbols=\(encoded)&range=1mo&interval=1d") else { return }
         do {
             let (data, _) = try await session.data(from: url)
-            let response = try JSONDecoder().decode(YahooSparkResponse.self, from: data)
-            for entry in response.spark.result ?? [] {
-                guard let r = entry.response.first else { continue }
-                let points = PriceHistory.points(timestamps: r.timestamp ?? [],
-                                                 closes: r.indicators?.quote?.first?.close ?? [])
-                if !points.isEmpty, priceHistory[entry.symbol]?.isEmpty ?? true {
-                    priceHistory[entry.symbol] = points
-                    priceHistoryFetchedAt[entry.symbol] = Date()
+            for (symbol, points) in Self.sparkPoints(from: data) {
+                if !points.isEmpty, priceHistory[symbol]?.isEmpty ?? true {
+                    priceHistory[symbol] = points
+                    priceHistoryFetchedAt[symbol] = Date()
                 }
             }
             sparkFetchedAt = Date()
         } catch {
         }
+    }
+
+    /// Per-symbol closes from a `/v8/finance/spark` response. Reads both shapes:
+    /// the old `spark.result` wrapper and the current flat object keyed by symbol.
+    nonisolated static func sparkPoints(from data: Data) -> [String: [PricePoint]] {
+        let decoder = JSONDecoder()
+        var out: [String: [PricePoint]] = [:]
+        if let legacy = try? decoder.decode(YahooSparkResponse.self, from: data) {
+            for entry in legacy.spark.result ?? [] {
+                guard let r = entry.response.first else { continue }
+                out[entry.symbol] = PriceHistory.points(timestamps: r.timestamp ?? [],
+                                                        closes: r.indicators?.quote?.first?.close ?? [])
+            }
+        } else if let flat = try? decoder.decode([String: YahooSparkSeries].self, from: data) {
+            for (symbol, series) in flat {
+                out[symbol] = PriceHistory.points(timestamps: series.timestamp ?? [], closes: series.close ?? [])
+            }
+        }
+        return out
     }
 
     /// Closes from the v8 chart endpoint for one symbol, or nil when the
