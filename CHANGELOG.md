@@ -4,6 +4,12 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.12.2 — 2026-11-15
+
+*Trend lines are back*
+
+- **Watchlist Trend column fixed.** Yahoo changed the format of its batched price history, so the 1-month sparklines stayed empty; they load again and are no longer re-requested on every refresh. Thanks to [@hamidi-dev](https://github.com/hamidi-dev) ([#28](https://github.com/simonsruggi/StockDock/pull/28))
+
 ## 1.12.1 — 2026-11-11
 
 *Alerts around the clock*
