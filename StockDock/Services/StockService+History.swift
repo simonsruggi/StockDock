@@ -25,6 +25,17 @@ extension StockService {
         priceHistoryMaxAt[symbol] = Date()
     }
 
+    /// Weekly closes over 5 years, for the "5Y" range: finer than the monthly
+    /// "All" series, lighter than 5 years of dailies. Cached ~6h.
+    func ensurePriceHistory5y(for symbol: String) async {
+        if let at = priceHistory5yAt[symbol],
+           Date().timeIntervalSince(at) < 21600,
+           priceHistory5y[symbol]?.isEmpty == false { return }
+        guard let points = await chartPoints(for: symbol, query: "interval=1wk&range=5y") else { return }
+        priceHistory5y[symbol] = points
+        priceHistory5yAt[symbol] = Date()
+    }
+
     /// Loads (or refreshes after ~5min) one trading day of 5-minute closes for
     /// the "1D" chart range.
     func ensureIntraday(for symbol: String) async {

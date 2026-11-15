@@ -12,16 +12,27 @@ struct PriceChartCard: View {
     let quote: StockQuote
 
     enum ChartRange: String, CaseIterable {
-        case day = "24H", week = "7D", month = "1M", year = "1Y", all = "All"
-        /// Lookback window in days; nil = the whole fetched history.
+        case day = "24H", week = "7D", month = "1M", threeMonths = "3M", sixMonths = "6M",
+             ytd = "YTD", year = "1Y", fiveYears = "5Y", all = "All"
+        /// Lookback window in days; nil = no fixed window (YTD is bounded by
+        /// `cutoff`, 5Y and All use their own series).
         var days: Int? {
             switch self {
             case .day: return 1
             case .week: return 7
             case .month: return 30
+            case .threeMonths: return 91
+            case .sixMonths: return 182
             case .year: return 365
-            case .all: return nil
+            case .ytd, .fiveYears, .all: return nil
             }
+        }
+        /// Earliest date shown from the 2-year daily series, or nil for no cut.
+        var cutoff: Date? {
+            let cal = Calendar.current
+            if self == .ytd { return cal.date(from: cal.dateComponents([.year], from: Date())) }
+            guard let days else { return nil }
+            return cal.date(byAdding: .day, value: -days, to: Date())
         }
         /// 24H uses the 5-minute intraday feed; the rest use daily closes.
         var isIntraday: Bool { self == .day }
@@ -117,6 +128,7 @@ struct PriceChartCard: View {
         .task(id: "\(symbol)-\(chartRange.rawValue)") {
             if chartRange.isIntraday { await stockService.ensureIntraday(for: symbol) }
             if chartRange == .all { await stockService.ensurePriceHistoryMax(for: symbol) }
+            if chartRange == .fiveYears { await stockService.ensurePriceHistory5y(for: symbol) }
         }
     }
 
