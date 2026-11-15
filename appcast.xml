@@ -6,22 +6,22 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.12.1</title>
-            <pubDate>Wed, 11 Nov 2026 13:15:25 +0100</pubDate>
-            <sparkle:version>53</sparkle:version>
-            <sparkle:shortVersionString>1.12.1</sparkle:shortVersionString>
+            <title>Version 1.12.2</title>
+            <pubDate>Sun, 15 Nov 2026 22:49:20 +0100</pubDate>
+            <sparkle:version>54</sparkle:version>
+            <sparkle:shortVersionString>1.12.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Alerts around the clock</h2>
-<p>Price alerts now fire on the 24/7 prices too.</p>
+<h2>Trend lines are back</h2>
+<p>The watchlist mini charts work again.</p>
 <ul>
-    <li><strong>Alerts follow 24/7 prices.</strong> With 24/7 prices on, alerts and portfolio notifications check the Hyperliquid price you see off-hours, not the last regular close.</li>
+    <li><strong>Watchlist Trend column fixed.</strong> Yahoo changed the format of its batched price history, so the 1-month sparklines stayed empty. They load again, and StockDock no longer re-requests them on every refresh. Thanks to Mo (@hamidi-dev) for the fix.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.12.1/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.12.2/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="q4UEFKeYZKg9qjraQUp5eKRXzY+rV2VP/TOgYQfX53ExNLBXAu90bNGnFcSO+WbZQl84oDfEKB9g7Zy7zY6oAw=="
-                       length="10462908"/>
+                       sparkle:edSignature="y8i8ASvmMkxcijdWLJQe7Ld6Bmlzgax+O1GV8xKkVlmlm97SG9tDBz1F9fGbUcpXUGHz0KY2IboqFF0caqSUDA=="
+                       length="10463976"/>
         </item>
     </channel>
 </rss>
