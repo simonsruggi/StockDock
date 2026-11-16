@@ -26,13 +26,7 @@ extension PriceChartCard {
             return stockService.priceHistory5y[symbol] ?? []
         }
         guard let all = stockService.priceHistory[symbol] else { return [] }
-        guard let cutoff = chartRange.cutoff else { return all }
-        let inRange = all.filter { $0.date >= cutoff }
-        // YTD is measured from last year's final close, so keep it as the first point.
-        if chartRange == .ytd, let base = all.last(where: { $0.date < cutoff }) {
-            return [base] + inRange
-        }
-        return inRange
+        return chartRange.trim(all)
     }
 
     var isLoadingCurrent: Bool {

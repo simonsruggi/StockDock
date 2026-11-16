@@ -36,7 +36,9 @@ class StockService: ObservableObject {
     var intradayFetchedAt: [String: Date] = [:]
     var intradayWeekAt: [String: Date] = [:]
     var intradayExtendedAt: [String: Date] = [:]
-    var sparkFetchedAt: Date?
+    /// Watchlist Trend-column series per range and symbol (see `ensureSparklines`).
+    @Published var sparkSeries: [SymbolChartRange: [String: [PricePoint]]] = [:]
+    var sparkSeriesAt: [SymbolChartRange: Date] = [:]
     var regularSessions: [String: RegularSession] = [:]
 
     private init() {

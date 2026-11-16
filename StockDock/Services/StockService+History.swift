@@ -78,27 +78,37 @@ extension StockService {
         intradayWeekAt[symbol] = Date()
     }
 
-    /// Batched sparkline history: one Yahoo `spark` request fills 1-month daily
-    /// closes for MANY symbols at once (instead of one request per watchlist row).
-    /// Cached ~10min. Only fills symbols missing recent daily history.
-    func ensureSparklines(for symbols: [String]) async {
-        if let at = sparkFetchedAt, Date().timeIntervalSince(at) < 600 { return }
-        let missing = symbols.filter { (priceHistory[$0]?.isEmpty ?? true) }
-        guard !missing.isEmpty else { sparkFetchedAt = Date(); return }
-        let joined = missing.joined(separator: ",")
-        let encoded = joined.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? joined
-        guard let url = URL(string: "https://query1.finance.yahoo.com/v8/finance/spark?symbols=\(encoded)&range=1mo&interval=1d") else { return }
-        do {
-            let (data, _) = try await session.data(from: url)
-            for (symbol, points) in Self.sparkPoints(from: data) {
-                if !points.isEmpty, priceHistory[symbol]?.isEmpty ?? true {
-                    priceHistory[symbol] = points
-                    priceHistoryFetchedAt[symbol] = Date()
-                }
+    /// Batched sparkline history for the watchlist's Trend column: one Yahoo
+    /// `spark` request per 20 symbols fills `range` for every row at once.
+    /// Kept in `sparkSeries`, apart from the detail chart's `priceHistory`, so a
+    /// short sparkline range can't starve the detail chart's 1Y view.
+    func ensureSparklines(for symbols: [String], range: SymbolChartRange) async {
+        let have = sparkSeries[range] ?? [:]
+        let fresh = sparkSeriesAt[range].map { Date().timeIntervalSince($0) < range.sparkCacheSeconds } ?? false
+        let wanted = fresh ? symbols.filter { have[$0] == nil } : symbols
+        guard !wanted.isEmpty else { return }
+
+        var fetched = have
+        var complete = true
+        for start in stride(from: 0, to: wanted.count, by: 20) {
+            if Task.isCancelled { complete = false; break }
+            let chunk = wanted[start..<min(start + 20, wanted.count)]
+            let joined = chunk.joined(separator: ",")
+            let encoded = joined.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? joined
+            guard let url = URL(string: "https://query1.finance.yahoo.com/v8/finance/spark?symbols=\(encoded)&\(range.sparkQuery)"),
+                  let (data, response) = try? await session.data(from: url),
+                  (response as? HTTPURLResponse)?.statusCode == 200 else { complete = false; continue }
+            // A rate-limited or unparsable reply decodes to nothing; don't count it as fresh.
+            let parsed = Self.sparkPoints(from: data)
+            if parsed.isEmpty { complete = false }
+            // Empty arrays are kept too, so a symbol without data isn't refetched every render.
+            for (symbol, points) in parsed {
+                fetched[symbol] = range.sparkTrim(points)
             }
-            sparkFetchedAt = Date()
-        } catch {
         }
+        sparkSeries[range] = fetched
+        // A failed or cancelled chunk leaves the range stale, so the next pass refetches it.
+        if complete { sparkSeriesAt[range] = Date() }
     }
 
     /// Per-symbol closes from a `/v8/finance/spark` response. Reads both shapes:

@@ -7,6 +7,7 @@ struct WatchRowView<Menu: View>: View {
     let extendedSession: Bool
     let percentDecimals: Int
     let valueDecimals: Int
+    var trendRange: SymbolChartRange = .month
     let onOpen: () -> Void
     @ViewBuilder let menu: () -> Menu
     @State private var hover = false
@@ -101,7 +102,7 @@ struct WatchRowView<Menu: View>: View {
                 }
 
                 // Trend sparkline
-                Sparkline(symbol: row.symbol).frame(width: WCol.trend)
+                Sparkline(symbol: row.symbol, range: trendRange).frame(width: WCol.trend)
 
                 // 52-week range
                 Group {

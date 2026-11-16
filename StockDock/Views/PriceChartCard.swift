@@ -36,6 +36,17 @@ struct PriceChartCard: View {
         }
         /// 24H uses the 5-minute intraday feed; the rest use daily closes.
         var isIntraday: Bool { self == .day }
+        /// Cuts a daily series to this range. YTD is measured from last year's
+        /// final close, so that close stays as the first point. Shared with the
+        /// watchlist's Trend column so both show the same period.
+        func trim(_ daily: [PricePoint]) -> [PricePoint] {
+            guard let cutoff else { return daily }
+            let inRange = daily.filter { $0.date >= cutoff }
+            if self == .ytd, let base = daily.last(where: { $0.date < cutoff }) {
+                return [base] + inRange
+            }
+            return inRange
+        }
     }
     /// #14: seeded from the last range the user picked (see `restoreRange`), so
     /// the chart opens where they left it instead of always on 1M.
