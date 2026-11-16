@@ -17,6 +17,8 @@ class StockService: ObservableObject {
     /// Cached ~6h. (Yahoo downsamples daily+max to coarse data, so "All" needs its
     /// own monthly series and the shorter ranges need the daily 2y series.)
     @Published var priceHistoryMax: [String: [PricePoint]] = [:]
+    /// Weekly closes over 5 years, for the "5Y" chart range. Cached ~6h.
+    @Published var priceHistory5y: [String: [PricePoint]] = [:]
     /// Intraday (5-minute) closes for the "24H" chart range. Cached ~5min.
     @Published var intradayHistory: [String: [PricePoint]] = [:]
     /// Hourly closes over ~7 days for the "7D" chart range. Cached ~15min.
@@ -30,6 +32,7 @@ class StockService: ObservableObject {
     var lastNewsFetch: Date?
     var priceHistoryFetchedAt: [String: Date] = [:]
     var priceHistoryMaxAt: [String: Date] = [:]
+    var priceHistory5yAt: [String: Date] = [:]
     var intradayFetchedAt: [String: Date] = [:]
     var intradayWeekAt: [String: Date] = [:]
     var intradayExtendedAt: [String: Date] = [:]

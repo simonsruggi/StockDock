@@ -11,8 +11,8 @@ extension PriceChartCard {
         switch chartRange {
         case .day: return date.formatted(.dateTime.hour().minute())
         case .week: return date.formatted(.dateTime.weekday(.abbreviated))
-        case .month: return date.formatted(.dateTime.day().month(.abbreviated))
-        case .year, .all: return date.formatted(.dateTime.month(.abbreviated).year(.twoDigits))
+        case .month, .threeMonths, .sixMonths, .ytd: return date.formatted(.dateTime.day().month(.abbreviated))
+        case .year, .fiveYears, .all: return date.formatted(.dateTime.month(.abbreviated).year(.twoDigits))
         }
     }
     var history: [PricePoint] {
@@ -22,17 +22,24 @@ extension PriceChartCard {
         if chartRange == .all {
             return stockService.priceHistoryMax[symbol] ?? []
         }
+        if chartRange == .fiveYears {
+            return stockService.priceHistory5y[symbol] ?? []
+        }
         guard let all = stockService.priceHistory[symbol] else { return [] }
-        guard let days = chartRange.days,
-              let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date())
-        else { return all }
-        return all.filter { $0.date >= cutoff }
+        guard let cutoff = chartRange.cutoff else { return all }
+        let inRange = all.filter { $0.date >= cutoff }
+        // YTD is measured from last year's final close, so keep it as the first point.
+        if chartRange == .ytd, let base = all.last(where: { $0.date < cutoff }) {
+            return [base] + inRange
+        }
+        return inRange
     }
 
     var isLoadingCurrent: Bool {
         switch chartRange {
         case .day: return stockService.intradayHistory[symbol] == nil
         case .all: return stockService.priceHistoryMax[symbol] == nil
+        case .fiveYears: return stockService.priceHistory5y[symbol] == nil
         default: return stockService.priceHistory[symbol] == nil
         }
     }
