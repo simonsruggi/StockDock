@@ -14,7 +14,11 @@ struct SegmentedRangePicker<T: Hashable>: View {
         case "24H": return "Last 24 hours"
         case "7D": return "Last 7 days"
         case "1M": return "Last month"
+        case "3M": return "Last 3 months"
+        case "6M": return "Last 6 months"
+        case "YTD": return "Year to date"
         case "1Y": return "Last year"
+        case "5Y": return "Last 5 years"
         case "All": return "All available history"
         default: return label
         }
