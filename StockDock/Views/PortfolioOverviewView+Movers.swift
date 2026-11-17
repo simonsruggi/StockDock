@@ -25,15 +25,19 @@ extension PortfolioOverviewView {
         case .all:
             return PeriodSummary(value: d.totalPnl, percent: d.totalPnlPercent, label: "all-time",
                                  tileLabel: "Today", moversTitle: "All-time movers", moves: allTimeMoves(d))
-        case .week, .month, .year:
-            let days = chartRange.days ?? 7
-            let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
-            let history = chartRange == .week ? stockService.intradayWeek : stockService.priceHistory
+        case .week, .month, .threeMonths, .sixMonths, .ytd, .year, .fiveYears:
+            let cutoff = chartRange.cutoff() ?? Date()
+            let history: [String: [PricePoint]]
+            switch chartRange {
+            case .week: history = stockService.intradayWeek
+            case .fiveYears: history = stockService.priceHistory5y
+            default: history = stockService.priceHistory
+            }
             let moves = PeriodMovers.moves(holdings: d.holdings, history: history, since: cutoff,
                                            livePrice: { live.livePrice(for: $0, extendedHours: extended) },
                                            rate: { stockService.rate(from: $0) })
             let title = "Movers · \(chartRange.rawValue)"
-            let tile = "Past \(chartRange.rawValue)"
+            let tile = chartRange == .ytd ? "This year" : "Past \(chartRange.rawValue)"
             if let total = PeriodMovers.total(moves) {
                 return PeriodSummary(value: total.value, percent: total.percent, label: chartRange.changeLabel,
                                      tileLabel: tile, moversTitle: title, moves: moves)

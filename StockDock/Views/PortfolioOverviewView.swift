@@ -9,29 +9,6 @@ struct PortfolioOverviewView: View {
     @Environment(\.portfolioActions) private var portfolioActions
     let scope: PortfolioWindowView.Scope
 
-    /// Hero chart range — a pure UI filter over the value series.
-    enum ChartRange: String, CaseIterable {
-        case day = "24H", week = "7D", month = "1M", year = "1Y", all = "All"
-        var days: Int? {
-            switch self {
-            case .day: return 1
-            case .week: return 7
-            case .month: return 30
-            case .year: return 365
-            case .all: return nil
-            }
-        }
-        /// Suffix for the hero pill, describing the span it measures.
-        var changeLabel: String {
-            switch self {
-            case .day: return "today"
-            case .week: return "past 7d"
-            case .month: return "past 1M"
-            case .year: return "past 1Y"
-            case .all: return "all-time"
-            }
-        }
-    }
     /// #14: seeded from the last range the user picked (see `restoreRange`), so
     /// the chart opens where they left it instead of always on All.
     @State var chartRange: ChartRange = .all
@@ -127,7 +104,10 @@ struct PortfolioOverviewView: View {
                         case .day:
                             if extended { await service.ensureIntradayExtended(for: s) } else { await service.ensureIntraday(for: s) }
                         case .week: await service.ensureIntradayWeek(for: s)
-                        case .month, .year: await service.ensurePriceHistory(for: s)
+                        case .month, .threeMonths, .sixMonths, .ytd, .year: await service.ensurePriceHistory(for: s)
+                        case .fiveYears:
+                            await service.ensurePriceHistory(for: s)
+                            await service.ensurePriceHistory5y(for: s)
                         case .all:
                             await service.ensurePriceHistory(for: s)
                             await service.ensurePriceHistoryMax(for: s)

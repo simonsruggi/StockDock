@@ -1,52 +1,37 @@
 import SwiftUI
 
 extension PriceChartCard {
-    func hoverLabel(_ date: Date) -> String {
-        chartRange.isIntraday ? date.formatted(.dateTime.hour().minute())
-                              : date.formatted(date: .abbreviated, time: .omitted)
-    }
-
-    /// X-axis tick label, formatted for the selected period.
-    func xAxisLabel(_ date: Date) -> String {
-        switch chartRange {
-        case .day: return date.formatted(.dateTime.hour().minute())
-        case .week: return date.formatted(.dateTime.weekday(.abbreviated))
-        case .month, .threeMonths, .sixMonths, .ytd: return date.formatted(.dateTime.day().month(.abbreviated))
-        case .year, .fiveYears, .all: return date.formatted(.dateTime.month(.abbreviated).year(.twoDigits))
-        }
-    }
+    /// The series drawn for the selected range. Read once per render in `body`
+    /// and passed down, not re-read by every mark.
     var history: [PricePoint] {
-        if chartRange.isIntraday {
-            return stockService.intradayHistory[symbol] ?? []
+        switch chartRange {
+        case .day: return stockService.intradayHistory[symbol] ?? []
+        case .fiveYears: return stockService.priceHistory5y[symbol] ?? []
+        case .all: return stockService.priceHistoryMax[symbol] ?? []
+        default:
+            guard let daily = stockService.priceHistory[symbol] else { return [] }
+            return chartRange.slice(daily, date: \.date)
         }
-        if chartRange == .all {
-            return stockService.priceHistoryMax[symbol] ?? []
-        }
-        if chartRange == .fiveYears {
-            return stockService.priceHistory5y[symbol] ?? []
-        }
-        guard let all = stockService.priceHistory[symbol] else { return [] }
-        guard let cutoff = chartRange.cutoff else { return all }
-        let inRange = all.filter { $0.date >= cutoff }
-        // YTD is measured from last year's final close, so keep it as the first point.
-        if chartRange == .ytd, let base = all.last(where: { $0.date < cutoff }) {
-            return [base] + inRange
-        }
-        return inRange
     }
 
-    var isLoadingCurrent: Bool {
-        switch chartRange {
-        case .day: return stockService.intradayHistory[symbol] == nil
-        case .all: return stockService.priceHistoryMax[symbol] == nil
-        case .fiveYears: return stockService.priceHistory5y[symbol] == nil
-        default: return stockService.priceHistory[symbol] == nil
-        }
+    /// Percent change from the range's first close to the live price; nil on
+    /// 24H, where the "today" pill already says it.
+    func periodChange(_ points: [PricePoint], livePrice: Double) -> Double? {
+        guard chartRange != .day, points.count >= 2, let first = points.first?.close, first > 0 else { return nil }
+        return (livePrice - first) / first * 100
     }
-    var chartDomain: ClosedRange<Double> {
-        let closes = history.map(\.close)
-        guard let min = closes.min(), let max = closes.max(), max > min else { return 0...1 }
-        let pad = (max - min) * 0.12
-        return (min - pad)...(max + pad)
+
+    /// True while the range's series is still on its way. A failed request is
+    /// not "loading": the card says there is no history instead of spinning forever.
+    var isLoadingCurrent: Bool {
+        let kind: StockService.HistoryKind
+        let loaded: Bool
+        switch chartRange {
+        case .day: kind = .intraday; loaded = stockService.intradayHistory[symbol] != nil
+        case .fiveYears: kind = .fiveYears; loaded = stockService.priceHistory5y[symbol] != nil
+        case .all: kind = .max; loaded = stockService.priceHistoryMax[symbol] != nil
+        default: kind = .daily; loaded = stockService.priceHistory[symbol] != nil
+        }
+        return !loaded && !stockService.historyFailed(kind, symbol)
     }
 }

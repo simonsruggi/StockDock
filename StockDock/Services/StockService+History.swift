@@ -10,7 +10,10 @@ extension StockService {
            priceHistory[symbol]?.isEmpty == false { return }
         // range=2y keeps FULL daily resolution (Yahoo downsamples 1d+max to coarse
         // data, which starves the 7D/1M ranges). "All" uses the monthly series below.
-        guard let points = await chartPoints(for: symbol, query: "interval=1d&range=2y") else { return }
+        guard let points = await chartPoints(for: symbol, query: "interval=1d&range=2y") else {
+            return markHistory(.daily, symbol, failed: true)
+        }
+        markHistory(.daily, symbol, failed: false)
         priceHistory[symbol] = points
         priceHistoryFetchedAt[symbol] = Date()
     }
@@ -20,7 +23,10 @@ extension StockService {
         if let at = priceHistoryMaxAt[symbol],
            Date().timeIntervalSince(at) < 21600,
            priceHistoryMax[symbol]?.isEmpty == false { return }
-        guard let points = await chartPoints(for: symbol, query: "interval=1mo&range=max") else { return }
+        guard let points = await chartPoints(for: symbol, query: "interval=1mo&range=max") else {
+            return markHistory(.max, symbol, failed: true)
+        }
+        markHistory(.max, symbol, failed: false)
         priceHistoryMax[symbol] = points
         priceHistoryMaxAt[symbol] = Date()
     }
@@ -31,7 +37,10 @@ extension StockService {
         if let at = priceHistory5yAt[symbol],
            Date().timeIntervalSince(at) < 21600,
            priceHistory5y[symbol]?.isEmpty == false { return }
-        guard let points = await chartPoints(for: symbol, query: "interval=1wk&range=5y") else { return }
+        guard let points = await chartPoints(for: symbol, query: "interval=1wk&range=5y") else {
+            return markHistory(.fiveYears, symbol, failed: true)
+        }
+        markHistory(.fiveYears, symbol, failed: false)
         priceHistory5y[symbol] = points
         priceHistory5yAt[symbol] = Date()
     }
@@ -46,8 +55,11 @@ extension StockService {
         // before the open (and all weekend) the 24H chart had nothing to draw and
         // fell through to the "no history yet" placeholder. `lastSession` keeps
         // the most recent session that actually traded.
-        guard let raw = await chartPoints(for: symbol, query: "interval=5m&range=2d") else { return }
+        guard let raw = await chartPoints(for: symbol, query: "interval=5m&range=2d") else {
+            return markHistory(.intraday, symbol, failed: true)
+        }
         let points = PriceHistory.lastSession(raw)
+        markHistory(.intraday, symbol, failed: points.isEmpty)
         guard !points.isEmpty else { return }
         intradayHistory[symbol] = points
         intradayFetchedAt[symbol] = Date()

@@ -103,10 +103,7 @@ extension PortfolioOverviewView {
     }
 
     private var filteredSeries: [PortfolioSnapshot] {
-        guard let days = chartRange.days,
-              let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date())
-        else { return series }
-        return series.filter { $0.date >= cutoff }
+        chartRange.slice(series, date: \.date)
     }
 
     /// Builds an estimated value curve from a given per-symbol price history
@@ -128,23 +125,20 @@ extension PortfolioOverviewView {
         portfolios.flatMap { $0.holdings }.compactMap(\.purchaseDate).min()
     }
 
-    /// Daily estimate (2y) for 1M/1Y. "All" needs the monthly max-history only when
-    /// the portfolio actually predates the daily window — since the curve now starts
-    /// at the oldest purchase, a portfolio built this year would otherwise be drawn
-    /// as a handful of monthly steps.
+    /// Daily estimate (2y) for 1M…1Y. 5Y and All need a coarser series (weekly 5y,
+    /// monthly max) only when the portfolio actually predates the daily window —
+    /// since the curve starts at the oldest purchase, a portfolio built this year
+    /// would otherwise be drawn as a handful of weekly or monthly steps.
     private var estimatedSeries: [ValuePoint] {
-        guard chartRange == .all else { return valueSeries(from: stockService.priceHistory) }
+        guard chartRange.needsLongHistory else { return valueSeries(from: stockService.priceHistory) }
         let dailyStart = Calendar.current.date(byAdding: .year, value: -2, to: Date())
         if let since = ownedSince, let dailyStart, since >= dailyStart {
             return valueSeries(from: stockService.priceHistory)
         }
-        return valueSeries(from: stockService.priceHistoryMax)
+        return valueSeries(from: chartRange == .fiveYears ? stockService.priceHistory5y : stockService.priceHistoryMax)
     }
     private var estimatedFiltered: [ValuePoint] {
-        guard let days = chartRange.days,
-              let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date())
-        else { return estimatedSeries }
-        return estimatedSeries.filter { $0.date >= cutoff }
+        chartRange.slice(estimatedSeries, date: \.date)
     }
 
     /// The curve actually drawn. 24H/7D use intraday-estimated value (the daily
@@ -195,9 +189,10 @@ extension PortfolioOverviewView {
         switch chartRange {
         case .day: return date.formatted(.dateTime.hour().minute())
         case .week: return date.formatted(.dateTime.weekday(.abbreviated))
-        case .month: return date.formatted(.dateTime.day().month(.abbreviated))
-        case .year, .all:
-            guard span >= 365 * 86400 else { return date.formatted(.dateTime.day().month(.abbreviated)) }
+        default:
+            guard !chartRange.isShortSpan, span >= 365 * 86400 else {
+                return date.formatted(.dateTime.day().month(.abbreviated))
+            }
             // Four-digit year: "gen 05" reads as the 5th of January, not January 2005.
             return date.formatted(.dateTime.month(.abbreviated).year())
         }

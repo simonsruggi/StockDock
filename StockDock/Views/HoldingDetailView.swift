@@ -58,7 +58,7 @@ struct HoldingDetailView: View {
         } content: {
             ScrollView {
                 VStack(alignment: .leading, spacing: DS.gap) {
-                    PriceChartCard(symbol: holding.symbol, quote: quote)
+                    PriceChartCard(symbol: holding.symbol, quote: quote, costBasis: holding.avgPrice)
                     statStrip
                     HStack(alignment: .top, spacing: DS.gap) {
                         fiftyTwoWeekCard.frame(maxWidth: .infinity)
