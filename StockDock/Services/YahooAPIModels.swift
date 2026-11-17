@@ -50,6 +50,7 @@ struct YahooChartResponse: Codable {
         let currency: String?
         let regularMarketPrice: Double
         let regularMarketTime: Int?
+        let exchangeTimezoneName: String?
         let chartPreviousClose: Double?
         let fiftyTwoWeekHigh: Double?
         let fiftyTwoWeekLow: Double?
@@ -95,6 +96,8 @@ struct YahooV7Response: Codable {
         let regularMarketChange: Double?
         let regularMarketChangePercent: Double?
         let regularMarketPreviousClose: Double?
+        let regularMarketTime: Int?
+        let exchangeTimezoneName: String?
         let marketState: String?
         let regularMarketDayHigh: Double?
         let regularMarketDayLow: Double?

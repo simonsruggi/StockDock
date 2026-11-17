@@ -53,11 +53,22 @@ extension StockService {
             preMarketChangePercent: tickSession == "PRE" ? tickChangePercent : existing?.preMarketChangePercent,
             postMarketPrice: tickSession == "POST" ? tickPrice : existing?.postMarketPrice,
             postMarketChange: tickSession == "POST" ? tickChange : existing?.postMarketChange,
-            postMarketChangePercent: tickSession == "POST" ? tickChangePercent : existing?.postMarketChangePercent
+            postMarketChangePercent: tickSession == "POST" ? tickChangePercent : existing?.postMarketChangePercent,
+            // The session date follows the regular price it came with (a first
+            // trade of a new day arrives before the next REST refresh); a
+            // replayed close never moves it backwards.
+            regularMarketTime: Self.sessionTime(after: ticker, isRegular: isRegular, existing: existing?.regularMarketTime),
+            exchangeTimeZone: existing?.exchangeTimeZone
         )
 
         quotes[symbol] = quote
         return true
+    }
+
+    nonisolated static func sessionTime(after ticker: Yaticker, isRegular: Bool, existing: Date?) -> Date? {
+        guard isRegular, ticker.time > 0 else { return existing }
+        let tickTime = Date(timeIntervalSince1970: Double(ticker.time) / 1000)
+        return max(existing ?? tickTime, tickTime)
     }
 
     /// A REGULAR_MARKET tick older than a few minutes is the replayed close,

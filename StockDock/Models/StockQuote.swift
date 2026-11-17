@@ -24,7 +24,55 @@ struct StockQuote: Identifiable, Codable {
     let postMarketChange: Double?
     let postMarketChangePercent: Double?
 
+    /// Time of the last regular-session trade and the exchange's time zone
+    /// (Yahoo `regularMarketTime` / `exchangeTimezoneName`). They date the
+    /// session `change` belongs to, which can differ from the local calendar day
+    /// (overnight, weekends, a user far from the exchange).
+    var regularMarketTime: Date? = nil
+    var exchangeTimeZone: String? = nil
+
     var id: String { symbol }
+
+    /// Whether a lot bought at `purchase` missed the start of the move
+    /// `effectiveChange(extendedHours:)` measures, i.e. never sat at the close
+    /// that move starts from. In pre-market with an extended move, the move
+    /// starts at the last regular close; otherwise it covers the quote's whole
+    /// session day.
+    func boughtWithinChange(_ purchase: Date, extendedHours: Bool, now: Date = Date(),
+                            local: Calendar = .localGregorian) -> Bool {
+        let preOnly = marketState == "PRE" && extendedHours && isExtendedHours && extendedChange != nil
+        return Self.boughtWithinChange(purchase, sessionTime: regularMarketTime, zone: exchangeTimeZone,
+                                       fromLastClose: preOnly, now: now, local: local)
+    }
+
+    /// - `sessionTime`: last regular trade (Yahoo `regularMarketTime`); it dates
+    ///   the session, which can differ from the local day (overnight, weekends,
+    ///   a user far from the exchange). Without it, "today" is the local day.
+    /// - A purchase at exactly local midnight is a date picked in a calendar,
+    ///   not a time: it is compared by day, the local day against the
+    ///   exchange's session day. A real timestamp is compared exactly. A real
+    ///   purchase at exactly local midnight is read as a picked date; east of
+    ///   the exchange that can put it in the wrong session.
+    /// Known gap: a lot bought after a close is counted from that close again
+    /// once the next session starts (the previous close's time isn't known), so
+    /// the after-hours move before the purchase shows in the next day's change.
+    static func boughtWithinChange(_ purchase: Date, sessionTime: Date?, zone: String?, fromLastClose: Bool,
+                                   now: Date, local: Calendar = .localGregorian) -> Bool {
+        guard let sessionTime else { return local.isDate(purchase, inSameDayAs: now) }
+        var exchange = Calendar(identifier: .gregorian)
+        if let zone, let tz = TimeZone(identifier: zone) { exchange.timeZone = tz }
+        if local.startOfDay(for: purchase) == purchase {
+            let bought = dayNumber(local, purchase), session = dayNumber(exchange, sessionTime)
+            return fromLastClose ? bought > session : bought >= session
+        }
+        return purchase >= (fromLastClose ? sessionTime : exchange.startOfDay(for: sessionTime))
+    }
+
+    /// Both day numbers must come from the same calendar system.
+    private static func dayNumber(_ calendar: Calendar, _ date: Date) -> Int {
+        let c = calendar.dateComponents([.year, .month, .day], from: date)
+        return (c.year ?? 0) * 10_000 + (c.month ?? 0) * 100 + (c.day ?? 0)
+    }
 
     var isPositive: Bool { change >= 0 }
 
@@ -124,5 +172,15 @@ struct StockQuote: Identifiable, Codable {
         case "REGULAR": return ""
         default: return "Closed"
         }
+    }
+}
+
+extension Calendar {
+    /// Gregorian in the user's time zone, so local day numbers compare with the
+    /// exchange's (a Buddhist or Japanese system calendar numbers years differently).
+    static var localGregorian: Calendar {
+        var c = Calendar(identifier: .gregorian)
+        c.timeZone = .current
+        return c
     }
 }

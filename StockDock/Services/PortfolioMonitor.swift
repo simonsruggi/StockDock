@@ -149,7 +149,8 @@ final class PortfolioMonitor {
             // scaled by signed quantity and leverage so shorts and levered lots
             // contribute correctly.
             let exposure = holding.quantity * holding.effectiveLeverage
-            let change = HyperliquidService.shared.liveChange(for: quote, extendedHours: storage.showExtendedHours)
+            let change = HyperliquidService.shared.liveChange(for: quote, holding: holding,
+                                                              extendedHours: storage.showExtendedHours)
             let changePercent = HyperliquidService.shared.liveChangePercent(for: quote, extendedHours: storage.showExtendedHours)
             let contribution = holding.dailyPnl(priceChange: change) * rate
             let prevClose = displayPrice - change

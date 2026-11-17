@@ -60,6 +60,16 @@ struct Holding: Identifiable, Codable {
         priceChange * quantity * effectiveLeverage
     }
 
+    /// Per-share move that counts toward today's P&L. `liveChange` runs from a
+    /// close the lot may never have seen: a lot bought within the change
+    /// (see `StockQuote.boughtWithinChange`) starts its day at the purchase
+    /// price instead. A lot topped up and re-dated to today counts as bought
+    /// today in full; keep top-ups as separate lots.
+    func dayPriceChange(liveChange: Double, currentPrice: Double, boughtWithin: (Date) -> Bool) -> Double {
+        guard avgPrice > 0, let bought = purchaseDate, boughtWithin(bought) else { return liveChange }
+        return currentPrice - avgPrice
+    }
+
     func pnlPercent(currentPrice: Double) -> Double {
         guard avgPrice > 0 else { return 0 }
         // Exposure-relative return: a short gains when the price falls, so flip

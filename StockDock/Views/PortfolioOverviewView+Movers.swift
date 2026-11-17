@@ -58,8 +58,8 @@ extension PortfolioOverviewView {
         var value: [String: Double] = [:], base: [String: Double] = [:], names: [String: String] = [:]
         for h in d.holdings {
             let fx = stockService.rate(from: h.quote.currency)
-            let change = live.liveChange(for: h.quote, extendedHours: extended)
             let price = live.livePrice(for: h.quote, extendedHours: extended)
+            let change = live.liveChange(for: h.quote, holding: h.holding, extendedHours: extended)
             let exposure = h.holding.quantity * h.holding.effectiveLeverage
             value[h.symbol, default: 0] += h.holding.dailyPnl(priceChange: change) * fx
             base[h.symbol, default: 0] += abs((price - change) * exposure * fx)

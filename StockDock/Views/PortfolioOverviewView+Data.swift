@@ -74,7 +74,8 @@ extension PortfolioOverviewView {
             d.totalCost += h.cost
             // Use the change consistent with the price the value is computed at
             // (extended-hours-aware), so TODAY can't disagree in sign with the value.
-            let change = HyperliquidService.shared.liveChange(for: h.quote, extendedHours: storageService.showExtendedHours)
+            let change = HyperliquidService.shared.liveChange(for: h.quote, holding: h.holding,
+                                                              extendedHours: storageService.showExtendedHours)
             d.dayChangeValue += h.holding.dailyPnl(priceChange: change) * stockService.rate(from: h.quote.currency)
 
             let weight = d.weightAmount(h)

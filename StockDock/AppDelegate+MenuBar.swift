@@ -21,7 +21,8 @@ extension AppDelegate {
         var stats = MenuBarPortfolioStats(value: totals.value, cost: totals.cost)
         for holding in holdings {
             guard let quote = stockService.quotes[holding.symbol] else { continue }
-            let change = HyperliquidService.shared.liveChange(for: quote, extendedHours: storageService.showExtendedHours)
+            let change = HyperliquidService.shared.liveChange(for: quote, holding: holding,
+                                                              extendedHours: storageService.showExtendedHours)
             stats.dailyPnl += holding.dailyPnl(priceChange: change) * stockService.rate(from: quote.currency)
         }
         return stats
