@@ -6,22 +6,27 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.12.2</title>
-            <pubDate>Sun, 15 Nov 2026 22:49:20 +0100</pubDate>
-            <sparkle:version>54</sparkle:version>
-            <sparkle:shortVersionString>1.12.2</sparkle:shortVersionString>
+            <title>Version 1.13.0</title>
+            <pubDate>Tue, 17 Nov 2026 13:33:47 +0100</pubDate>
+            <sparkle:version>55</sparkle:version>
+            <sparkle:shortVersionString>1.13.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Trend lines are back</h2>
-<p>The watchlist mini charts work again.</p>
+<h2>More ways to read a chart</h2>
+<p>New chart ranges, a few tools traders asked for, and smoother charts.</p>
 <ul>
-    <li><strong>Watchlist Trend column fixed.</strong> Yahoo changed the format of its batched price history, so the 1-month sparklines stayed empty. They load again, and StockDock no longer re-requests them on every refresh. Thanks to Mo (@hamidi-dev) for the fix.</li>
+    <li><strong>New ranges: 3M, 6M, YTD and 5Y</strong> on the symbol chart and the portfolio chart. YTD starts from last year's final close; 5Y uses weekly closes. Thanks to Mo (@hamidi-dev).</li>
+    <li><strong>Change over the range.</strong> Next to today's move, the symbol chart shows how much the price changed over the selected range.</li>
+    <li><strong>Drag to measure.</strong> Click and drag across a chart to see the change between two dates.</li>
+    <li><strong>Your average price on the chart.</strong> A holding's chart draws a dashed line at your average purchase price.</li>
+    <li><strong>Smoother charts.</strong> Moving the mouse over a chart uses about 60% less CPU.</li>
+    <li><strong>No more endless spinner</strong> when Yahoo does not return a price history.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.12.2/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.0/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="y8i8ASvmMkxcijdWLJQe7Ld6Bmlzgax+O1GV8xKkVlmlm97SG9tDBz1F9fGbUcpXUGHz0KY2IboqFF0caqSUDA=="
-                       length="10463976"/>
+                       sparkle:edSignature="14OpYHa17Fw8mQoxqrySVzzaiDciNTvc1vaXW2kBlVL7em7p+rw+2NTiHscz94NVGkOMBbzsmwbUkO2aWtUcDg=="
+                       length="10521036"/>
         </item>
     </channel>
 </rss>
