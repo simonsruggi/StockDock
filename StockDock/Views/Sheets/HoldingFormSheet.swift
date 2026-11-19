@@ -21,10 +21,7 @@ struct HoldingFormSheet: View {
     @State private var avgPriceText = ""
     @State private var leverageText = ""
     @State private var isShort = false
-    @State private var purchaseDate = Date()
-    /// Stand-in date shown when editing an undated lot; saved unchanged it stays
-    /// undated instead of being re-dated to today.
-    @State private var datePlaceholder: Date?
+    @State private var purchaseDate: Date?
 
     private var portfolioId: UUID {
         switch mode {
@@ -198,13 +195,7 @@ struct HoldingFormSheet: View {
             avgPriceText = String(format: "%.2f", h.avgPrice)
             leverageText = (h.leverage.map { $0 != 1 ? String(format: "%g", $0) : "" }) ?? ""
             isShort = h.quantity < 0
-            if let date = h.purchaseDate {
-                purchaseDate = date
-            } else {
-                let placeholder = Date()
-                datePlaceholder = placeholder
-                purchaseDate = placeholder
-            }
+            purchaseDate = h.purchaseDate
         } else if let sym = fixedSymbol, let q = stockService.quotes[sym] {
             avgPriceText = String(format: "%.2f", q.price)
         }
@@ -226,7 +217,7 @@ struct HoldingFormSheet: View {
         }()
         if let h = editingHolding {
             storageService.updateHolding(in: portfolioId, holdingId: h.id, quantity: signedQty, avgPrice: price,
-                                         purchaseDate: purchaseDate == datePlaceholder ? nil : purchaseDate, leverage: leverage)
+                                         purchaseDate: purchaseDate, leverage: leverage)
         } else {
             storageService.addHolding(to: portfolioId, symbol: sym, quantity: signedQty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
         }

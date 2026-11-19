@@ -286,3 +286,7 @@
 "Period for the Trend column" = "Zeitraum der Trend-Spalte";
 "Sort by the change over the period" = "Nach Veränderung im Zeitraum sortieren";
 "Sort by where the price sits in its 52-week range" = "Nach Lage des Kurses in der 52-Wochen-Spanne sortieren";
+
+"Not set" = "Nicht angegeben";
+"Set date" = "Datum festlegen";
+"Clear date" = "Datum entfernen";

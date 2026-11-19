@@ -286,3 +286,7 @@
 "Period for the Trend column" = "Période de la colonne Tendance";
 "Sort by the change over the period" = "Trier par variation sur la période";
 "Sort by where the price sits in its 52-week range" = "Trier par position du prix dans sa fourchette sur 52 semaines";
+
+"Not set" = "Non renseignée";
+"Set date" = "Choisir une date";
+"Clear date" = "Effacer la date";

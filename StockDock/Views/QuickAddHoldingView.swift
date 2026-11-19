@@ -12,7 +12,7 @@ struct QuickAddHoldingView: View {
     @State private var avgPriceText = ""
     @State private var leverageText = ""
     @State private var isShort = false
-    @State private var purchaseDate = Date()
+    @State private var purchaseDate: Date?
 
     var body: some View {
         VStack(spacing: 12) {
@@ -57,12 +57,7 @@ struct QuickAddHoldingView: View {
                 }
             }
 
-            VStack(alignment: .leading) {
-                Text("Purchase date").font(.inter(10, relativeTo: .caption)).foregroundColor(.secondary)
-                DatePicker("", selection: $purchaseDate, displayedComponents: .date)
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-            }
+            PurchaseDateField(date: $purchaseDate)
 
             Spacer()
 

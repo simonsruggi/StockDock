@@ -12,7 +12,7 @@ struct AddHoldingView: View {
     @State private var avgPriceText = ""
     @State private var leverageText = ""
     @State private var isShort = false
-    @State private var purchaseDate = Date()
+    @State private var purchaseDate: Date?
     @State private var searchResults: [SearchResult] = []
     @State private var selectedSymbol: String?
     @State private var searchTask: Task<Void, Never>?
@@ -157,15 +157,9 @@ struct AddHoldingView: View {
                     .padding(.horizontal)
             }
 
-            VStack(alignment: .leading) {
-                Text("Purchase date")
-                    .font(.inter(10, relativeTo: .caption))
-                    .foregroundColor(.secondary)
-                DatePicker("", selection: $purchaseDate, displayedComponents: .date)
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-            }
-            .padding(.horizontal)
+            PurchaseDateField(date: $purchaseDate)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
 
             Spacer()
 

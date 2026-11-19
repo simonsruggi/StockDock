@@ -12,13 +12,7 @@ struct EditHoldingView: View {
     @State private var avgPriceText: String
     @State private var leverageText: String
     @State private var isShort: Bool
-    @State private var purchaseDate: Date
-    /// The stand-in shown for a lot without a purchase date. Saving it unchanged
-    /// keeps the lot undated, so it isn't silently re-dated to today (which would
-    /// count its whole gain as today's P&L).
-    /// @State, not let: SwiftUI re-runs init on parent updates, and a fresh
-    /// Date() would no longer match the one `purchaseDate` kept.
-    @State private var datePlaceholder: Date?
+    @State private var purchaseDate: Date?
 
     init(portfolioId: UUID, holding: Holding, isPresented: Binding<(portfolioId: UUID, holding: Holding)?>) {
         self.portfolioId = portfolioId
@@ -29,9 +23,7 @@ struct EditHoldingView: View {
         _avgPriceText = State(initialValue: String(format: "%.2f", holding.avgPrice))
         _leverageText = State(initialValue: (holding.leverage.map { $0 != 1 ? String(format: "%g", $0) : "" }) ?? "")
         _isShort = State(initialValue: holding.quantity < 0)
-        let placeholder: Date? = holding.purchaseDate == nil ? Date() : nil
-        _datePlaceholder = State(initialValue: placeholder)
-        _purchaseDate = State(initialValue: holding.purchaseDate ?? placeholder ?? Date())
+        _purchaseDate = State(initialValue: holding.purchaseDate)
     }
 
     /// #24: names the currency the stored avg price is in, so it is never
@@ -115,21 +107,15 @@ struct EditHoldingView: View {
                     .padding(.horizontal)
             }
 
-            VStack(alignment: .leading) {
-                Text("Purchase date")
-                    .font(.inter(10, relativeTo: .caption))
-                    .foregroundColor(.secondary)
-                DatePicker("", selection: $purchaseDate, displayedComponents: .date)
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-            }
-            .padding(.horizontal)
+            PurchaseDateField(date: $purchaseDate)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal)
 
             if let quote = stockService.quotes[holding.symbol], quote.currency != storageService.preferredCurrency, let info = costBasisInfo {
                 let stockSym = StorageService.currencySymbol(for: quote.currency)
                 let prefSym = StorageService.currencySymbol(for: storageService.preferredCurrency)
-                let dateStr = DateFormatter.mediumDate.string(from: purchaseDate)
-                Text("Cost basis: \(prefSym)\(String(format: "%.2f", info.costInPreferred)) (\(stockSym)\(String(format: "%.2f", info.costInStock)) × \(String(format: "%.4f", info.rate)) on \(dateStr))")
+                let onDate = purchaseDate.map { " on " + DateFormatter.mediumDate.string(from: $0) } ?? ""
+                Text(verbatim: "Cost basis: \(prefSym)\(String(format: "%.2f", info.costInPreferred)) (\(stockSym)\(String(format: "%.2f", info.costInStock)) × \(String(format: "%.4f", info.rate))\(onDate))")
                     .font(.inter(10, relativeTo: .caption))
                     .foregroundColor(.secondary)
                     .padding(.horizontal)
@@ -175,7 +161,7 @@ struct EditHoldingView: View {
             return l
         }()
         storageService.updateHolding(in: portfolioId, holdingId: holding.id, quantity: signedQty, avgPrice: price,
-                                     purchaseDate: purchaseDate == datePlaceholder ? nil : purchaseDate, leverage: leverage)
+                                     purchaseDate: purchaseDate, leverage: leverage)
         Task {
             await stockService.refreshAll(storageService: storageService)
         }
