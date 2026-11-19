@@ -5,6 +5,8 @@ import SwiftUI
 struct DSDatePicker: View {
     @Binding var date: Date
     @State private var showCalendar = false
+    /// Popovers don't inherit the window's locale, so the in-app language is passed in.
+    @Environment(\.locale) private var locale
 
     var body: some View {
         Button { showCalendar.toggle() } label: {
@@ -26,6 +28,7 @@ struct DSDatePicker: View {
                 .padding(14)
                 .frame(width: 268)
                 .background(DS.card)
+                .environment(\.locale, locale)
         }
     }
 }

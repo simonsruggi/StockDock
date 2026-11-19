@@ -7,6 +7,8 @@ struct DSPicker<T: Hashable>: View {
     @Binding var selection: T
     var width: CGFloat = 240
     @State private var show = false
+    /// Popovers don't inherit the window's locale, so the in-app language is passed in.
+    @Environment(\.locale) private var locale
 
     private var currentLabel: String {
         options.first { $0.value == selection }?.label ?? ""
@@ -38,6 +40,7 @@ struct DSPicker<T: Hashable>: View {
             }
             .frame(width: width)
             .frame(maxHeight: 320)
+            .environment(\.locale, locale)
         }
     }
 }

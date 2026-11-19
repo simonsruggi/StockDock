@@ -26,6 +26,9 @@ class StockService: ObservableObject {
     /// 5-minute closes including pre/post-market, for the portfolio "24H" range
     /// with extended hours on. Cached ~5min.
     @Published var intradayExtended: [String: [PricePoint]] = [:]
+    /// Chart series whose last request failed ("kind:SYMBOL"), so the charts show
+    /// "no history" instead of a spinner that never ends. Cleared on success.
+    @Published var failedHistory: Set<String> = []
 
     let session: URLSession
     var crumb: String?
@@ -73,6 +76,7 @@ class StockService: ObservableObject {
         // Evict quotes for symbols no longer tracked
         let staleKeys = Set(quotes.keys).subtracting(allSymbols)
         for key in staleKeys { quotes.removeValue(forKey: key) }
+        evictStaleHistory(keeping: allSymbols)
 
         await fetchQuotes(symbols: Array(allSymbols))
         await refreshExchangeRates(storageService: storageService)

@@ -4,6 +4,24 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.13.1 — 2026-11-19
+
+*Weights by market value*
+
+- **Choose what weights are based on.** Settings → "Weights based on": Cost basis (the default, unchanged) or Market value. It applies to the allocation donut, the Concentration tile and the weight in Positions, so long-held winners show their real share of the portfolio. Thanks to [@berndinberlin](https://github.com/berndinberlin) ([#31](https://github.com/simonsruggi/StockDock/issues/31))
+
+## 1.13.0 — 2026-11-17
+
+*More ways to read a chart*
+
+- **New ranges: 3M, 6M, YTD and 5Y** on the symbol chart and the portfolio chart. YTD starts from last year's final close; 5Y uses weekly closes. Thanks to [@hamidi-dev](https://github.com/hamidi-dev) ([#29](https://github.com/simonsruggi/StockDock/pull/29))
+- **Change over the range.** Next to today's move, the symbol chart shows how much the price changed over the selected range (e.g. "+38% · 5Y")
+- **Drag to measure.** Click and drag across a chart to see the change between two dates, in % and in price
+- **Your average price on the chart.** A holding's chart draws a dashed line at your average purchase price, so you see at a glance whether you are above or below it
+- **Smoother charts.** Moving the mouse over a chart uses about 60% less CPU
+- **No more endless spinner.** If Yahoo does not return a price history, the chart says so instead of loading forever
+- **Lighter over long sessions.** Charts of symbols you no longer follow are released from memory after a few hours
+
 ## 1.12.2 — 2026-11-15
 
 *Trend lines are back*

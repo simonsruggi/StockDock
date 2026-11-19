@@ -33,6 +33,7 @@ struct SegmentedRangePicker<T: Hashable>: View {
                     Text(label(option))
                         .font(.inter(10, weight: .semibold, relativeTo: .caption2))
                         .foregroundStyle(selection == option ? DS.ink : DS.inkTertiary)
+                        .lineLimit(1).fixedSize()
                         .padding(.horizontal, 9).padding(.vertical, 4)
                         .background {
                             if selection == option {

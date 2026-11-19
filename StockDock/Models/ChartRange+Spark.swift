@@ -2,9 +2,9 @@ import Foundation
 
 /// The watchlist's Trend column uses the symbol chart's ranges, and both share
 /// one remembered selection (`StorageService.lastSymbolChartRange`).
-typealias SymbolChartRange = PriceChartCard.ChartRange
+typealias SymbolChartRange = ChartRange
 
-extension PriceChartCard.ChartRange {
+extension ChartRange {
     /// Query for the batched `/v8/finance/spark` request: one per range fills
     /// every watchlist row. Same data as the symbol chart: 5-minute bars for 24H,
     /// daily closes (fetched with headroom, then cut by `sparkTrim`) up to 1Y,
@@ -25,7 +25,7 @@ extension PriceChartCard.ChartRange {
 
     /// The series the symbol chart would draw for this range.
     func sparkTrim(_ points: [PricePoint]) -> [PricePoint] {
-        isIntraday ? PriceHistory.lastSession(points) : trim(points)
+        isIntraday ? PriceHistory.lastSession(points) : slice(points, date: \.date)
     }
 
     /// Intraday data moves; longer ranges barely change within a session.

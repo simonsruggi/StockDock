@@ -6,22 +6,21 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.12.2</title>
-            <pubDate>Sun, 15 Nov 2026 22:49:20 +0100</pubDate>
-            <sparkle:version>54</sparkle:version>
-            <sparkle:shortVersionString>1.12.2</sparkle:shortVersionString>
+            <title>Version 1.13.1</title>
+            <pubDate>Thu, 19 Nov 2026 14:49:33 +0100</pubDate>
+            <sparkle:version>56</sparkle:version>
+            <sparkle:shortVersionString>1.13.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Trend lines are back</h2>
-<p>The watchlist mini charts work again.</p>
+<h2>Weights by market value</h2>
 <ul>
-    <li><strong>Watchlist Trend column fixed.</strong> Yahoo changed the format of its batched price history, so the 1-month sparklines stayed empty. They load again, and StockDock no longer re-requests them on every refresh. Thanks to Mo (@hamidi-dev) for the fix.</li>
+    <li><strong>Choose what weights are based on.</strong> Settings → "Weights based on": Cost basis (the default, unchanged) or Market value. It applies to the allocation donut, the Concentration tile and the weight in Positions. Thanks to Bernd (@berndinberlin).</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.12.2/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.1/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="y8i8ASvmMkxcijdWLJQe7Ld6Bmlzgax+O1GV8xKkVlmlm97SG9tDBz1F9fGbUcpXUGHz0KY2IboqFF0caqSUDA=="
-                       length="10463976"/>
+                       sparkle:edSignature="cmX51I/C2GD8RPt72jsxGWLu/rQfDGqt6qjqKNIN68DYIWxXcUfp+xpNqcqhfTHgNQ5/31JS0fLaaLBhpGLMBQ=="
+                       length="10531169"/>
         </item>
     </channel>
 </rss>
