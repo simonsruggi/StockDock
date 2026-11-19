@@ -1,0 +1,20 @@
+name: Feature request
+description: Suggest something StockDock should do
+title: "Feature request: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like StockDock to do?
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help you?
+  - type: input
+    id: version
+    attributes:
+      label: StockDock version
+      placeholder: "e.g. 1.13.2"
