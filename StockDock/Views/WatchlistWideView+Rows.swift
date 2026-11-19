@@ -83,6 +83,12 @@ extension WatchlistWideView {
             // Sort by the pre/post-market % move, not the raw extended price.
             // Rows without an extended-hours quote sink to the bottom either way.
             return StorageService.sortedByExtendedPercent(base, ascending: asc) { $0.extChangePercent }
+        // Rows without data (history not loaded, no 52-week range) sink to the bottom.
+        case .trend:
+            let series = stockService.sparkSeries[trendRange] ?? [:]
+            return StorageService.sortedByExtendedPercent(base, ascending: asc) { Sparkline.change(series[$0.symbol] ?? []) }
+        case .range52:
+            return StorageService.sortedByExtendedPercent(base, ascending: asc) { $0.quote?.fiftyTwoWeekPosition }
         }
     }
 }

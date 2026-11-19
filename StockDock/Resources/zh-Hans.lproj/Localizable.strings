@@ -284,3 +284,5 @@
 "Perpetual futures price when there is no Pre/Post session, not the official quote" = "无盘前/盘后交易时的永续合约价格，非官方报价";
 "Trend %@" = "趋势 %@";
 "Period for the Trend column" = "趋势列的时间范围";
+"Sort by the change over the period" = "按期间涨跌幅排序";
+"Sort by where the price sits in its 52-week range" = "按价格在 52 周区间中的位置排序";

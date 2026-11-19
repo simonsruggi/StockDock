@@ -17,8 +17,11 @@ struct Sparkline: View {
 
     private var points: [PricePoint] { stockService.sparkSeries[range]?[symbol] ?? [] }
 
-    /// First-to-last change over the period; nil without enough data.
-    private var change: Double? {
+    private var change: Double? { Self.change(points) }
+
+    /// First-to-last change over the period; nil without enough data. Also the
+    /// Trend column's sort key.
+    static func change(_ points: [PricePoint]) -> Double? {
         guard points.count >= 2, let first = points.first?.close, first > 0,
               let last = points.last?.close else { return nil }
         return (last / first - 1) * 100

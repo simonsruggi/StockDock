@@ -9,7 +9,7 @@ struct WatchlistWideView: View {
     @ObservedObject var allHoursService = HyperliquidService.shared
     @Binding var showSearch: Bool
 
-    enum SortKey { case order, symbol, name, changePercent, extChangePercent }
+    enum SortKey { case order, symbol, name, changePercent, extChangePercent, trend, range52 }
 
     @State var filter = ""
     @State private var filterFocused = false
@@ -29,7 +29,7 @@ struct WatchlistWideView: View {
     /// Period of the Trend column: the same remembered range the symbol chart
     /// opens on, so both stay in step. Mirrored in @State because the stored
     /// value isn't @Published; re-read when the chart sheet closes.
-    @State private var trendRange: SymbolChartRange = .month
+    @State var trendRange: SymbolChartRange = .month
     private var trendRangeBinding: Binding<SymbolChartRange> {
         Binding(get: { trendRange }, set: {
             trendRange = $0
@@ -178,19 +178,21 @@ struct WatchlistWideView: View {
                 headerCell("After hrs", .extChangePercent, width: WCol.ext, align: .trailing,
                            help: "Sort by the pre/post-market % move")
             }
-            Text("Trend \(trendRange.rawValue)").font(DS.label).foregroundStyle(DS.inkTertiary).frame(width: WCol.trend, alignment: .leading)
-            Text("52-week").font(DS.label).foregroundStyle(DS.inkTertiary).frame(width: WCol.range, alignment: .leading)
+            headerCell("Trend \(trendRange.rawValue)", .trend, width: WCol.trend, align: .leading,
+                       help: "Sort by the change over the period")
+            headerCell("52-week", .range52, width: WCol.range, align: .leading,
+                       help: "Sort by where the price sits in its 52-week range")
         }
         .padding(.horizontal, 14).padding(.vertical, 10)
     }
 
     @ViewBuilder
-    private func headerCell(_ title: String, _ key: SortKey, width: CGFloat?, align: Alignment,
+    private func headerCell(_ title: LocalizedStringKey, _ key: SortKey, width: CGFloat?, align: Alignment,
                             help: LocalizedStringKey = "") -> some View {
         Button { withAnimation(.easeOut(duration: 0.15)) { toggleSort(key) } } label: {
             HStack(spacing: 3) {
                 if align == .trailing { Spacer(minLength: 0) }
-                Text(LocalizedStringKey(title)).font(DS.label).foregroundStyle(sortKey == key ? DS.brand : DS.inkTertiary)
+                Text(title).font(DS.label).foregroundStyle(sortKey == key ? DS.brand : DS.inkTertiary)
                 if sortKey == key {
                     Image(systemName: sortAsc ? "chevron.up" : "chevron.down")
                         .font(.system(size: 7, weight: .bold)).foregroundStyle(DS.brand)

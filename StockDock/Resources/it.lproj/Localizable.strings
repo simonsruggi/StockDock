@@ -284,3 +284,5 @@
 "Perpetual futures price when there is no Pre/Post session, not the official quote" = "Prezzo del future perpetuo quando non c'è sessione Pre/Post, non la quotazione ufficiale";
 "Trend %@" = "Trend %@";
 "Period for the Trend column" = "Periodo della colonna Trend";
+"Sort by the change over the period" = "Ordina per variazione nel periodo";
+"Sort by where the price sits in its 52-week range" = "Ordina per posizione del prezzo nell'intervallo a 52 settimane";

@@ -284,3 +284,5 @@
 "Perpetual futures price when there is no Pre/Post session, not the official quote" = "Perpetual futures price when there is no Pre/Post session, not the official quote";
 "Trend %@" = "Trend %@";
 "Period for the Trend column" = "Period for the Trend column";
+"Sort by the change over the period" = "Sort by the change over the period";
+"Sort by where the price sits in its 52-week range" = "Sort by where the price sits in its 52-week range";
