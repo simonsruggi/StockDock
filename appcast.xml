@@ -6,27 +6,21 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.13.0</title>
-            <pubDate>Tue, 17 Nov 2026 13:33:47 +0100</pubDate>
-            <sparkle:version>55</sparkle:version>
-            <sparkle:shortVersionString>1.13.0</sparkle:shortVersionString>
+            <title>Version 1.13.1</title>
+            <pubDate>Thu, 19 Nov 2026 14:49:33 +0100</pubDate>
+            <sparkle:version>56</sparkle:version>
+            <sparkle:shortVersionString>1.13.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>More ways to read a chart</h2>
-<p>New chart ranges, a few tools traders asked for, and smoother charts.</p>
+<h2>Weights by market value</h2>
 <ul>
-    <li><strong>New ranges: 3M, 6M, YTD and 5Y</strong> on the symbol chart and the portfolio chart. YTD starts from last year's final close; 5Y uses weekly closes. Thanks to Mo (@hamidi-dev).</li>
-    <li><strong>Change over the range.</strong> Next to today's move, the symbol chart shows how much the price changed over the selected range.</li>
-    <li><strong>Drag to measure.</strong> Click and drag across a chart to see the change between two dates.</li>
-    <li><strong>Your average price on the chart.</strong> A holding's chart draws a dashed line at your average purchase price.</li>
-    <li><strong>Smoother charts.</strong> Moving the mouse over a chart uses about 60% less CPU.</li>
-    <li><strong>No more endless spinner</strong> when Yahoo does not return a price history.</li>
+    <li><strong>Choose what weights are based on.</strong> Settings → "Weights based on": Cost basis (the default, unchanged) or Market value. It applies to the allocation donut, the Concentration tile and the weight in Positions. Thanks to Bernd (@berndinberlin).</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.0/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.1/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="14OpYHa17Fw8mQoxqrySVzzaiDciNTvc1vaXW2kBlVL7em7p+rw+2NTiHscz94NVGkOMBbzsmwbUkO2aWtUcDg=="
-                       length="10521036"/>
+                       sparkle:edSignature="cmX51I/C2GD8RPt72jsxGWLu/rQfDGqt6qjqKNIN68DYIWxXcUfp+xpNqcqhfTHgNQ5/31JS0fLaaLBhpGLMBQ=="
+                       length="10531169"/>
         </item>
     </channel>
 </rss>
