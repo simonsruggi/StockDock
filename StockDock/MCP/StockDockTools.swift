@@ -118,7 +118,7 @@ enum StockDockTools {
                 let costRate = stocks.costRate(for: h, currency: q.currency)
                 let hValue = h.marketValue(currentPrice: price) * rate
                 let hCost = h.costBasisLocal * costRate
-                let hDay = h.dailyPnl(priceChange: live.liveChange(for: q, extendedHours: extended)) * rate
+                let hDay = h.dailyPnl(priceChange: live.liveChange(for: q, holding: h, extendedHours: extended)) * rate
                 value += hValue; cost += hCost; day += hDay
                 var row: [String: Any] = [
                     "symbol": h.symbol,

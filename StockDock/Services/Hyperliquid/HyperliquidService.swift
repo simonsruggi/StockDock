@@ -60,6 +60,21 @@ final class HyperliquidService: ObservableObject {
         return q.marketState == "PRE" ? a.change : q.change + a.change
     }
 
+    /// `liveChange` for one holding: a lot bought inside the window the change
+    /// covers counts from its purchase price, not from a close it never saw.
+    func liveChange(for q: StockQuote, holding: Holding, extendedHours: Bool, now: Date = Date(),
+                    local: Calendar = .localGregorian) -> Double {
+        let change = liveChange(for: q, extendedHours: extendedHours)
+        // With a 24/7 quote, pre-market's move starts at the last regular close.
+        let allHours = quote(for: q) != nil
+        return holding.dayPriceChange(liveChange: change, currentPrice: livePrice(for: q, extendedHours: extendedHours)) { bought in
+            allHours
+                ? StockQuote.boughtWithinChange(bought, sessionTime: q.regularMarketTime, zone: q.exchangeTimeZone,
+                                                fromLastClose: q.marketState == "PRE", now: now, local: local)
+                : q.boughtWithinChange(bought, extendedHours: extendedHours, now: now, local: local)
+        }
+    }
+
     /// Today's change in percent, measured from the same previous close as `liveChange`.
     func liveChangePercent(for q: StockQuote, extendedHours: Bool) -> Double {
         let change = liveChange(for: q, extendedHours: extendedHours)

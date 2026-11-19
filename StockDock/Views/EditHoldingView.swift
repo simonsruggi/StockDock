@@ -13,6 +13,12 @@ struct EditHoldingView: View {
     @State private var leverageText: String
     @State private var isShort: Bool
     @State private var purchaseDate: Date
+    /// The stand-in shown for a lot without a purchase date. Saving it unchanged
+    /// keeps the lot undated, so it isn't silently re-dated to today (which would
+    /// count its whole gain as today's P&L).
+    /// @State, not let: SwiftUI re-runs init on parent updates, and a fresh
+    /// Date() would no longer match the one `purchaseDate` kept.
+    @State private var datePlaceholder: Date?
 
     init(portfolioId: UUID, holding: Holding, isPresented: Binding<(portfolioId: UUID, holding: Holding)?>) {
         self.portfolioId = portfolioId
@@ -23,7 +29,9 @@ struct EditHoldingView: View {
         _avgPriceText = State(initialValue: String(format: "%.2f", holding.avgPrice))
         _leverageText = State(initialValue: (holding.leverage.map { $0 != 1 ? String(format: "%g", $0) : "" }) ?? "")
         _isShort = State(initialValue: holding.quantity < 0)
-        _purchaseDate = State(initialValue: holding.purchaseDate ?? Date())
+        let placeholder: Date? = holding.purchaseDate == nil ? Date() : nil
+        _datePlaceholder = State(initialValue: placeholder)
+        _purchaseDate = State(initialValue: holding.purchaseDate ?? placeholder ?? Date())
     }
 
     /// #24: names the currency the stored avg price is in, so it is never
@@ -166,7 +174,8 @@ struct EditHoldingView: View {
             else { return nil }
             return l
         }()
-        storageService.updateHolding(in: portfolioId, holdingId: holding.id, quantity: signedQty, avgPrice: price, purchaseDate: purchaseDate, leverage: leverage)
+        storageService.updateHolding(in: portfolioId, holdingId: holding.id, quantity: signedQty, avgPrice: price,
+                                     purchaseDate: purchaseDate == datePlaceholder ? nil : purchaseDate, leverage: leverage)
         Task {
             await stockService.refreshAll(storageService: storageService)
         }

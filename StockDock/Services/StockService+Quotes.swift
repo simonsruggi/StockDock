@@ -141,7 +141,9 @@ extension StockService {
                 preMarketChangePercent: pre.percent,
                 postMarketPrice: q.postMarketPrice,
                 postMarketChange: post.change,
-                postMarketChangePercent: post.percent
+                postMarketChangePercent: post.percent,
+                regularMarketTime: q.regularMarketTime.map { Date(timeIntervalSince1970: TimeInterval($0)) },
+                exchangeTimeZone: q.exchangeTimezoneName
             )
 
             quotes.append(quote)
@@ -246,7 +248,9 @@ extension StockService {
                 preMarketChangePercent: pre.percent,
                 postMarketPrice: postMarketPrice,
                 postMarketChange: post.change,
-                postMarketChangePercent: post.percent
+                postMarketChangePercent: post.percent,
+                regularMarketTime: meta.regularMarketTime.map { Date(timeIntervalSince1970: TimeInterval($0)) },
+                exchangeTimeZone: meta.exchangeTimezoneName
             )
 
             quotes[meta.symbol] = quote

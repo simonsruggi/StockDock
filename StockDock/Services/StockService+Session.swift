@@ -76,6 +76,7 @@ extension StockQuote {
             currency: currency, marketState: state, dayHigh: dayHigh, dayLow: dayLow,
             fiftyTwoWeekHigh: fiftyTwoWeekHigh, fiftyTwoWeekLow: fiftyTwoWeekLow,
             preMarketPrice: preMarketPrice, preMarketChange: preMarketChange, preMarketChangePercent: preMarketChangePercent,
-            postMarketPrice: postMarketPrice, postMarketChange: postMarketChange, postMarketChangePercent: postMarketChangePercent)
+            postMarketPrice: postMarketPrice, postMarketChange: postMarketChange, postMarketChangePercent: postMarketChangePercent,
+            regularMarketTime: regularMarketTime, exchangeTimeZone: exchangeTimeZone)
     }
 }
