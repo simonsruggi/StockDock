@@ -140,6 +140,12 @@ struct SettingsView: View {
                     }
                     caption("P&L shown net of tax · 0 = gross")
 
+                    Picker("Weights based on", selection: $storageService.weightBasis) {
+                        Text("Cost basis").tag("cost")
+                        Text("Market value").tag("value")
+                    }
+                    caption("Allocation, Concentration and Positions weight")
+
                     Toggle("Show extended hours (Pre/Post)", isOn: $storageService.showExtendedHours)
                         .toggleStyle(.switch)
                     caption("Show pre-market and after-hours prices")

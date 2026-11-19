@@ -24,9 +24,13 @@ extension PortfolioOverviewView {
         var allocation: [AllocationSlice] = []
         var typeBreakdown: [(label: String, fraction: Double)] = []
         var taxRate: Double = 0
-        /// Sum of |cost basis|: allocation weights are shares of what was invested,
-        /// not of today's market value, so they don't drift with prices.
+        /// Weights are shares of what was invested by default (they don't drift
+        /// with prices); the "Market value" setting makes them follow exposure.
+        var weightsByValue = false
         var weightBase: Double = 0
+
+        func weightAmount(_ h: ValuedHolding) -> Double { abs(weightsByValue ? h.value : h.cost) }
+        func weight(_ h: ValuedHolding) -> Double { weightBase >= 0.01 ? weightAmount(h) / weightBase * 100 : 0 }
 
         var totalPnl: Double { CapitalGainsTax.net(totalValue - totalCost, ratePercent: taxRate) }
         var totalPnlPercent: Double { abs(totalCost) >= 0.01 ? (totalPnl / abs(totalCost)) * 100 : 0 }
@@ -46,6 +50,7 @@ extension PortfolioOverviewView {
     var derived: Derived {
         var d = Derived()
         d.taxRate = storageService.taxRate
+        d.weightsByValue = storageService.weightsByMarketValue
         d.holdings = portfolios.flatMap { portfolio in
             portfolio.holdings.compactMap { holding -> ValuedHolding? in
                 guard let quote = stockService.quotes[holding.symbol] else { return nil }
@@ -72,7 +77,7 @@ extension PortfolioOverviewView {
             let change = HyperliquidService.shared.liveChange(for: h.quote, extendedHours: storageService.showExtendedHours)
             d.dayChangeValue += h.holding.dailyPnl(priceChange: change) * stockService.rate(from: h.quote.currency)
 
-            let weight = abs(h.cost)
+            let weight = d.weightAmount(h)
             absTotal += weight
             bySymbol[h.symbol, default: 0] += weight
             byType[Self.typeLabel(h.type), default: 0] += weight

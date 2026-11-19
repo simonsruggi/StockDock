@@ -135,6 +135,14 @@ class StorageService: ObservableObject {
         }
     }
 
+    /// What allocation weights (donut, Concentration, Positions weight) are
+    /// shares of: "cost" = what was invested (stable across price moves),
+    /// "value" = today's market value (real exposure).
+    @Published var weightBasis: String = "cost" {
+        didSet { scheduleSave() }
+    }
+    var weightsByMarketValue: Bool { weightBasis == "value" }
+
     /// A P&L amount or percentage after `taxRate`.
     func afterTax(_ pnl: Double) -> Double {
         CapitalGainsTax.net(pnl, ratePercent: taxRate)
@@ -319,6 +327,7 @@ class StorageService: ObservableObject {
         tickerShowName = false
         advancedPositions = false
         taxRate = 0
+        weightBasis = "cost"
         watchlistSort = "manual"
         appLanguage = "en"
         fontSizeLevel = 9

@@ -95,6 +95,11 @@ struct SettingsWideView: View {
                 TaxRateField(rate: $storageService.taxRate)
             }
             SettingDivider()
+            SettingRow("Weights based on", caption: "Allocation, Concentration and Positions weight") {
+                DSPicker(options: [("cost", "Cost basis"), ("value", "Market value")],
+                         selection: $storageService.weightBasis, width: 200)
+            }
+            SettingDivider()
             SettingToggle("Extended hours (Pre/Post)",
                           caption: "Show pre-market and after-hours prices",
                           isOn: $storageService.showExtendedHours)

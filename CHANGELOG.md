@@ -4,6 +4,12 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.13.1 — 2026-11-19
+
+*Weights by market value*
+
+- **Choose what weights are based on.** Settings → "Weights based on": Cost basis (the default, unchanged) or Market value. It applies to the allocation donut, the Concentration tile and the weight in Positions, so long-held winners show their real share of the portfolio. Thanks to [@berndinberlin](https://github.com/berndinberlin) ([#31](https://github.com/simonsruggi/StockDock/issues/31))
+
 ## 1.13.0 — 2026-11-17
 
 *More ways to read a chart*

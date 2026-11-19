@@ -275,6 +275,9 @@
 
 "Tax on gains" = "收益税率";
 "P&L shown net of tax · 0 = gross" = "盈亏按税后显示 · 0 = 税前";
+"Weights based on" = "权重依据";
+"Market value" = "市值";
+"Allocation, Concentration and Positions weight" = "资产配置、集中度和持仓权重";
 "Net P&L" = "税后盈亏";
 "Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price" = "Hyperliquid 永续合约（trade.xyz），全天候交易——非交易所官方价格";
 "Overnight & weekends (Hyperliquid)" = "夜间和周末（Hyperliquid）";

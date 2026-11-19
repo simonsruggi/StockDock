@@ -275,6 +275,9 @@
 
 "Tax on gains" = "Impôt sur les plus-values";
 "P&L shown net of tax · 0 = gross" = "P&L affiché net d'impôt · 0 = brut";
+"Weights based on" = "Pondérations selon";
+"Market value" = "Valeur de marché";
+"Allocation, Concentration and Positions weight" = "Répartition, Concentration et poids dans Positions";
 "Net P&L" = "P&L net";
 "Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price" = "Perpétuel Hyperliquid (trade.xyz), échangé 24/7 — pas le cours officiel de la bourse";
 "Overnight & weekends (Hyperliquid)" = "Nuit et week-end (Hyperliquid)";
