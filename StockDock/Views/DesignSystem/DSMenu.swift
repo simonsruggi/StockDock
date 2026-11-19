@@ -18,6 +18,8 @@ struct DSMenu<Label: View>: View {
     let sections: [[DSMenuAction]]
     @ViewBuilder var label: () -> Label
     @State private var show = false
+    /// Popovers don't inherit the window's locale, so the in-app language is passed in.
+    @Environment(\.locale) private var locale
 
     var body: some View {
         Button { show.toggle() } label: { label() }
@@ -33,6 +35,7 @@ struct DSMenu<Label: View>: View {
                 }
                 .padding(6)
                 .frame(width: width)
+                .environment(\.locale, locale)
             }
     }
 }

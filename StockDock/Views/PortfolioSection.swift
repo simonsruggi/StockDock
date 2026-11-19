@@ -156,6 +156,7 @@ struct PortfolioSection: View {
                         onDismiss: { showNotifications = false }
                     )
                     .environmentObject(storageService)
+                    .environment(\.locale, Locale(identifier: storageService.appLanguage))
                     .frame(width: 340)
                 }
             }
