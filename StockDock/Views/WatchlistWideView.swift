@@ -30,6 +30,12 @@ struct WatchlistWideView: View {
     /// opens on, so both stay in step. Mirrored in @State because the stored
     /// value isn't @Published; re-read when the chart sheet closes.
     @State private var trendRange: SymbolChartRange = .month
+    private var trendRangeBinding: Binding<SymbolChartRange> {
+        Binding(get: { trendRange }, set: {
+            trendRange = $0
+            storageService.lastSymbolChartRange = $0.rawValue
+        })
+    }
     private func syncTrendRange() {
         trendRange = SymbolChartRange(rawValue: storageService.lastSymbolChartRange) ?? .month
     }
@@ -41,12 +47,14 @@ struct WatchlistWideView: View {
     var body: some View {
         PageScaffold("Watchlist", caption: "\(storageService.watchlist.count) symbols") {
             HStack(spacing: 12) {
-                SegmentedRangePicker(options: SymbolChartRange.allCases, label: { $0.rawValue },
-                                     selection: Binding(get: { trendRange }, set: {
-                                         trendRange = $0
-                                         storageService.lastSymbolChartRange = $0.rawValue
-                                     }))
-                    .help("Period for the Trend column")
+                // Narrow windows get a dropdown instead of nine segments.
+                ViewThatFits(in: .horizontal) {
+                    SegmentedRangePicker(options: SymbolChartRange.allCases, label: { $0.rawValue },
+                                         selection: trendRangeBinding)
+                    DSPicker(options: SymbolChartRange.allCases.map { ($0, $0.rawValue) },
+                             selection: trendRangeBinding, width: 90)
+                }
+                .help("Period for the Trend column")
                 RefreshButton(isLoading: stockService.isLoading) {
                     Task { await stockService.refreshAll(storageService: storageService) }
                 }

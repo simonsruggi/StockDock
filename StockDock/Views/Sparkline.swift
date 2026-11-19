@@ -12,7 +12,7 @@ struct Sparkline: View {
     let symbol: String
     var range: SymbolChartRange = .month
 
-    static let chartWidth: CGFloat = 80
+    static let chartWidth: CGFloat = 64
     static let changeWidth: CGFloat = 50
 
     private var points: [PricePoint] { stockService.sparkSeries[range]?[symbol] ?? [] }

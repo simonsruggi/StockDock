@@ -20,6 +20,9 @@ struct PageHeader<Trailing: View>: View {
                     Text(LocalizedStringKey(caption)).font(DS.caption).foregroundStyle(DS.inkTertiary)
                 }
             }
+            // The title never wraps: trailing controls give way first.
+            .fixedSize(horizontal: true, vertical: false)
+            .layoutPriority(1)
             Spacer()
             trailing
         }
