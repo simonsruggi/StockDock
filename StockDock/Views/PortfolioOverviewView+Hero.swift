@@ -48,7 +48,7 @@ extension PortfolioOverviewView {
             .padding(.top, 22)
             .padding(.bottom, 14)
 
-            heroChart(ds)
+            heroChart(ds, up: period.value >= 0)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(height: 300)
@@ -97,12 +97,12 @@ extension PortfolioOverviewView {
         }
     }
 
-    @ViewBuilder private func heroChart(_ ds: (points: [ValuePoint], isEstimated: Bool)) -> some View {
+    @ViewBuilder private func heroChart(_ ds: (points: [ValuePoint], isEstimated: Bool), up periodUp: Bool) -> some View {
         let points = ds.points
         if points.count >= 2 {
-            // Consistent color across periods: emerald when the period is up,
-            // terracotta when down. Estimated state is shown by the dash only.
-            let periodUp = (points.last?.value ?? 0) >= (points.first?.value ?? 0)
+            // Emerald when the period's gain (net of buys) is up, terracotta when
+            // down — not the curve's ends, which rise on every buy.
+            // Estimated state is shown by the dash only.
             let tint = periodUp ? DS.up : DS.down
             let span = (points.last?.date.timeIntervalSince(points.first?.date ?? .distantPast)) ?? 0
             Chart {
