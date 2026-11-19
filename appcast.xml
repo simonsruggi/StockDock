@@ -6,21 +6,22 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.13.1</title>
-            <pubDate>Thu, 19 Nov 2026 14:49:33 +0100</pubDate>
-            <sparkle:version>56</sparkle:version>
-            <sparkle:shortVersionString>1.13.1</sparkle:shortVersionString>
+            <title>Version 1.13.2</title>
+            <pubDate>Thu, 19 Nov 2026 15:13:50 +0100</pubDate>
+            <sparkle:version>57</sparkle:version>
+            <sparkle:shortVersionString>1.13.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Weights by market value</h2>
+<h2>Trend over any range</h2>
 <ul>
-    <li><strong>Choose what weights are based on.</strong> Settings → "Weights based on": Cost basis (the default, unchanged) or Market value. It applies to the allocation donut, the Concentration tile and the weight in Positions. Thanks to Bernd (@berndinberlin).</li>
+    <li><strong>Pick the Trend column's range.</strong> The watchlist has a range switch (24H to All) for the Trend column, with the period's % change next to each sparkline. It shares the symbol chart's remembered range. Thanks to Mo (@hamidi-dev).</li>
+    <li><strong>Menus follow the app language.</strong> Dropdowns, menus and the date picker now use the language chosen in Settings.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.1/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.2/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="cmX51I/C2GD8RPt72jsxGWLu/rQfDGqt6qjqKNIN68DYIWxXcUfp+xpNqcqhfTHgNQ5/31JS0fLaaLBhpGLMBQ=="
-                       length="10531169"/>
+                       sparkle:edSignature="+2Px+VcY7ffa01yt99TG9VM1CrtztgeF/8JhBoEKXQIe/uQOFtxPIX3qu8Gz2lVPcrA6ZIQOgSz6MdvueRyzAw=="
+                       length="10580546"/>
         </item>
     </channel>
 </rss>
