@@ -282,3 +282,5 @@
 "Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price" = "Perpetuo de Hyperliquid (trade.xyz), cotiza 24/7 — no es el precio oficial de la bolsa";
 "Overnight & weekends (Hyperliquid)" = "Noche y fines de semana (Hyperliquid)";
 "Perpetual futures price when there is no Pre/Post session, not the official quote" = "Precio del futuro perpetuo cuando no hay sesión Pre/Post, no la cotización oficial";
+"Trend %@" = "Tendencia %@";
+"Period for the Trend column" = "Periodo de la columna Tendencia";

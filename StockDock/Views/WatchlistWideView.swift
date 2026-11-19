@@ -26,6 +26,13 @@ struct WatchlistWideView: View {
     struct DetailTarget: Identifiable { let symbol: String; var id: String { symbol } }
     @State private var detailSymbol: DetailTarget?
     @State private var renameSymbol: AlertTarget?
+    /// Period of the Trend column: the same remembered range the symbol chart
+    /// opens on, so both stay in step. Mirrored in @State because the stored
+    /// value isn't @Published; re-read when the chart sheet closes.
+    @State private var trendRange: SymbolChartRange = .month
+    private func syncTrendRange() {
+        trendRange = SymbolChartRange(rawValue: storageService.lastSymbolChartRange) ?? .month
+    }
 
     private func toggleSort(_ key: SortKey) {
         if sortKey == key { sortAsc.toggle() } else { sortKey = key; sortAsc = (key == .order || key == .symbol || key == .name) }
@@ -34,6 +41,12 @@ struct WatchlistWideView: View {
     var body: some View {
         PageScaffold("Watchlist", caption: "\(storageService.watchlist.count) symbols") {
             HStack(spacing: 12) {
+                SegmentedRangePicker(options: SymbolChartRange.allCases, label: { $0.rawValue },
+                                     selection: Binding(get: { trendRange }, set: {
+                                         trendRange = $0
+                                         storageService.lastSymbolChartRange = $0.rawValue
+                                     }))
+                    .help("Period for the Trend column")
                 RefreshButton(isLoading: stockService.isLoading) {
                     Task { await stockService.refreshAll(storageService: storageService) }
                 }
@@ -53,9 +66,10 @@ struct WatchlistWideView: View {
             }
         }
         .navigationTitle("Watchlist")
-        .task(id: storageService.watchlist) {
-            // One batched spark request fills every row's sparkline.
-            await stockService.ensureSparklines(for: storageService.watchlist)
+        .onAppear(perform: syncTrendRange)
+        .task(id: storageService.watchlist + [trendRange.rawValue]) {
+            // One batched spark request fills every row's sparkline for the range.
+            await stockService.ensureSparklines(for: storageService.watchlist, range: trendRange)
         }
         .sheet(item: $addToPortfolio) { t in
             HoldingFormSheet(mode: .addSymbol(symbol: t.symbol, portfolioId: t.portfolioId)) { addToPortfolio = nil }
@@ -70,7 +84,7 @@ struct WatchlistWideView: View {
                               currentAlias: storageService.alias(for: t.symbol)) { renameSymbol = nil }
                 .environmentObject(storageService)
         }
-        .sheet(item: $detailSymbol) { t in
+        .sheet(item: $detailSymbol, onDismiss: syncTrendRange) { t in
             SymbolDetailSheet(symbol: t.symbol, onAddToPortfolio: { pid in
                 detailSymbol = nil
                 // Let the detail sheet finish dismissing before presenting the add sheet.
@@ -133,6 +147,7 @@ struct WatchlistWideView: View {
                                      extendedSession: extendedSession,
                                      percentDecimals: storageService.percentDecimals,
                                      valueDecimals: storageService.valueDecimals,
+                                     trendRange: trendRange,
                                      onOpen: { detailSymbol = DetailTarget(symbol: row.symbol) },
                                      menu: { rowMenu(row) })
                         if idx < visibleRows.count - 1 {
@@ -155,7 +170,7 @@ struct WatchlistWideView: View {
                 headerCell("After hrs", .extChangePercent, width: WCol.ext, align: .trailing,
                            help: "Sort by the pre/post-market % move")
             }
-            Text("Trend").font(DS.label).foregroundStyle(DS.inkTertiary).frame(width: WCol.trend)
+            Text("Trend \(trendRange.rawValue)").font(DS.label).foregroundStyle(DS.inkTertiary).frame(width: WCol.trend, alignment: .leading)
             Text("52-week").font(DS.label).foregroundStyle(DS.inkTertiary).frame(width: WCol.range, alignment: .leading)
         }
         .padding(.horizontal, 14).padding(.vertical, 10)

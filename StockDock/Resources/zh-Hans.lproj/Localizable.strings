@@ -282,3 +282,5 @@
 "Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price" = "Hyperliquid 永续合约（trade.xyz），全天候交易——非交易所官方价格";
 "Overnight & weekends (Hyperliquid)" = "夜间和周末（Hyperliquid）";
 "Perpetual futures price when there is no Pre/Post session, not the official quote" = "无盘前/盘后交易时的永续合约价格，非官方报价";
+"Trend %@" = "趋势 %@";
+"Period for the Trend column" = "趋势列的时间范围";

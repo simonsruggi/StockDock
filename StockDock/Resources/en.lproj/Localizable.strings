@@ -282,3 +282,5 @@
 "Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price" = "Hyperliquid perpetual (trade.xyz), trades 24/7 — not the official exchange price";
 "Overnight & weekends (Hyperliquid)" = "Overnight & weekends (Hyperliquid)";
 "Perpetual futures price when there is no Pre/Post session, not the official quote" = "Perpetual futures price when there is no Pre/Post session, not the official quote";
+"Trend %@" = "Trend %@";
+"Period for the Trend column" = "Period for the Trend column";

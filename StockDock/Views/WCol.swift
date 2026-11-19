@@ -6,7 +6,7 @@ enum WCol {
     static let symbol: CGFloat = 128
     static let price: CGFloat = 104
     static let ext: CGFloat = 116
-    static let trend: CGFloat = 56
+    static let trend: CGFloat = Sparkline.chartWidth + 6 + Sparkline.changeWidth
     static let range: CGFloat = 100
     static let spacing: CGFloat = 12
 }

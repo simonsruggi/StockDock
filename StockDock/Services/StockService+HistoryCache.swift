@@ -46,6 +46,12 @@ extension StockService {
         if !week.isEmpty { for s in week { intradayWeek[s] = nil; intradayWeekAt[s] = nil } }
         let ext = drop(intradayExtended, intradayExtendedAt)
         if !ext.isEmpty { for s in ext { intradayExtended[s] = nil; intradayExtendedAt[s] = nil } }
+        for (range, bySymbol) in sparkSeries {
+            let rangeStale = sparkSeriesAt[range].map { now.timeIntervalSince($0) > maxAge } ?? true
+            guard rangeStale else { continue }
+            let gone = bySymbol.keys.filter { !tracked.contains($0) }
+            if !gone.isEmpty { for s in gone { sparkSeries[range]?[s] = nil } }
+        }
         let failed = failedHistory.filter { key in
             tracked.contains(String(key.split(separator: ":", maxSplits: 1).last ?? ""))
         }
