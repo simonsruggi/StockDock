@@ -4,6 +4,13 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.13.2 — 2026-11-19
+
+*Trend over any range*
+
+- **Pick the Trend column's range.** The watchlist has a range switch (24H to All) for the Trend column, with the period's % change next to each sparkline. It shares the symbol chart's remembered range, so picking 6M in either place shows 6M in both. Thanks to [@hamidi-dev](https://github.com/hamidi-dev) ([#30](https://github.com/simonsruggi/StockDock/pull/30))
+- **Menus follow the app language.** Dropdowns, menus and the date picker showed their items in the macOS language instead of the one chosen in Settings
+
 ## 1.13.1 — 2026-11-19
 
 *Weights by market value*
