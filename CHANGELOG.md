@@ -4,6 +4,15 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.13.3 — 2026-11-20
+
+*Today's P&L, done right*
+
+- **Lots bought today count from your buy price.** Today's P&L used to count the whole move since the previous close, even for shares bought mid-session; it now starts from the purchase price, following the exchange's trading session. Thanks to [@hamidi-dev](https://github.com/hamidi-dev) ([#32](https://github.com/simonsruggi/StockDock/pull/32))
+- **Purchase date starts empty.** New lots no longer default to today, so a position held for years doesn't show its whole gain as today's P&L. The date stays "Not set" until you pick a day, and can be cleared
+- **Sort the watchlist by Trend and 52-week.** Trend sorts by the change over the selected range, 52-week by where the price sits in its yearly range
+- **Overview chart color fixed.** The portfolio curve is green or red by the period's gain, not by its ends, which rose on every buy
+
 ## 1.13.2 — 2026-11-19
 
 *Trend over any range*
