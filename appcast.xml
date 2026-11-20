@@ -6,22 +6,24 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.13.2</title>
-            <pubDate>Thu, 19 Nov 2026 15:13:50 +0100</pubDate>
-            <sparkle:version>57</sparkle:version>
-            <sparkle:shortVersionString>1.13.2</sparkle:shortVersionString>
+            <title>Version 1.13.3</title>
+            <pubDate>Fri, 20 Nov 2026 15:56:03 +0100</pubDate>
+            <sparkle:version>58</sparkle:version>
+            <sparkle:shortVersionString>1.13.3</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Trend over any range</h2>
+<h2>Today's P&amp;L, done right</h2>
 <ul>
-    <li><strong>Pick the Trend column's range.</strong> The watchlist has a range switch (24H to All) for the Trend column, with the period's % change next to each sparkline. It shares the symbol chart's remembered range. Thanks to Mo (@hamidi-dev).</li>
-    <li><strong>Menus follow the app language.</strong> Dropdowns, menus and the date picker now use the language chosen in Settings.</li>
+    <li><strong>Lots bought today count from your buy price.</strong> Today's P&amp;L used to count the whole move since yesterday's close, even for shares bought mid-session; now it starts from what you paid. Thanks to Mo (@hamidi-dev).</li>
+    <li><strong>Purchase date starts empty.</strong> New lots no longer default to today, so a position held for years doesn't show its whole gain as today's P&amp;L. Pick a day or leave it "Not set", and clear it any time.</li>
+    <li><strong>Sort the watchlist by Trend and 52-week.</strong> Trend sorts by the change over the selected range, 52-week by where the price sits in its yearly range.</li>
+    <li><strong>Overview chart color fixed.</strong> The portfolio curve is green or red by the period's gain, no longer turning green just because you bought more.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.2/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.3/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="+2Px+VcY7ffa01yt99TG9VM1CrtztgeF/8JhBoEKXQIe/uQOFtxPIX3qu8Gz2lVPcrA6ZIQOgSz6MdvueRyzAw=="
-                       length="10580546"/>
+                       sparkle:edSignature="OViEMdImjydBvbphJzm5hAD69UAW0oiY647/1YF4Afb/83Aq0o7DLadNWs103oaQIMECIDkrWTz2+ZocD27QBA=="
+                       length="10651024"/>
         </item>
     </channel>
 </rss>
