@@ -48,6 +48,21 @@ final class HyperliquidService: ObservableObject {
         return AllHoursQuote(coin: coin, price: mid, change: change, changePercent: change / q.price * 100)
     }
 
+    /// Coin whose history may stand in for the quote's off-hours, at any time of day.
+    func chartCoin(for q: StockQuote) -> String? {
+        guard enabled, HyperliquidSymbols.accepts(symbol: q.symbol, currency: q.currency),
+              let coin = HyperliquidSymbols.coin(for: q.symbol), activeCoins.contains(coin) else { return nil }
+        return coin
+    }
+
+    /// `history` with the 24/7 candles filling Yahoo's gaps, when the feed is on and has them.
+    func chartHistory(_ history: [PricePoint], for q: StockQuote, span: HyperliquidCandles.Span) -> [PricePoint] {
+        guard let coin = chartCoin(for: q), let candles = HyperliquidCandles.shared.points(coin: coin, span: span) else {
+            return history
+        }
+        return HyperliquidCandles.filling(history, with: candles, span: span, reference: q.price)
+    }
+
     /// Price a position is valued at: the 24/7 price off-hours, the usual (extended-hours aware) price otherwise.
     func livePrice(for q: StockQuote, extendedHours: Bool) -> Double {
         quote(for: q)?.price ?? q.displayPrice(extendedHours: extendedHours)

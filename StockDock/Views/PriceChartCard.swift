@@ -7,6 +7,7 @@ struct PriceChartCard: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
     @ObservedObject var allHoursService = HyperliquidService.shared
+    @ObservedObject var allHoursCandles = HyperliquidCandles.shared
     let symbol: String
     let quote: StockQuote
     /// Average purchase price of the holding, drawn as a dashed line on the chart.
@@ -68,7 +69,10 @@ struct PriceChartCard: View {
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .premiumCard()
         .task(id: symbol) { await stockService.ensurePriceHistory(for: symbol) }
-        .task(id: "\(symbol)-\(chartRange.rawValue)") {
+        .task(id: "\(symbol)-\(chartRange.rawValue)-\(allHoursService.chartCoin(for: quote) ?? "")") {
+            if chartRange == .day, let coin = allHoursService.chartCoin(for: quote) {
+                await HyperliquidCandles.shared.ensure(coin: coin, span: .day)
+            }
             switch chartRange {
             case .day: await stockService.ensureIntraday(for: symbol)
             case .fiveYears: await stockService.ensurePriceHistory5y(for: symbol)

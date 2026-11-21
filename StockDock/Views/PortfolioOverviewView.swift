@@ -4,6 +4,7 @@ struct PortfolioOverviewView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
     @ObservedObject var allHoursService = HyperliquidService.shared
+    @ObservedObject var allHoursCandles = HyperliquidCandles.shared
     @Environment(\.editHoldingAction) var editHoldingAction
     @Environment(\.addHoldingAction) var addHoldingAction
     @Environment(\.portfolioActions) private var portfolioActions
@@ -90,6 +91,10 @@ struct PortfolioOverviewView: View {
                 for s in symbols { group.addTask { await service.ensurePriceHistory(for: s) } }
             }
         }
+        .task(id: candleLoadKey) {
+            guard let span = chartRange.candleSpan else { return }
+            await HyperliquidCandles.shared.ensure(coins: Array(candleLoadKey.dropFirst()), span: span)
+        }
         .task(id: rangeLoadKey) {
             let key = rangeLoadKey
             loadingRangeKey = key
@@ -116,6 +121,13 @@ struct PortfolioOverviewView: View {
                 }
             }
         }
+    }
+
+    /// 24H/7D coins with a 24/7 history; empty with the setting off, so nothing loads.
+    private var candleLoadKey: [String] {
+        guard let span = chartRange.candleSpan else { return [] }
+        let coins = Set(symbols.compactMap { stockService.quotes[$0].flatMap(allHoursService.chartCoin(for:)) })
+        return coins.isEmpty ? [] : [span.rawValue] + coins.sorted()
     }
 
     private var rangeLoadKey: String {

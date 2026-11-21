@@ -21,6 +21,15 @@ enum ChartRange: String, CaseIterable {
         }
     }
 
+    /// Hyperliquid candle series for the intraday ranges, which can show the 24/7 hours.
+    var candleSpan: HyperliquidCandles.Span? {
+        switch self {
+        case .day: return .day
+        case .week: return .week
+        default: return nil
+        }
+    }
+
     /// Earliest date the range shows, or nil for the whole series.
     func cutoff(now: Date = Date(), calendar: Calendar = .current) -> Date? {
         if self == .ytd { return calendar.date(from: calendar.dateComponents([.year], from: now)) }

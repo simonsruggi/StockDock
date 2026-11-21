@@ -155,9 +155,9 @@ extension PortfolioOverviewView {
         switch chartRange {
         case .day:
             let source = storageService.showExtendedHours ? stockService.intradayExtended : stockService.intradayHistory
-            ds = (valueSeries(from: source), true)
+            ds = (valueSeries(from: withAllHours(source, span: .day)), true)
         case .week:
-            ds = (valueSeries(from: stockService.intradayWeek), true)
+            ds = (valueSeries(from: withAllHours(stockService.intradayWeek, span: .week)), true)
         default:
             let real = filteredSeries.map { ValuePoint(date: $0.date, value: $0.totalValue) }
             let est = estimatedFiltered
@@ -169,6 +169,16 @@ extension PortfolioOverviewView {
         // value belongs right after the last bar, not stretched across the night.
         let atLastBar = chartRange == .day && !storageService.showExtendedHours
         return (Self.pinnedToLive(ds.points, totalValue: totalValue, now: atLastBar ? .distantPast : Date()), ds.isEstimated)
+    }
+
+    /// Per-symbol bars with Hyperliquid's 24/7 candles in Yahoo's gaps (setting on).
+    private func withAllHours(_ source: [String: [PricePoint]], span: HyperliquidCandles.Span) -> [String: [PricePoint]] {
+        var out = source
+        for (symbol, bars) in source {
+            guard let quote = stockService.quotes[symbol] else { continue }
+            out[symbol] = HyperliquidService.shared.chartHistory(bars, for: quote, span: span)
+        }
+        return out
     }
 
     /// Ends the curve on the live portfolio value. The bars lag the live quote

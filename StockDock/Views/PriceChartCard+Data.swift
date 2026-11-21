@@ -5,7 +5,8 @@ extension PriceChartCard {
     /// and passed down, not re-read by every mark.
     var history: [PricePoint] {
         switch chartRange {
-        case .day: return stockService.intradayHistory[symbol] ?? []
+        case .day:
+            return HyperliquidService.shared.chartHistory(stockService.intradayHistory[symbol] ?? [], for: quote, span: .day)
         case .fiveYears: return stockService.priceHistory5y[symbol] ?? []
         case .all: return stockService.priceHistoryMax[symbol] ?? []
         default:
