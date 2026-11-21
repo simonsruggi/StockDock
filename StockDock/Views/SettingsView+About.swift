@@ -11,6 +11,7 @@ extension SettingsView {
                     updaterViewModel.checkForUpdates()
                 }
             }
+            .searchAnchor("updates")
             SettingDivider()
             SettingRow("Support StockDock") {
                 HStack(spacing: 6) {
@@ -21,10 +22,12 @@ extension SettingsView {
                 }
                 .fixedSize()
             }
+            .searchAnchor("support")
             SettingDivider()
             SettingRow("Reset", caption: "Portfolios and watchlist are not affected") {
                 SettingLinkButton("Reset to Defaults…", tint: DS.down) { showResetAlert = true }
             }
+            .searchAnchor("reset")
         }
     }
 

@@ -7,6 +7,7 @@ extension SettingsView {
                 DSPicker(options: StorageService.supportedLanguages.map { ($0.code, $0.name) },
                          selection: $storageService.appLanguage, width: 180)
             }
+            .searchAnchor("language")
             SettingDivider()
             SettingRow("Theme") {
                 DSPicker(options: AppearanceMode.allCases.map { ($0, $0.label) },
@@ -14,11 +15,13 @@ extension SettingsView {
                                             set: { storageService.appearanceMode = $0 }),
                          width: 140)
             }
+            .searchAnchor("theme")
             SettingDivider()
             SettingRow("Font") {
                 DSPicker(options: FontRegistration.availableFonts.map { ($0.family, $0.label) },
                          selection: $storageService.fontFamily, width: 180)
             }
+            .searchAnchor("font")
             SettingDivider()
             SettingRow("Text size") {
                 HStack(spacing: 8) {
@@ -34,8 +37,9 @@ extension SettingsView {
                 }
                 .fixedSize()
             }
+            .searchAnchor("textSize")
             SettingDivider()
-            SettingToggle("Show News tab", isOn: $storageService.showNewsTab)
+            SettingToggle("Show News tab", isOn: $storageService.showNewsTab).searchAnchor("newsTab")
         }
     }
 
@@ -46,12 +50,14 @@ extension SettingsView {
                          selection: $storageService.stockPriceCurrency, width: 160)
                     .onChange(of: storageService.stockPriceCurrency) { refreshRates() }
             }
+            .searchAnchor("priceCurrency")
             SettingDivider()
             SettingRow("Portfolio currency") {
                 DSPicker(options: Self.currencyOptions(withOriginal: false),
                          selection: $storageService.preferredCurrency, width: 160)
                     .onChange(of: storageService.preferredCurrency) { refreshRates() }
             }
+            .searchAnchor("portfolioCurrency")
         }
     }
 }

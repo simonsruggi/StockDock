@@ -11,10 +11,10 @@ extension SettingsView {
 
     var notificationsGroup: some View {
         SettingsGroup(title: "Notifications", icon: "bell", isExpanded: $groupNotifications) {
-            SettingToggle("Mirror to a Discord/Slack webhook", isOn: $storageService.discordEnabled)
+            SettingToggle("Mirror to a Discord/Slack webhook", isOn: $storageService.discordEnabled).searchAnchor("webhook")
             if storageService.discordEnabled { webhookField }
 
-            SettingSubheader("Price alerts")
+            SettingSubheader("Price alerts").searchAnchor("priceAlerts")
             if storageService.alerts.isEmpty {
                 emptyLine("No alerts. Right-click a stock in the watchlist to add one.")
             } else {
@@ -22,7 +22,7 @@ extension SettingsView {
                 trailingAction("Clear all", tint: DS.down) { showClearAlerts = true }
             }
 
-            SettingSubheader("Portfolio notifications")
+            SettingSubheader("Portfolio notifications").searchAnchor("portfolioNotifications")
             let portfolios = portfoliosWithNotifications
             if portfolios.isEmpty {
                 emptyLine("None. Right-click a portfolio → “Notifications…” to add one.")

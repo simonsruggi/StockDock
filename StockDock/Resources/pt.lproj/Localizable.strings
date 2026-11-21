@@ -307,3 +307,14 @@
 "Theme" = "Tema";
 "Use system color in the menu bar" = "Cor do sistema na barra de menus";
 "Value decimals" = "Casas decimais (valores)";
+
+/* Search */
+"Search stocks, portfolios, settings…" = "Buscar ações, carteiras, ajustes…";
+"Search stocks, portfolios, settings  ⌘K" = "Buscar ações, carteiras, ajustes  ⌘K";
+"Go to" = "Ir para";
+"Add to watchlist" = "Adicionar à watchlist";
+"Refresh prices" = "Atualizar preços";
+"Open StockDock window" = "Abrir a janela do StockDock";
+"Navigate" = "Navegar";
+"Open" = "Abrir";
+"Clear" = "Limpar";

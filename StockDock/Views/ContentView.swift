@@ -3,8 +3,12 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var storageService: StorageService
-    @Environment(\.openWindowAction) private var openWindowAction
-    @State private var selectedTab: Tab = .watchlist
+    @EnvironmentObject var updaterViewModel: UpdaterViewModel
+    @Environment(\.openWindowAction) var openWindowAction
+    @State var selectedTab: Tab = .watchlist
+    @StateObject var search = UniversalSearchModel(surface: .popover)
+    @ObservedObject var router = SearchRouter.shared
+    @FocusState var searchFocused: Bool
     @State private var showSearch = false
     @State private var addHoldingPortfolioId: UUID?
     @State private var editHolding: (portfolioId: UUID, holding: Holding)?
@@ -131,23 +135,40 @@ struct ContentView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 8)
 
+            UniversalSearchField(model: search, focused: $searchFocused)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+
             Divider()
 
-            // Content
+            // Content — replaced by the results while a search is typed.
             Group {
-                switch selectedTab {
-                case .home:
-                    HomeView()
-                case .watchlist:
-                    WatchlistView(showSearch: $showSearch)
-                case .portfolios:
-                    PortfolioListView()
-                case .settings:
-                    SettingsView()
+                if !search.query.isEmpty {
+                    SearchResultsList(model: search)
+                } else {
+                    switch selectedTab {
+                    case .home:
+                        HomeView()
+                    case .watchlist:
+                        WatchlistView(showSearch: $showSearch)
+                    case .portfolios:
+                        PortfolioListView()
+                    case .settings:
+                        SettingsView()
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(DS.ground)
+            .onAppear {
+                search.attach(storage: storageService, stocks: stockService)
+                // Dev affordance: SD_SEARCH=<text> opens with that search typed.
+                if let q = ProcessInfo.processInfo.environment["SD_SEARCH"] { search.query = q }
+            }
+            .onChange(of: router.request) { _, request in
+                guard let request, request.surface == .popover else { return }
+                handleSearch(request.target)
+            }
         }
         .tint(DS.brand)
         .environment(\.addHoldingAction, AddHoldingAction { portfolioId in

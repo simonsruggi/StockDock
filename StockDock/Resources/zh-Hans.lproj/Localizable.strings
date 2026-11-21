@@ -307,3 +307,14 @@
 "Theme" = "主题";
 "Use system color in the menu bar" = "菜单栏使用系统颜色";
 "Value decimals" = "数值小数位";
+
+/* Search */
+"Search stocks, portfolios, settings…" = "搜索股票、投资组合、设置…";
+"Search stocks, portfolios, settings  ⌘K" = "搜索股票、投资组合、设置  ⌘K";
+"Go to" = "前往";
+"Add to watchlist" = "添加到自选";
+"Refresh prices" = "刷新价格";
+"Open StockDock window" = "打开 StockDock 窗口";
+"Navigate" = "导航";
+"Open" = "打开";
+"Clear" = "清除";

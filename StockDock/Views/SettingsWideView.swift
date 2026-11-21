@@ -13,11 +13,21 @@ struct SettingsWideView: View {
     @State private var showClearAlerts = false
     @State private var showClearPortfolioNotifs = false
     @FocusState private var webhookFocused: Bool
+    @ObservedObject private var router = SearchRouter.shared
+
+    /// Brings the row the search palette landed on into view.
+    private func scrollToHighlight(_ proxy: ScrollViewProxy) {
+        guard let key = router.highlightedSetting else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.easeInOut(duration: 0.3)) { proxy.scrollTo(SearchAnchor.scrollID(key), anchor: .center) }
+        }
+    }
 
     var body: some View {
         PageScaffold("Settings", caption: "Preferences are shared with the menu bar.") {
             EmptyView()
         } content: {
+            ScrollViewReader { proxy in
             ScrollView {
                 // Two balanced columns so Settings occupies the same content
                 // width as every other tab.
@@ -39,6 +49,9 @@ struct SettingsWideView: View {
                 }
                 .pageColumn()
                 .padding(.top, 4)
+            }
+            .onAppear { scrollToHighlight(proxy) }
+            .onChange(of: router.highlightedSetting) { _, _ in scrollToHighlight(proxy) }
             }
         }
         .navigationTitle("Settings")
@@ -64,6 +77,7 @@ struct SettingsWideView: View {
                 DSPicker(options: StorageService.supportedLanguages.map { ($0.code, $0.name) },
                          selection: $storageService.appLanguage, width: 200)
             }
+                .searchAnchor("language")
             SettingDivider()
             SettingRow("Stock price currency", caption: "How individual quotes are shown") {
                 DSPicker(options: [("", "Original")] + StorageService.supportedCurrencies.map { ($0, "\(StorageService.currencySymbol(for: $0)) \($0)") },
@@ -73,6 +87,7 @@ struct SettingsWideView: View {
                         Task { await stockService.refreshAll(storageService: storageService) }
                     }
             }
+                .searchAnchor("priceCurrency")
             SettingDivider()
             SettingRow("Portfolio currency", caption: "Totals and P&L are converted here") {
                 DSPicker(options: StorageService.supportedCurrencies.map { ($0, "\(StorageService.currencySymbol(for: $0)) \($0)") },
@@ -82,6 +97,7 @@ struct SettingsWideView: View {
                         Task { await stockService.refreshAll(storageService: storageService) }
                     }
             }
+                .searchAnchor("portfolioCurrency")
         }
     }
 
@@ -90,24 +106,29 @@ struct SettingsWideView: View {
             SettingToggle("Short positions & leverage",
                           caption: "Unlocks negative quantity and a leverage field",
                           isOn: $storageService.advancedPositions)
+                .searchAnchor("advanced")
             SettingDivider()
             SettingRow("Tax on gains", caption: "P&L shown net of tax · 0 = gross") {
                 TaxRateField(rate: $storageService.taxRate)
             }
+                .searchAnchor("tax")
             SettingDivider()
             SettingRow("Weights based on", caption: "Allocation, Concentration and Positions weight") {
                 DSPicker(options: [("cost", "Cost basis"), ("value", "Market value")],
                          selection: $storageService.weightBasis, width: 200)
             }
+                .searchAnchor("weights")
             SettingDivider()
             SettingToggle("Extended hours (Pre/Post)",
                           caption: "Show pre-market and after-hours prices",
                           isOn: $storageService.showExtendedHours)
+                .searchAnchor("extendedHours")
             if storageService.showExtendedHours {
                 SettingDivider()
                 SettingToggle("Overnight & weekends (Hyperliquid)",
                               caption: "Perpetual futures price when there is no Pre/Post session, not the official quote",
                               isOn: $storageService.showAllHoursPrices)
+                .searchAnchor("allHours")
                     .padding(.leading, 20)
             }
         }
@@ -116,12 +137,16 @@ struct SettingsWideView: View {
     private var watchlistCard: some View {
         SettingsCard(title: "Watchlist row details") {
             SettingToggle("Company name", isOn: $storageService.showCompanyName)
+                .searchAnchor("companyName")
             SettingDivider()
             SettingToggle("Day range (low – high)", isOn: $storageService.showDayRange)
+                .searchAnchor("dayRange")
             SettingDivider()
             SettingToggle("52-week range bar", isOn: $storageService.show52WeekBar)
+                .searchAnchor("week52")
             SettingDivider()
             SettingToggle("Absolute change value", isOn: $storageService.showAbsoluteChange)
+                .searchAnchor("absoluteChange")
         }
     }
 
@@ -143,30 +168,36 @@ struct SettingsWideView: View {
                     ("icon", "Icon only"),
                 ], selection: $storageService.menuBarDisplay, width: 230)
             }
+                .searchAnchor("menuBarDisplay")
             SettingDivider()
             SettingRow("Percentage decimals", caption: "Digits after the decimal point (e.g. +2.34%)") {
                 DSPicker(options: [(0, "0"), (1, "1"), (2, "2"), (3, "3"), (4, "4")],
                          selection: $storageService.percentDecimals, width: 110)
             }
+                .searchAnchor("percentDecimals")
             SettingDivider()
             SettingRow("Value decimals", caption: "Prices & amounts. Auto = extra precision for forex / sub-dollar") {
                 DSPicker(options: [(-1, "Auto"), (0, "0"), (1, "1"), (2, "2"), (3, "3"), (4, "4")],
                          selection: $storageService.valueDecimals, width: 110)
             }
+                .searchAnchor("valueDecimals")
             SettingDivider()
             SettingToggle("Hide percentage change",
                           caption: "Show only price / value, no % in the menu bar",
                           isOn: $storageService.menuBarHidePercent)
+                .searchAnchor("hidePercent")
             if storageService.menuBarDisplay == "ticker" || storageService.menuBarDisplay == "tickerPortfolio" {
                 SettingDivider()
                 SettingToggle("Show name instead of symbol",
                               caption: "\"S&P 500\" instead of \"^GSPC\"",
                               isOn: $storageService.tickerShowName)
+                .searchAnchor("tickerName")
                 SettingDivider()
                 SettingRow("Ticker order") {
                     DSPicker(options: [("manual", "As added"), ("type", "By type"), ("alpha", "Alphabetical")],
                              selection: $storageService.watchlistSort, width: 180)
                 }
+                .searchAnchor("tickerOrder")
             }
             SettingDivider()
             SettingRow("Gain color", caption: "Applies across the whole app — menu bar, watchlist and portfolios") {
@@ -174,12 +205,14 @@ struct SettingsWideView: View {
                     get: { Color(nsColor: storageService.gainColor) },
                     set: { storageService.gainColorHex = $0.hexString }))
             }
+                .searchAnchor("gainColor")
             SettingDivider()
             SettingRow("Loss color") {
                 DSColorWell(color: Binding(
                     get: { Color(nsColor: storageService.lossColor) },
                     set: { storageService.lossColorHex = $0.hexString }))
             }
+                .searchAnchor("lossColor")
             SettingDivider()
             HStack {
                 Spacer()
@@ -195,6 +228,7 @@ struct SettingsWideView: View {
             SettingToggle("Use system color in the menu bar",
                           caption: "Keeps menu bar text readable on any wallpaper; doesn't affect in-app colors",
                           isOn: $storageService.menuBarUseSystemColor)
+                .searchAnchor("systemColor")
         }
     }
 
@@ -203,6 +237,7 @@ struct SettingsWideView: View {
             SettingToggle("Mirror to a Discord/Slack webhook",
                           caption: "Price alerts and portfolio notifications are also sent there",
                           isOn: $storageService.discordEnabled)
+                .searchAnchor("webhook")
             if storageService.discordEnabled {
                 SettingDivider()
                 let trimmed = storageService.discordWebhookURL.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -252,6 +287,7 @@ struct SettingsWideView: View {
             }
             .padding(.vertical, 6)
         }
+                .searchAnchor("priceAlerts")
     }
 
     private func portfolioNotifsCard(_ portfolios: [Portfolio]) -> some View {
@@ -275,6 +311,7 @@ struct SettingsWideView: View {
             }
             .padding(.vertical, 6)
         }
+                .searchAnchor("portfolioNotifications")
     }
 
     private var appearanceCard: some View {
@@ -285,15 +322,18 @@ struct SettingsWideView: View {
                                             set: { storageService.appearanceMode = $0 }),
                          width: 160)
             }
+                .searchAnchor("theme")
             SettingDivider()
             SettingRow("Show News tab", caption: "The Home feed only fetches while open — no background use") {
                 DSToggle(isOn: $storageService.showNewsTab)
             }
+                .searchAnchor("newsTab")
             SettingDivider()
             SettingRow("Font") {
                 DSPicker(options: FontRegistration.availableFonts.map { ($0.family, $0.label) },
                          selection: $storageService.fontFamily, width: 200)
             }
+                .searchAnchor("font")
             SettingDivider()
             SettingRow("Text size") {
                 HStack(spacing: 10) {
@@ -307,6 +347,7 @@ struct SettingsWideView: View {
                         .frame(width: 18, alignment: .trailing)
                 }
             }
+                .searchAnchor("textSize")
         }
     }
 
@@ -323,6 +364,7 @@ struct SettingsWideView: View {
                 .foregroundStyle(updaterViewModel.canCheckForUpdates ? DS.brand : DS.inkTertiary)
                 .disabled(!updaterViewModel.canCheckForUpdates)
             }
+                .searchAnchor("updates")
             SettingDivider()
             SettingRow("StockDock is free and open source",
                        caption: "If you'd like to support me, become a sponsor — or simply star the repo. Both help, and every feature stays free.") {
@@ -355,6 +397,7 @@ struct SettingsWideView: View {
                 }
                 .fixedSize()
             }
+                .searchAnchor("support")
             SettingDivider()
             SettingRow("Reset", caption: "Portfolios and watchlist are not affected") {
                 Button("Reset to Defaults…") { showResetAlert = true }
@@ -362,6 +405,7 @@ struct SettingsWideView: View {
                     .font(.inter(11.5, weight: .medium, relativeTo: .caption))
                     .foregroundStyle(DS.down)
             }
+                .searchAnchor("reset")
         }
     }
 }

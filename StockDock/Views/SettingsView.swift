@@ -22,7 +22,10 @@ struct SettingsView: View {
     @AppStorage("settings.group.notifications") var groupNotifications = false
     @AppStorage("settings.group.about") var groupAbout = false
 
+    @ObservedObject var router = SearchRouter.shared
+
     var body: some View {
+        ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 generalGroup
@@ -37,7 +40,12 @@ struct SettingsView: View {
             .padding(.vertical, 8)
         }
         // AppKit hands focus to the first text field (the tax rate) when the popover opens.
-        .onAppear { DispatchQueue.main.async { NSApp.keyWindow?.makeFirstResponder(nil) } }
+        .onAppear {
+            DispatchQueue.main.async { NSApp.keyWindow?.makeFirstResponder(nil) }
+            scrollToHighlight(proxy)
+        }
+        .onChange(of: router.highlightedSetting) { _, _ in scrollToHighlight(proxy) }
+        }
         .dsAlert($showResetAlert, title: "Reset Settings",
                  message: "This will reset all settings to their defaults. Your portfolios and watchlist will not be affected.",
                  confirmTitle: "Reset", destructive: true) {
@@ -50,6 +58,14 @@ struct SettingsView: View {
         .dsAlert($showClearPortfolioNotifs, title: "Clear all portfolio notifications",
                  message: "This will delete all portfolio notifications across every portfolio. This cannot be undone.",
                  confirmTitle: "Clear all", destructive: true) { storageService.removeAllPortfolioNotifications() }
+    }
+
+    /// Brings the row search landed on into view, once its category has opened.
+    func scrollToHighlight(_ proxy: ScrollViewProxy) {
+        guard let key = router.highlightedSetting else { return }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.easeInOut(duration: 0.3)) { proxy.scrollTo(SearchAnchor.scrollID(key), anchor: .center) }
+        }
     }
 
     /// Currency changes invalidate every converted figure: refetch the rates.

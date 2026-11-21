@@ -28,7 +28,28 @@ struct PortfolioListView: View {
         }
     }
 
+    @ObservedObject private var router = SearchRouter.shared
+
     var body: some View {
+        listBody
+            .onAppear(perform: applySearchRequest)
+            .onChange(of: router.portfolioFilter) { _, _ in applySearchRequest() }
+            .onChange(of: router.newPortfolioRequested) { _, _ in applySearchRequest() }
+    }
+
+    /// A portfolio or position picked in the search box, or "New Portfolio".
+    private func applySearchRequest() {
+        if let filter = router.portfolioFilter {
+            searchText = filter
+            router.portfolioFilter = nil
+        }
+        if router.newPortfolioRequested {
+            showNewPortfolio = true
+            router.newPortfolioRequested = false
+        }
+    }
+
+    private var listBody: some View {
         Group {
         if storageService.portfolios.isEmpty && !showNewPortfolio {
             VStack(spacing: 12) {

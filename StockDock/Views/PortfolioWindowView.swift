@@ -26,7 +26,11 @@ struct PortfolioWindowView: View {
         case portfolio(UUID)
     }
 
-    @State private var selection: Nav = PortfolioWindowView.initialSelection()
+    @State var selection: Nav = PortfolioWindowView.initialSelection()
+    @EnvironmentObject var updaterViewModel: UpdaterViewModel
+    @StateObject var paletteModel = UniversalSearchModel(surface: .window)
+    @State var showPalette = false
+    @ObservedObject var router = SearchRouter.shared
 
     /// Dev affordance: SD_OPEN_TAB=home|watchlist|settings preselects a tab so
     /// each pane can be screenshotted deterministically.
@@ -41,7 +45,7 @@ struct PortfolioWindowView: View {
     @State private var showSearch = false
     @State private var addHoldingPortfolioId: UUID?
     @State private var editHolding: EditTarget?
-    @State private var showNewPortfolio = false
+    @State var showNewPortfolio = false
     @State private var newPortfolioName = ""
     @State private var renameTarget: PortfolioRef?
     @State private var notifTarget: PortfolioRef?
@@ -130,10 +134,26 @@ struct PortfolioWindowView: View {
         .dsAlert(Binding(get: { importAlert != nil }, set: { if !$0 { importAlert = nil } }),
                  title: "Import", message: importAlert ?? "", confirmTitle: "OK", cancelTitle: nil)
         .background(keyboardShortcuts)
+        .overlay {
+            if showPalette {
+                SearchPalette(model: paletteModel, isPresented: $showPalette)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeOut(duration: 0.15), value: showPalette)
+        .onAppear {
+            paletteModel.attach(storage: storageService, stocks: stockService)
+            // Dev affordance: SD_SEARCH=<text> opens the palette with that search typed.
+            if let q = ProcessInfo.processInfo.environment["SD_SEARCH"] { paletteModel.query = q; showPalette = true }
+        }
+        .onChange(of: router.request) { _, request in
+            guard let request, request.surface == .window else { return }
+            handleSearch(request.target)
+        }
     }
 
     /// Invisible buttons that give the window native keyboard shortcuts:
-    /// ⌘1 Home · ⌘2 Watchlist · ⌘3 Portfolios · ⌘4 Settings · ⌘R Refresh · ⌘N New portfolio.
+    /// ⌘1 Home · ⌘2 Watchlist · ⌘3 Portfolios · ⌘4 Settings · ⌘R Refresh · ⌘N New portfolio · ⌘K/⌘F Search.
     private var keyboardShortcuts: some View {
         Group {
             Button("") { if storageService.showNewsTab { selection = .home } }.keyboardShortcut("1", modifiers: .command)
@@ -144,6 +164,8 @@ struct PortfolioWindowView: View {
                 Task { await stockService.refreshAll(storageService: storageService) }
             }.keyboardShortcut("r", modifiers: .command)
             Button("") { showNewPortfolio = true }.keyboardShortcut("n", modifiers: .command)
+            Button("") { showPalette = true }.keyboardShortcut("k", modifiers: .command)
+            Button("") { showPalette = true }.keyboardShortcut("f", modifiers: .command)
             // ⌘W closes just this window — StockDock keeps living in the menu bar.
             Button("") { NSApp.keyWindow?.performClose(nil) }.keyboardShortcut("w", modifiers: .command)
         }
@@ -166,6 +188,8 @@ struct PortfolioWindowView: View {
             }
             .padding(.top, 12).padding(.trailing, 12).padding(.bottom, 2)
             brand
+            SidebarSearchButton { showPalette = true }
+                .padding(.horizontal, 12).padding(.bottom, 6)
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
                     if storageService.showNewsTab {

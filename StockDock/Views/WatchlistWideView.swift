@@ -25,6 +25,14 @@ struct WatchlistWideView: View {
     struct AlertTarget: Identifiable { let symbol: String; var id: String { symbol } }
     struct DetailTarget: Identifiable { let symbol: String; var id: String { symbol } }
     @State private var detailSymbol: DetailTarget?
+    @ObservedObject private var router = SearchRouter.shared
+
+    /// A symbol picked in the search palette opens its detail here.
+    private func openSearchDetail() {
+        guard let symbol = router.detailSymbol else { return }
+        router.detailSymbol = nil
+        detailSymbol = DetailTarget(symbol: symbol)
+    }
     @State private var renameSymbol: AlertTarget?
     /// Period of the Trend column: the same remembered range the symbol chart
     /// opens on, so both stay in step. Mirrored in @State because the stored
@@ -102,6 +110,8 @@ struct WatchlistWideView: View {
             }) { detailSymbol = nil }
                 .environmentObject(stockService).environmentObject(storageService)
         }
+        .onAppear(perform: openSearchDetail)
+        .onChange(of: router.detailSymbol) { _, _ in openSearchDetail() }
     }
 
     // MARK: - Header controls

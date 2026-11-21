@@ -33,7 +33,22 @@ struct WatchlistView: View {
         }
     }
 
+    @ObservedObject private var router = SearchRouter.shared
+
     var body: some View {
+        listBody
+            .onAppear(perform: applySearchFilter)
+            .onChange(of: router.watchlistFilter) { _, _ in applySearchFilter() }
+    }
+
+    /// A symbol picked in the search box shows up filtered here.
+    private func applySearchFilter() {
+        guard let filter = router.watchlistFilter else { return }
+        searchText = filter
+        router.watchlistFilter = nil
+    }
+
+    @ViewBuilder private var listBody: some View {
         if storageService.watchlist.isEmpty {
             VStack(spacing: 12) {
                 Spacer()
