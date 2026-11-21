@@ -6,23 +6,25 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.13.4</title>
-            <pubDate>Sat, 21 Nov 2026 14:46:01 +0100</pubDate>
-            <sparkle:version>59</sparkle:version>
-            <sparkle:shortVersionString>1.13.4</sparkle:shortVersionString>
+            <title>Version 1.13.5</title>
+            <pubDate>Sat, 21 Nov 2026 18:33:33 +0100</pubDate>
+            <sparkle:version>60</sparkle:version>
+            <sparkle:shortVersionString>1.13.5</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>The chart follows the market around the clock</h2>
+<h2>Find anything, fast</h2>
 <ul>
-    <li><strong>24H and 7D follow the 24/7 price.</strong> With "Overnight &amp; weekends" on, the portfolio chart and the symbol 24H chart keep moving with Hyperliquid's prices at night and over the weekend, instead of a flat line from the last Yahoo bar.</li>
-    <li><strong>Hover shows every position.</strong> Pointing at the portfolio chart now lists, for that moment, each position's price, value and gain or loss against what you paid.</li>
-    <li><strong>Past values at that day's exchange rate.</strong> The estimated portfolio curve converts each day at the exchange rate of that day, not today's.</li>
+    <li><strong>Search everything.</strong> One search box finds stocks, positions, portfolios, every setting and quick actions, and adds new symbols from the market. In the menu bar it sits under the tabs; in the window press ⌘K. Pick a setting and it opens right on that row.</li>
+    <li><strong>Cleaner menu bar Settings.</strong> Every option is now a tidy row with the same menus and switches as the desktop app, grouped in cards, with far less text.</li>
+    <li><strong>One row per position.</strong> In the menu bar portfolios, several buys of the same stock show as a single position; the arrow next to it reveals each buy.</li>
+    <li><strong>All price alerts on or off at once.</strong> A single switch disables every alert, or re-arms them all.</li>
+    <li><strong>Updates arrive sooner.</strong> StockDock now checks for new versions every hour instead of every six.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.4/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.5/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="TFcrYP7YEiMeu2sEf8iuvZhIpz/iLVT9o4F8e1nXiaPvZ+GtW6/LMhIvUasNi77cVxB5gApgUs9cFS/XeX8eBw=="
-                       length="10783333"/>
+                       sparkle:edSignature="KHUW8Ei+wEDGDdn0yOuJAFPqPuMsxU/Hevwr6dumecIZ8vz7OqzZwzxE/edDarRDRVUUgLsAdf7XzYho9PF7Ag=="
+                       length="11163219"/>
         </item>
     </channel>
 </rss>
