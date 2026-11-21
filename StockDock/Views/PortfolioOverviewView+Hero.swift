@@ -48,7 +48,7 @@ extension PortfolioOverviewView {
             .padding(.top, 22)
             .padding(.bottom, 14)
 
-            heroChart(ds, up: period.value >= 0)
+            heroChart(ds, up: period.value >= 0, d)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(height: 300)
@@ -57,7 +57,7 @@ extension PortfolioOverviewView {
         .premiumCard()
     }
     /// Smooth hover crosshair drawn as an overlay (not chart marks).
-    @ViewBuilder private func valueCrosshair(_ proxy: ChartProxy, points: [ValuePoint], tint: Color) -> some View {
+    @ViewBuilder private func valueCrosshair(_ proxy: ChartProxy, points: [ValuePoint], tint: Color, _ d: Derived) -> some View {
         GeometryReader { geo in
             if let plotAnchor = proxy.plotFrame {
                 let plot = geo[plotAnchor]
@@ -85,10 +85,18 @@ extension PortfolioOverviewView {
                             Circle().fill(tint).frame(width: 9, height: 9)
                                 .overlay(Circle().strokeBorder(.white, lineWidth: 1.5))
                                 .position(x: cx, y: plot.minY + py)
-                            ChartTooltip(title: tooltipDate(h.date),
-                                         value: StorageService.formatAmount(h.value, symbol: currencySymbol, decimals: storageService.amountDecimals),
-                                         tint: tint)
-                                .position(x: min(max(cx, plot.minX + 46), plot.maxX - 46), y: plot.minY + 8)
+                            // Beside the crosshair, on the side with room, so it never hides the curve under the cursor.
+                            let half = PortfolioHoverTooltip.width / 2
+                            let onLeft = cx > plot.midX
+                            PortfolioHoverTooltip(title: tooltipDate(h.date),
+                                                  total: StorageService.formatAmount(h.value, symbol: currencySymbol, decimals: storageService.amountDecimals),
+                                                  tint: tint,
+                                                  rows: hoverBreakdown(at: h.date, isLive: h.date == points.last?.date, d),
+                                                  currencySymbol: currencySymbol,
+                                                  percentDecimals: decimals)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .offset(x: min(max(onLeft ? cx - 12 - 2 * half : cx + 12, plot.minX), plot.maxX - 2 * half),
+                                        y: plot.minY + 2)
                         }
                         .allowsHitTesting(false)
                     }
@@ -97,7 +105,7 @@ extension PortfolioOverviewView {
         }
     }
 
-    @ViewBuilder private func heroChart(_ ds: (points: [ValuePoint], isEstimated: Bool), up periodUp: Bool) -> some View {
+    @ViewBuilder private func heroChart(_ ds: (points: [ValuePoint], isEstimated: Bool), up periodUp: Bool, _ d: Derived) -> some View {
         let points = ds.points
         if points.count >= 2 {
             // Emerald when the period's gain (net of buys) is up, terracotta when
@@ -142,7 +150,7 @@ extension PortfolioOverviewView {
                 }
             }
             .chartLegend(.hidden)
-            .chartOverlay { proxy in valueCrosshair(proxy, points: points, tint: tint) }
+            .chartOverlay { proxy in valueCrosshair(proxy, points: points, tint: tint, d) }
             // Morph marks in place when async data lands (avoids a hard "pop" as
             // intraday/history loads after a range switch).
             //

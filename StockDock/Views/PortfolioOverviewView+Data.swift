@@ -135,13 +135,25 @@ extension PortfolioOverviewView {
     /// monthly max) only when the portfolio actually predates the daily window —
     /// since the curve starts at the oldest purchase, a portfolio built this year
     /// would otherwise be drawn as a handful of weekly or monthly steps.
-    private var estimatedSeries: [ValuePoint] {
-        guard chartRange.needsLongHistory else { return valueSeries(from: stockService.priceHistory) }
+    var estimatedHistory: [String: [PricePoint]] {
+        guard chartRange.needsLongHistory else { return stockService.priceHistory }
         let dailyStart = Calendar.current.date(byAdding: .year, value: -2, to: Date())
         if let since = ownedSince, let dailyStart, since >= dailyStart {
-            return valueSeries(from: stockService.priceHistory)
+            return stockService.priceHistory
         }
-        return valueSeries(from: chartRange == .fiveYears ? stockService.priceHistory5y : stockService.priceHistoryMax)
+        return chartRange == .fiveYears ? stockService.priceHistory5y : stockService.priceHistoryMax
+    }
+    private var estimatedSeries: [ValuePoint] { valueSeries(from: estimatedHistory) }
+
+    /// Per-symbol bars behind the 24H/7D curve (24/7 candles included), nil on longer ranges.
+    var intradaySource: [String: [PricePoint]]? {
+        switch chartRange {
+        case .day:
+            let source = storageService.showExtendedHours ? stockService.intradayExtended : stockService.intradayHistory
+            return withAllHours(source, span: .day)
+        case .week: return withAllHours(stockService.intradayWeek, span: .week)
+        default: return nil
+        }
     }
     private var estimatedFiltered: [ValuePoint] {
         chartRange.slice(estimatedSeries, date: \.date)
@@ -153,11 +165,8 @@ extension PortfolioOverviewView {
     func displaySeries(totalValue: Double) -> (points: [ValuePoint], isEstimated: Bool) {
         let ds: (points: [ValuePoint], isEstimated: Bool)
         switch chartRange {
-        case .day:
-            let source = storageService.showExtendedHours ? stockService.intradayExtended : stockService.intradayHistory
-            ds = (valueSeries(from: withAllHours(source, span: .day)), true)
-        case .week:
-            ds = (valueSeries(from: withAllHours(stockService.intradayWeek, span: .week)), true)
+        case .day, .week:
+            ds = (valueSeries(from: intradaySource ?? [:]), true)
         default:
             let real = filteredSeries.map { ValuePoint(date: $0.date, value: $0.totalValue) }
             let est = estimatedFiltered
