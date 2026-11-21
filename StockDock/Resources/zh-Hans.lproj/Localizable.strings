@@ -318,3 +318,8 @@
 "Navigate" = "导航";
 "Open" = "打开";
 "Clear" = "清除";
+
+/* Alerts */
+"All alerts" = "所有提醒";
+"Disable all" = "全部停用";
+"Re-arm all" = "全部重新启用";

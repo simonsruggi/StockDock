@@ -18,6 +18,8 @@ extension SettingsView {
             if storageService.alerts.isEmpty {
                 emptyLine("No alerts. Right-click a stock in the watchlist to add one.")
             } else {
+                AllAlertsToggle()
+                SettingDivider()
                 AlertGroupList()
                 trailingAction("Clear all", tint: DS.down) { showClearAlerts = true }
             }

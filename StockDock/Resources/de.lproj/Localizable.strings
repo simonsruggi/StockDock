@@ -318,3 +318,8 @@
 "Navigate" = "Navigieren";
 "Open" = "Öffnen";
 "Clear" = "Löschen";
+
+/* Alerts */
+"All alerts" = "Alle Alarme";
+"Disable all" = "Alle deaktivieren";
+"Re-arm all" = "Alle reaktivieren";

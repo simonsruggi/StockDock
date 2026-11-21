@@ -276,6 +276,8 @@ struct SettingsWideView: View {
 
     private var alertsCard: some View {
         SettingsCard(title: "Price alerts") {
+            AllAlertsToggle()
+            SettingDivider()
             AlertGroupList()
             SettingDivider()
             HStack {
