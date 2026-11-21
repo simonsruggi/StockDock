@@ -30,8 +30,11 @@ enum SearchMatcher {
         if field.hasPrefix(token) { return 85 }
         let words = field.split { !$0.isLetter && !$0.isNumber && $0 != "%" && $0 != "/" }
         if words.contains(where: { $0.hasPrefix(token) }) { return 70 }
+        // One or two letters inside a word ("mu" in "Amundi") is noise, not intent.
+        guard token.count >= 3 else { return 0 }
         if field.contains(token) { return 50 }
-        return token.count >= 3 && isSubsequence(token, of: field) ? 20 : 0
+        // Letters in order with gaps only inside a single word that starts the same way.
+        return words.contains { $0.first == token.first && $0.count <= token.count * 3 && isSubsequence(token, of: String($0)) } ? 20 : 0
     }
 
     /// "pfl" in "portfolio": the letters in order, gaps allowed — tolerates typos of omission.
