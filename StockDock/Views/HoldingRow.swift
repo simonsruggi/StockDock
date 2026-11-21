@@ -7,6 +7,16 @@ struct HoldingRow: View {
     @Environment(\.editHoldingAction) var editHoldingAction
     let holding: Holding
     let portfolioId: UUID
+    /// Every lot of the position when this row stands for several; empty for a single lot.
+    var lots: [Holding] = []
+    /// A lot shown under its expanded position: lighter, with its purchase date.
+    var isLot = false
+    /// Merged position: whether its lots are showing (drives the chevron).
+    var expanded = false
+
+    private var allLots: [Holding] { lots.isEmpty ? [holding] : lots }
+    /// The position as displayed: the lots merged (shares summed, price averaged).
+    private var shown: Holding { HoldingValues.merged(allLots) }
 
     var quote: StockQuote? {
         stockService.quotes[holding.symbol]
@@ -24,10 +34,17 @@ struct HoldingRow: View {
             // Col 1: Ticker + Qty@Avg
             VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: 3) {
-                    Text(holding.symbol)
+                    Text(isLot ? (holding.purchaseDate?.formatted(.dateTime.day().month(.abbreviated).year(.twoDigits)) ?? "—") : holding.symbol)
                         .font(.inter(13, relativeTo: .body).monospacedDigit())
                         .fontWeight(.bold)
-                    if holding.isShort {
+                    if lots.count > 1 {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(DS.inkTertiary)
+                            .rotationEffect(.degrees(expanded ? 90 : 0))
+                            .animation(.easeOut(duration: 0.15), value: expanded)
+                    }
+                    if shown.isShort && !isLot {
                         Text("SHORT")
                             .font(.inter(8, weight: .bold, relativeTo: .caption2))
                             .foregroundColor(.white)
@@ -35,8 +52,8 @@ struct HoldingRow: View {
                             .padding(.vertical, 1)
                             .background(RoundedRectangle(cornerRadius: 2).fill(DS.down))
                     }
-                    if holding.effectiveLeverage != 1 {
-                        Text("\(StorageService.formatNumber(holding.effectiveLeverage, decimals: holding.effectiveLeverage == holding.effectiveLeverage.rounded() ? 0 : 1))\u{00D7}")
+                    if shown.effectiveLeverage != 1 && !isLot {
+                        Text("\(StorageService.formatNumber(shown.effectiveLeverage, decimals: shown.effectiveLeverage == shown.effectiveLeverage.rounded() ? 0 : 1))\u{00D7}")
                             .font(.inter(8, weight: .bold, relativeTo: .caption2))
                             .foregroundColor(.white)
                             .padding(.horizontal, 3)
@@ -47,7 +64,7 @@ struct HoldingRow: View {
                 // #24: the avg price sits right under the Last column, so it has
                 // to be in the same currency — it was printed raw while Last was
                 // converted, which is what made people convert it by hand.
-                Text("\(StorageService.formatQuantity(holding.quantity))\u{00D7}\(StorageService.formatNumber(holding.avgPrice * priced.rate, decimals: 2))")
+                Text("\(StorageService.formatQuantity(shown.quantity))\u{00D7}\(StorageService.formatNumber(shown.avgPrice * priced.rate, decimals: 2))")
                     .font(.inter(10, relativeTo: .caption).monospacedDigit())
                     .foregroundColor(.secondary)
                     .lineLimit(1)
@@ -56,7 +73,6 @@ struct HoldingRow: View {
             .frame(width: 88, alignment: .leading)
 
             if let quote {
-                let rate = stockService.rate(from: quote.currency)
                 let pRate = priced.rate
                 let priceSymbol = StorageService.currencySymbol(for: priced.currency)
                 let prefSymbol = StorageService.currencySymbol(for: storageService.preferredCurrency)
@@ -84,11 +100,11 @@ struct HoldingRow: View {
                 .frame(maxWidth: .infinity)
 
                 // Col 3: Controvalore + P&L in preferred currency
-                let marketVal = holding.marketValue(currentPrice: displayPrice) * rate
-                let costRate = stockService.costRate(for: holding, currency: quote.currency)
-                let costBasis = holding.costBasisLocal * costRate
-                let pnl = storageService.afterTax(marketVal - costBasis)
-                let pnlPct = abs(costBasis) >= 0.01 ? (pnl / abs(costBasis)) * 100 : 0
+                let values = HoldingValues(allLots, quote: quote, price: displayPrice,
+                                           stockService: stockService, storageService: storageService)
+                let marketVal = values.value
+                let pnl = values.pnl
+                let pnlPct = values.pnlPercent
 
                 VStack(alignment: .trailing, spacing: 1) {
                     Text(StorageService.formatAmount(marketVal, symbol: prefSymbol, decimals: storageService.amountDecimals))
@@ -106,7 +122,14 @@ struct HoldingRow: View {
             }
         }
         .padding(.vertical, 2)
+        .opacity(isLot ? 0.85 : 1)
         .contextMenu {
+            if lots.count <= 1 { lotActions }
+        }
+    }
+
+    /// Edit and delete act on one lot, so a merged position offers them on its lots.
+    @ViewBuilder private var lotActions: some View {
             Button {
                 editHoldingAction.perform(portfolioId, holding)
             } label: {
@@ -117,6 +140,5 @@ struct HoldingRow: View {
             } label: {
                 Label("Delete", systemImage: "trash")
             }
-        }
     }
 }

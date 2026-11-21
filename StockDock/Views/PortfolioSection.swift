@@ -80,8 +80,9 @@ struct PortfolioSection: View {
             }
 
             // Holdings
-            ForEach(portfolio.holdings) { holding in
-                HoldingRow(holding: holding, portfolioId: portfolio.id)
+            // Lots of the same symbol are one position; the lots open under it.
+            ForEach(HoldingValues.groups(portfolio.holdings), id: \.first!.id) { lots in
+                HoldingGroupRow(lots: lots, portfolioId: portfolio.id)
             }
 
             // Add holding button
