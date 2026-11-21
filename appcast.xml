@@ -6,24 +6,23 @@
         <description>StockDock update feed</description>
         <language>en</language>
         <item>
-            <title>Version 1.13.3</title>
-            <pubDate>Fri, 20 Nov 2026 15:56:03 +0100</pubDate>
-            <sparkle:version>58</sparkle:version>
-            <sparkle:shortVersionString>1.13.3</sparkle:shortVersionString>
+            <title>Version 1.13.4</title>
+            <pubDate>Sat, 21 Nov 2026 14:46:01 +0100</pubDate>
+            <sparkle:version>59</sparkle:version>
+            <sparkle:shortVersionString>1.13.4</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <description><![CDATA[
-<h2>Today's P&amp;L, done right</h2>
+<h2>The chart follows the market around the clock</h2>
 <ul>
-    <li><strong>Lots bought today count from your buy price.</strong> Today's P&amp;L used to count the whole move since yesterday's close, even for shares bought mid-session; now it starts from what you paid. Thanks to Mo (@hamidi-dev).</li>
-    <li><strong>Purchase date starts empty.</strong> New lots no longer default to today, so a position held for years doesn't show its whole gain as today's P&amp;L. Pick a day or leave it "Not set", and clear it any time.</li>
-    <li><strong>Sort the watchlist by Trend and 52-week.</strong> Trend sorts by the change over the selected range, 52-week by where the price sits in its yearly range.</li>
-    <li><strong>Overview chart color fixed.</strong> The portfolio curve is green or red by the period's gain, no longer turning green just because you bought more.</li>
+    <li><strong>24H and 7D follow the 24/7 price.</strong> With "Overnight &amp; weekends" on, the portfolio chart and the symbol 24H chart keep moving with Hyperliquid's prices at night and over the weekend, instead of a flat line from the last Yahoo bar.</li>
+    <li><strong>Hover shows every position.</strong> Pointing at the portfolio chart now lists, for that moment, each position's price, value and gain or loss against what you paid.</li>
+    <li><strong>Past values at that day's exchange rate.</strong> The estimated portfolio curve converts each day at the exchange rate of that day, not today's.</li>
 </ul>
             ]]></description>
-            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.3/StockDock.zip"
+            <enclosure url="https://github.com/simonsruggi/StockDock/releases/download/v1.13.4/StockDock.zip"
                        type="application/octet-stream"
-                       sparkle:edSignature="OViEMdImjydBvbphJzm5hAD69UAW0oiY647/1YF4Afb/83Aq0o7DLadNWs103oaQIMECIDkrWTz2+ZocD27QBA=="
-                       length="10651024"/>
+                       sparkle:edSignature="TFcrYP7YEiMeu2sEf8iuvZhIpz/iLVT9o4F8e1nXiaPvZ+GtW6/LMhIvUasNi77cVxB5gApgUs9cFS/XeX8eBw=="
+                       length="10783333"/>
         </item>
     </channel>
 </rss>
