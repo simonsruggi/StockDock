@@ -4,6 +4,16 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.13.5 — 2026-11-21
+
+*Find anything, fast*
+
+- **Search everything.** One search box finds stocks, positions, portfolios, every setting and quick actions, and adds new symbols from the market. In the menu bar it sits under the tabs; in the window press ⌘K. Pick a setting and it opens right on that row
+- **Cleaner menu bar Settings.** Every option is a tidy row with the same menus and switches as the desktop app, grouped in cards, with far less text
+- **One row per position.** In the menu bar portfolios, several buys of the same stock show as a single position; the arrow next to it reveals each buy
+- **All price alerts on or off at once.** A single switch disables every alert, or re-arms them all
+- **Updates arrive sooner.** StockDock checks for new versions every hour instead of every six
+
 ## 1.13.4 — 2026-11-21
 
 *The chart follows the market around the clock*
