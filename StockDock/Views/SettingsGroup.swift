@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// A collapsible settings category: a tappable header (icon + title + chevron)
-/// that expands to reveal its controls. Keeps the (long) settings list short —
-/// you drill into the category you need. Expansion state is owned by the caller
-/// (persisted via @AppStorage) so it survives popover reopenings.
+/// A collapsible settings category for the menu bar popover: a header (icon +
+/// title + chevron) that opens a white card of setting rows, the same rows the
+/// desktop Settings uses. Expansion state is owned by the caller (persisted via
+/// @AppStorage) so it survives popover reopenings.
 struct SettingsGroup<Content: View>: View {
     let title: String
     let icon: String
@@ -15,34 +15,36 @@ struct SettingsGroup<Content: View>: View {
             Button {
                 withAnimation(.easeInOut(duration: 0.22)) { isExpanded.toggle() }
             } label: {
-                HStack(spacing: 9) {
+                HStack(spacing: 10) {
                     Image(systemName: icon)
-                        .font(.inter(11, relativeTo: .caption))
-                        .foregroundColor(.accentColor)
-                        .frame(width: 16)
-                    Text(title)
-                        .font(.inter(13, weight: .bold, relativeTo: .headline))
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(DS.brand)
+                        .frame(width: 18)
+                    Text(LocalizedStringKey(title))
+                        .font(DS.bodyStrong)
+                        .foregroundStyle(DS.ink)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.inter(10, weight: .semibold, relativeTo: .caption))
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(DS.inkTertiary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
+                .padding(.vertical, 10)
                 .contentShape(Rectangle())
-                .padding(.vertical, 9)
             }
             .buttonStyle(.plain)
 
             if isExpanded {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 0) {
                     content()
                 }
-                .padding(.leading, 25)
-                .padding(.bottom, 10)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(DS.card))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(DS.hairline))
+                .padding(.bottom, 8)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
-
-            Divider()
         }
     }
 }

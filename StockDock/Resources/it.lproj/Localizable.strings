@@ -290,3 +290,20 @@
 "Not set" = "Non indicata";
 "Set date" = "Imposta data";
 "Clear date" = "Cancella data";
+
+/* Menu bar settings */
+"About & Data" = "Info e dati";
+"Auto" = "Auto";
+"Colors" = "Colori";
+"Hide percentage change" = "Nascondi variazione %";
+"Menu Bar" = "Barra dei menu";
+"Numbers" = "Numeri";
+"Percentage decimals" = "Decimali percentuali";
+"Portfolios and watchlist are not affected" = "Portafogli e watchlist restano invariati";
+"Positions & Market" = "Posizioni e mercato";
+"Show News tab" = "Mostra scheda Notizie";
+"Star" = "Stella";
+"Support StockDock" = "Sostieni StockDock";
+"Theme" = "Tema";
+"Use system color in the menu bar" = "Colore di sistema nella barra dei menu";
+"Value decimals" = "Decimali valori";

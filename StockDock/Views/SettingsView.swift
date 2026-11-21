@@ -1,405 +1,65 @@
 import AppKit
-import Sparkle
 import SwiftUI
 
+/// Settings in the menu bar popover: collapsible categories, each a card of the
+/// same rows and DS controls the desktop Settings uses. Sections live in the
+/// `SettingsView+*.swift` extensions.
 struct SettingsView: View {
     @EnvironmentObject var storageService: StorageService
     @EnvironmentObject var stockService: StockService
     @EnvironmentObject var updaterViewModel: UpdaterViewModel
-    @State private var showResetAlert = false
-    @State private var showClearAlerts = false
-    @State private var showClearPortfolioNotifs = false
+    @State var showResetAlert = false
+    @State var showClearAlerts = false
+    @State var showClearPortfolioNotifs = false
+    @FocusState var webhookFocused: Bool
 
-    // Collapsible category state — remembered across popover opens. General is
-    // open by default (theme/language live there); the rest start collapsed so
-    // the list is short and you drill into what you need.
-    @AppStorage("settings.group.general") private var groupGeneral = true
-    @AppStorage("settings.group.currency") private var groupCurrency = false
-    @AppStorage("settings.group.positions") private var groupPositions = false
-    @AppStorage("settings.group.watchlist") private var groupWatchlist = false
-    @AppStorage("settings.group.menubar") private var groupMenuBar = false
-    @AppStorage("settings.group.notifications") private var groupNotifications = false
-    @AppStorage("settings.group.about") private var groupAbout = false
-
-    /// Small secondary caption used throughout the settings list.
-    private func caption(_ text: String) -> some View {
-        Text(LocalizedStringKey(text))
-            .font(.inter(10, relativeTo: .caption))
-            .foregroundColor(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    /// Sub-section label inside a category (e.g. "Language" under "General").
-    private func subHeader(_ text: String) -> some View {
-        Text(text)
-            .font(.inter(11, weight: .semibold, relativeTo: .subheadline))
-            .foregroundColor(.secondary)
-    }
+    // Remembered across popover opens. General starts open, the rest collapsed.
+    @AppStorage("settings.group.general") var groupGeneral = true
+    @AppStorage("settings.group.currency") var groupCurrency = false
+    @AppStorage("settings.group.positions") var groupPositions = false
+    @AppStorage("settings.group.watchlist") var groupWatchlist = false
+    @AppStorage("settings.group.menubar") var groupMenuBar = false
+    @AppStorage("settings.group.notifications") var groupNotifications = false
+    @AppStorage("settings.group.about") var groupAbout = false
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 4) {
-                // MARK: - General (language, appearance, font)
-                SettingsGroup(title: "General", icon: "gearshape", isExpanded: $groupGeneral) {
-                    subHeader("Language")
-                    Picker("Language", selection: $storageService.appLanguage) {
-                        ForEach(StorageService.supportedLanguages, id: \.code) { lang in
-                            Text(lang.name).tag(lang.code)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    caption("Choose the app's language. Default is English.")
-
-                    subHeader("Appearance")
-                    Picker("Theme", selection: Binding(
-                        get: { storageService.appearanceMode },
-                        set: { storageService.appearanceMode = $0 }
-                    )) {
-                        ForEach(AppearanceMode.allCases, id: \.self) { mode in
-                            Text(mode.label).tag(mode)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    caption("Follow the system, or force Light or Dark.")
-                    Toggle("Show News tab", isOn: $storageService.showNewsTab)
-                        .toggleStyle(.switch)
-                    caption("The Home news feed is off by default when hidden — it only fetches while its tab is open (throttled, no background use).")
-
-                    subHeader("Font")
-                    Picker("Font family", selection: $storageService.fontFamily) {
-                        ForEach(FontRegistration.availableFonts, id: \.family) { font in
-                            Text(font.label)
-                                .font(.custom(font.family, size: 13))
-                                .tag(font.family)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    HStack {
-                        Text("A")
-                            .font(.inter(10, relativeTo: .caption))
-                            .foregroundColor(.secondary)
-                        Slider(value: Binding(
-                            get: { Double(storageService.fontSizeLevel) },
-                            set: { storageService.fontSizeLevel = Int($0) }
-                        ), in: 7...13, step: 1)
-                        Text("A")
-                            .font(.inter(18, weight: .bold, relativeTo: .title2))
-                            .foregroundColor(.secondary)
-                    }
-                    caption("Size: \(storageService.fontSizeLevel)")
-                }
-
-                // MARK: - Currency
-                SettingsGroup(title: "Currency", icon: "eurosign.circle", isExpanded: $groupCurrency) {
-                    subHeader("Stock price currency")
-                    Picker("Price currency", selection: $storageService.stockPriceCurrency) {
-                        Text("Original").tag("")
-                        ForEach(StorageService.supportedCurrencies, id: \.self) { code in
-                            Text("\(StorageService.currencySymbol(for: code)) \(code)")
-                                .tag(code)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .onChange(of: storageService.stockPriceCurrency) {
-                        stockService.exchangeRates.removeAll()
-                        Task {
-                            await stockService.refreshAll(storageService: storageService)
-                        }
-                    }
-                    caption(storageService.stockPriceCurrency.isEmpty
-                            ? "Prices shown in their native currency"
-                            : "All prices converted to \(storageService.stockPriceCurrency)")
-
-                    subHeader("Portfolio currency")
-                    Picker("Portfolio currency", selection: $storageService.preferredCurrency) {
-                        ForEach(StorageService.supportedCurrencies, id: \.self) { code in
-                            Text("\(StorageService.currencySymbol(for: code)) \(code)")
-                                .tag(code)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .onChange(of: storageService.preferredCurrency) {
-                        stockService.exchangeRates.removeAll()
-                        Task {
-                            await stockService.refreshAll(storageService: storageService)
-                        }
-                    }
-                    caption("Portfolio totals and P&L converted to \(storageService.preferredCurrency)")
-                }
-
-                // MARK: - Positions & Market
-                SettingsGroup(title: "Positions & Market", icon: "chart.line.uptrend.xyaxis", isExpanded: $groupPositions) {
-                    Toggle("Enable short positions & leverage", isOn: $storageService.advancedPositions)
-                        .toggleStyle(.switch)
-                    caption("Adds a leverage field and lets you enter a negative quantity for short positions, so a portfolio can be a relative long/short basket.")
-
-                    HStack {
-                        Text("Tax on gains")
-                        Spacer()
-                        TaxRateField(rate: $storageService.taxRate)
-                    }
-                    caption("P&L shown net of tax · 0 = gross")
-
-                    Picker("Weights based on", selection: $storageService.weightBasis) {
-                        Text("Cost basis").tag("cost")
-                        Text("Market value").tag("value")
-                    }
-                    caption("Allocation, Concentration and Positions weight")
-
-                    Toggle("Show extended hours (Pre/Post)", isOn: $storageService.showExtendedHours)
-                        .toggleStyle(.switch)
-                    caption("Show pre-market and after-hours prices")
-
-                    if storageService.showExtendedHours {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Toggle("Overnight & weekends (Hyperliquid)", isOn: $storageService.showAllHoursPrices)
-                                .toggleStyle(.switch)
-                            caption("Perpetual futures price when there is no Pre/Post session, not the official quote")
-                        }
-                        .padding(.leading, 16)
-                    }
-                }
-
-                // MARK: - Watchlist Display
-                SettingsGroup(title: "Watchlist", icon: "list.bullet", isExpanded: $groupWatchlist) {
-                    Toggle("Company name", isOn: $storageService.showCompanyName)
-                        .toggleStyle(.switch)
-                    Toggle("Day range (low – high)", isOn: $storageService.showDayRange)
-                        .toggleStyle(.switch)
-                    Toggle("52-week range bar", isOn: $storageService.show52WeekBar)
-                        .toggleStyle(.switch)
-                    Toggle("Absolute change value", isOn: $storageService.showAbsoluteChange)
-                        .toggleStyle(.switch)
-                    caption("Choose which details appear in each watchlist row")
-                }
-
-                // MARK: - Menu Bar (display + colors)
-                SettingsGroup(title: "Menu Bar", icon: "menubar.rectangle", isExpanded: $groupMenuBar) {
-                    subHeader("Display")
-                    Picker("Display", selection: $storageService.menuBarDisplay) {
-                        Text("P&L (+321.09€)").tag("pnl")
-                        Text("Daily P&L (+321.09€)").tag("dailyPnl")
-                        Text("P&L % (+2.3%)").tag("pnlPercent")
-                        Text("P&L + % (+321.09€ +2.3%)").tag("pnlFull")
-                        Text("Total Value (14396.67€)").tag("totalValue")
-                        Text("Best Stock (▲ AAPL +1.2%)").tag("bestStock")
-                        Text("Worst Stock (▼ TSLA -0.8%)").tag("worstStock")
-                        Text("Best & Worst").tag("bestWorst")
-                        Text("Portfolio (14396.67€ +1.2%)").tag("portfolioRecap")
-                        Text("Ticker (cycle watchlist)").tag("ticker")
-                        Text("Ticker + Portfolio (cycle)").tag("tickerPortfolio")
-                        Text("Icon Only").tag("icon")
-                    }
-                    .pickerStyle(.menu)
-                    caption("Choose what to show in the menu bar")
-
-                    HStack {
-                        Text("Percentage decimals")
-                        Spacer()
-                        Picker("", selection: $storageService.percentDecimals) {
-                            ForEach(0...4, id: \.self) { Text("\($0)").tag($0) }
-                        }
-                        .labelsHidden().pickerStyle(.menu).frame(width: 90)
-                    }
-                    caption("Digits after the decimal point in percentages (e.g. +2.34% with 2).")
-
-                    HStack {
-                        Text("Value decimals")
-                        Spacer()
-                        Picker("", selection: $storageService.valueDecimals) {
-                            Text("Auto").tag(-1)
-                            ForEach(0...4, id: \.self) { Text("\($0)").tag($0) }
-                        }
-                        .labelsHidden().pickerStyle(.menu).frame(width: 90)
-                    }
-                    caption("Prices & amounts. Auto keeps extra precision for forex / sub-dollar prices.")
-
-                    Toggle("Hide percentage change", isOn: $storageService.menuBarHidePercent)
-                    caption("Show only price / value in the menu bar, without the % change.")
-
-                    // Ticker-specific options (issue #8) — only relevant in ticker modes.
-                    if storageService.menuBarDisplay == "ticker" || storageService.menuBarDisplay == "tickerPortfolio" {
-                        Toggle("Show name instead of symbol", isOn: $storageService.tickerShowName)
-                        caption("Shows the readable name in the ticker (e.g. \"S&P 500\" instead of \"^GSPC\").")
-
-                        Picker("Ticker order", selection: $storageService.watchlistSort) {
-                            Text("As added").tag("manual")
-                            Text("By type (stocks, ETFs, indices…)").tag("type")
-                            Text("Alphabetical").tag("alpha")
-                        }
-                        .pickerStyle(.menu)
-                        caption("Order in which watchlist entries cycle in the menu bar.")
-                    }
-
-                    subHeader("Colors")
-                    ColorPicker("Gain color", selection: Binding(
-                        get: { Color(nsColor: storageService.gainColor) },
-                        set: { storageService.gainColorHex = $0.hexString }
-                    ))
-                    ColorPicker("Loss color", selection: Binding(
-                        get: { Color(nsColor: storageService.lossColor) },
-                        set: { storageService.lossColorHex = $0.hexString }
-                    ))
-                    Button("Reset to default green/red") {
-                        storageService.gainColorHex = ""
-                        storageService.lossColorHex = ""
-                    }
-                    .font(.inter(10, relativeTo: .caption))
-                    caption("Gain/loss colors apply across the whole app — menu bar, watchlist and portfolios.")
-
-                    Toggle("Use system color in the menu bar", isOn: $storageService.menuBarUseSystemColor)
-                    caption("Keeps the menu bar text readable on any wallpaper (direction still shown by + / − and ▲ ▼). Doesn't affect in-app colors.")
-                }
-
-                // MARK: - Notifications
-                SettingsGroup(title: "Notifications", icon: "bell", isExpanded: $groupNotifications) {
-                    // Channels (Discord / Slack webhook)
-                    subHeader("Channels")
-                    Toggle("Mirror notifications to a Discord/Slack webhook", isOn: $storageService.discordEnabled)
-                        .toggleStyle(.switch)
-                    TextField("https://discord.com/api/webhooks/… or hooks.slack.com/…", text: $storageService.discordWebhookURL)
-                        .textFieldStyle(.roundedBorder)
-                        .font(.inter(10, relativeTo: .caption))
-                        .disabled(!storageService.discordEnabled)
-                    let trimmed = storageService.discordWebhookURL.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if storageService.discordEnabled && !trimmed.isEmpty && !WebhookNotifier.isValid(trimmed) {
-                        Text("Not a valid Discord or Slack webhook URL (must be https).")
-                            .font(.inter(10, relativeTo: .caption))
-                            .foregroundColor(.red)
-                    } else {
-                        caption("Price alerts and portfolio notifications are also sent here.")
-                    }
-                    Button("Send test") {
-                        NotificationManager.shared.send(
-                            title: "StockDock test",
-                            body: "Webhook is working ✅",
-                            sentiment: .positive)
-                    }
-                    .controlSize(.small)
-                    .disabled(!storageService.discordEnabled || !WebhookNotifier.isValid(trimmed))
-
-                    // Price alerts
-                    HStack {
-                        subHeader("Price alerts")
-                        Spacer()
-                        if !storageService.alerts.isEmpty {
-                            Button(action: { showClearAlerts = true }) {
-                                Text("Clear all")
-                                    .font(.inter(10, relativeTo: .caption))
-                            }
-                            .buttonStyle(.borderless)
-                            .foregroundColor(.red)
-                        }
-                    }
-                    if storageService.alerts.isEmpty {
-                        caption("No alerts. Right-click a stock in the watchlist to add one.")
-                    } else {
-                        AlertGroupList()
-                    }
-
-                    // Portfolio notifications
-                    let withNotifs = storageService.portfolios.filter {
-                        !storageService.notifications(for: $0.id).isEmpty
-                    }
-                    HStack {
-                        subHeader("Portfolio notifications")
-                        Spacer()
-                        if !withNotifs.isEmpty {
-                            Button(action: { showClearPortfolioNotifs = true }) {
-                                Text("Clear all")
-                                    .font(.inter(10, relativeTo: .caption))
-                            }
-                            .buttonStyle(.borderless)
-                            .foregroundColor(.red)
-                        }
-                    }
-                    if withNotifs.isEmpty {
-                        caption("None. Right-click a portfolio → “Notifications…” to add one.")
-                    } else {
-                        ForEach(withNotifs) { portfolio in
-                            Text(portfolio.name)
-                                .font(.inter(10, weight: .medium, relativeTo: .caption))
-                            ForEach(storageService.notifications(for: portfolio.id)) { n in
-                                PortfolioNotifRow(portfolioId: portfolio.id, notification: n)
-                            }
-                        }
-                    }
-                }
-
-                // MARK: - About & Data (updates, sponsor, reset)
-                SettingsGroup(title: "About & Data", icon: "info.circle", isExpanded: $groupAbout) {
-                    subHeader("Updates")
-                    Button("Check for Updates...") {
-                        NSApp.setActivationPolicy(.regular)
-                        NSApp.activate(ignoringOtherApps: true)
-                        updaterViewModel.checkForUpdates()
-                    }
-                    .disabled(!updaterViewModel.canCheckForUpdates)
-
-                    subHeader("Enjoying StockDock?")
-                    caption("StockDock is free and open source — and always will be. If you'd like to support me, you can become a sponsor, or simply star the repo. Both help, and every feature stays free for everyone.")
-                    HStack(spacing: 8) {
-                        Button {
-                            if let url = URL(string: "https://github.com/sponsors/simonsruggi") {
-                                NSWorkspace.shared.open(url)
-                            }
-                        } label: {
-                            Label("Become a Sponsor", systemImage: "heart.fill")
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .tint(.pink)
-
-                        Button {
-                            if let url = URL(string: "https://github.com/simonsruggi/StockDock") {
-                                NSWorkspace.shared.open(url)
-                            }
-                        } label: {
-                            Label("Star on GitHub", systemImage: "star.fill")
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
-                        .tint(.yellow)
-                    }
-
-                    subHeader("Reset")
-                    Button("Reset to Default Settings") {
-                        showResetAlert = true
-                    }
-                    .foregroundColor(.red)
-                    caption("This will not erase your portfolios or watchlist")
-                }
+            VStack(alignment: .leading, spacing: 0) {
+                generalGroup
+                currencyGroup
+                positionsGroup
+                watchlistGroup
+                menuBarGroup
+                notificationsGroup
+                aboutGroup
             }
-            .padding(16)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
         }
-        .alert("Reset Settings", isPresented: $showResetAlert) {
-            Button("Cancel", role: .cancel) {}
-            Button("Reset", role: .destructive) {
-                storageService.resetToDefaults()
-                Task {
-                    stockService.exchangeRates.removeAll()
-                    await stockService.refreshAll(storageService: storageService)
-                }
-            }
-        } message: {
-            Text("This will reset all settings to their defaults. Your portfolios and watchlist will not be affected.")
+        // AppKit hands focus to the first text field (the tax rate) when the popover opens.
+        .onAppear { DispatchQueue.main.async { NSApp.keyWindow?.makeFirstResponder(nil) } }
+        .dsAlert($showResetAlert, title: "Reset Settings",
+                 message: "This will reset all settings to their defaults. Your portfolios and watchlist will not be affected.",
+                 confirmTitle: "Reset", destructive: true) {
+            storageService.resetToDefaults()
+            Task { stockService.exchangeRates.removeAll(); await stockService.refreshAll(storageService: storageService) }
         }
-        .alert("Clear all alerts", isPresented: $showClearAlerts) {
-            Button("Cancel", role: .cancel) {}
-            Button("Clear all", role: .destructive) {
-                storageService.removeAllAlerts()
-            }
-        } message: {
-            Text("This will delete all your price alerts. This cannot be undone.")
-        }
-        .alert("Clear all portfolio notifications", isPresented: $showClearPortfolioNotifs) {
-            Button("Cancel", role: .cancel) {}
-            Button("Clear all", role: .destructive) {
-                storageService.removeAllPortfolioNotifications()
-            }
-        } message: {
-            Text("This will delete all portfolio notifications across every portfolio. This cannot be undone.")
-        }
+        .dsAlert($showClearAlerts, title: "Clear all alerts",
+                 message: "This will delete all your price alerts. This cannot be undone.",
+                 confirmTitle: "Clear all", destructive: true) { storageService.removeAllAlerts() }
+        .dsAlert($showClearPortfolioNotifs, title: "Clear all portfolio notifications",
+                 message: "This will delete all portfolio notifications across every portfolio. This cannot be undone.",
+                 confirmTitle: "Clear all", destructive: true) { storageService.removeAllPortfolioNotifications() }
     }
 
+    /// Currency changes invalidate every converted figure: refetch the rates.
+    func refreshRates() {
+        stockService.exchangeRates.removeAll()
+        Task { await stockService.refreshAll(storageService: storageService) }
+    }
+
+    static func currencyOptions(withOriginal: Bool) -> [(value: String, label: String)] {
+        let codes = StorageService.supportedCurrencies.map { (value: $0, label: "\(StorageService.currencySymbol(for: $0)) \($0)") }
+        return withOriginal ? [(value: "", label: "Original")] + codes : codes
+    }
 }

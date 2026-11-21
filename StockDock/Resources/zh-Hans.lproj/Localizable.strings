@@ -290,3 +290,20 @@
 "Not set" = "未设置";
 "Set date" = "设置日期";
 "Clear date" = "清除日期";
+
+/* Menu bar settings */
+"About & Data" = "关于与数据";
+"Auto" = "自动";
+"Colors" = "颜色";
+"Hide percentage change" = "隐藏百分比变化";
+"Menu Bar" = "菜单栏";
+"Numbers" = "数字";
+"Percentage decimals" = "百分比小数位";
+"Portfolios and watchlist are not affected" = "不影响投资组合和自选列表";
+"Positions & Market" = "持仓与市场";
+"Show News tab" = "显示新闻标签";
+"Star" = "星标";
+"Support StockDock" = "支持 StockDock";
+"Theme" = "主题";
+"Use system color in the menu bar" = "菜单栏使用系统颜色";
+"Value decimals" = "数值小数位";

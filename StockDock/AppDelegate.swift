@@ -114,6 +114,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
         }
 
+        // Dev affordance: SD_OPEN_POPOVER=Home|Watchlist|Portfolios|Settings opens the popover on that tab.
+        if ProcessInfo.processInfo.environment["SD_OPEN_POPOVER"] != nil {
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 2_500_000_000)
+                self.showPopoverIfHidden()
+            }
+        }
+
         // Pause on system sleep, resume on wake
         NSWorkspace.shared.notificationCenter.addObserver(
             self, selector: #selector(handleSleep),

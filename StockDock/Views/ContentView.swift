@@ -24,7 +24,7 @@ struct ContentView: View {
         .frame(width: 380, height: 520)
         .preferredColorScheme(storageService.appearanceMode.colorScheme)
         .onAppear {
-            selectedTab = Tab.resolve(stored: storageService.lastSelectedTab,
+            selectedTab = Tab.resolve(stored: ProcessInfo.processInfo.environment["SD_OPEN_POPOVER"] ?? storageService.lastSelectedTab,
                                       showNews: storageService.showNewsTab)
         }
         .onChange(of: selectedTab) { _, newValue in
