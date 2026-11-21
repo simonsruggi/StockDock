@@ -117,12 +117,16 @@ extension PortfolioOverviewView {
     private func valueSeries(from histBySymbol: [String: [PricePoint]]) -> [ValuePoint] {
         let hs = portfolios.flatMap { $0.holdings }
         var rate: [String: Double] = [:]
+        var rateHistory: [String: [PricePoint]] = [:]
         var hist: [String: [PricePoint]] = [:]
         for h in hs {
-            if let q = stockService.quotes[h.symbol] { rate[h.symbol] = stockService.rate(from: q.currency) }
+            if let q = stockService.quotes[h.symbol] {
+                rate[h.symbol] = stockService.rate(from: q.currency)
+                rateHistory[h.symbol] = stockService.rateHistory(from: q.currency)
+            }
             if let ph = histBySymbol[h.symbol] { hist[h.symbol] = ph }
         }
-        return PortfolioBackfill.series(holdings: hs, historyBySymbol: hist, rateBySymbol: rate)
+        return PortfolioBackfill.series(holdings: hs, historyBySymbol: hist, rateBySymbol: rate, rateHistoryBySymbol: rateHistory)
     }
 
     /// Oldest purchase across the shown portfolios — where the estimated curve

@@ -39,6 +39,10 @@ class StockService: ObservableObject {
     var intradayFetchedAt: [String: Date] = [:]
     var intradayWeekAt: [String: Date] = [:]
     var intradayExtendedAt: [String: Date] = [:]
+    /// Daily closes of an FX pair ("USDEUR" → USDEUR=X) over 5 years, so the
+    /// estimated value curve converts each day at that day's rate. Cached ~6h.
+    @Published var fxHistory: [String: [PricePoint]] = [:]
+    var fxHistoryAt: [String: Date] = [:]
     /// Watchlist Trend-column series per range and symbol (see `ensureSparklines`).
     @Published var sparkSeries: [SymbolChartRange: [String: [PricePoint]]] = [:]
     var sparkSeriesAt: [SymbolChartRange: Date] = [:]

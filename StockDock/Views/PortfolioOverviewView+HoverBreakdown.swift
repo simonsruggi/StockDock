@@ -30,7 +30,9 @@ extension PortfolioOverviewView {
             } else {
                 guard let close = Self.close(at: date, in: history[h.symbol] ?? []) else { continue }
                 price = close
-                value = h.holding.marketValue(currentPrice: close) * stockService.rate(from: h.quote.currency)
+                let rate = Self.close(at: date, in: stockService.rateHistory(from: h.quote.currency))
+                    ?? stockService.rate(from: h.quote.currency)
+                value = h.holding.marketValue(currentPrice: close) * rate
             }
             var row = bySymbol[h.symbol]
                 ?? (price * h.priceRate, StorageService.currencySymbol(for: h.priceCurrency), 0, 0)

@@ -91,6 +91,13 @@ struct PortfolioOverviewView: View {
                 for s in symbols { group.addTask { await service.ensurePriceHistory(for: s) } }
             }
         }
+        .task(id: fxPairs) {
+            let service = stockService
+            let preferred = storageService.preferredCurrency
+            await withTaskGroup(of: Void.self) { group in
+                for currency in fxPairs { group.addTask { await service.ensureFXHistory(from: currency, to: preferred) } }
+            }
+        }
         .task(id: candleLoadKey) {
             guard let span = chartRange.candleSpan else { return }
             await HyperliquidCandles.shared.ensure(coins: Array(candleLoadKey.dropFirst()), span: span)
@@ -121,6 +128,12 @@ struct PortfolioOverviewView: View {
                 }
             }
         }
+    }
+
+    /// Currencies of the held symbols other than the preferred one, for the daily FX series.
+    private var fxPairs: [String] {
+        let preferred = storageService.preferredCurrency
+        return Array(Set(symbols.compactMap { stockService.quotes[$0]?.currency }.filter { $0 != preferred })).sorted()
     }
 
     /// 24H/7D coins with a 24/7 history; empty with the setting off, so nothing loads.

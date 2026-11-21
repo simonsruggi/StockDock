@@ -10,7 +10,8 @@ import Foundation
 enum PortfolioBackfill {
     static func series(holdings: [Holding],
                        historyBySymbol: [String: [PricePoint]],
-                       rateBySymbol: [String: Double]) -> [ValuePoint] {
+                       rateBySymbol: [String: Double],
+                       rateHistoryBySymbol: [String: [PricePoint]] = [:]) -> [ValuePoint] {
         var historyFor: [String: [PricePoint]] = [:]
         for holding in holdings {
             guard let points = historyBySymbol[holding.symbol], !points.isEmpty else { return [] }
@@ -42,6 +43,10 @@ enum PortfolioBackfill {
         let dates = Set(historyFor.values.flatMap { $0.map(\.date) }).filter { $0 >= start }.sorted()
         guard !dates.isEmpty else { return [] }
 
+        // The FX rate of each day, where a daily series is given; today's otherwise.
+        let rateHistory = rateHistoryBySymbol.filter { !$0.value.isEmpty }.mapValues { $0.sorted { $0.date < $1.date } }
+        var rateCursor: [String: Int] = [:]
+        var lastRate: [String: Double] = [:]
         var cursor: [String: Int] = [:]
         var lastClose: [String: Double] = [:]
         return dates.map { date in
@@ -53,11 +58,20 @@ enum PortfolioBackfill {
                 }
                 cursor[symbol] = i
             }
+            for (symbol, points) in rateHistory {
+                var i = rateCursor[symbol] ?? 0
+                while i < points.count, points[i].date <= date {
+                    lastRate[symbol] = points[i].close
+                    i += 1
+                }
+                rateCursor[symbol] = i
+                if lastRate[symbol] == nil { lastRate[symbol] = points.first?.close }
+            }
             var total = 0.0
             for holding in holdings {
                 if let from = ownedFrom[holding.id], date < from { continue }
                 let close = lastClose[holding.symbol] ?? 0
-                let rate = rateBySymbol[holding.symbol] ?? 1
+                let rate = lastRate[holding.symbol] ?? rateBySymbol[holding.symbol] ?? 1
                 total += close * holding.quantity * holding.effectiveLeverage * rate
             }
             return ValuePoint(date: date, value: total)

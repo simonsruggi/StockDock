@@ -145,7 +145,7 @@ extension StockService {
     /// Closes from the v8 chart endpoint for one symbol, or nil when the
     /// request fails or returns no usable point. Failures are non-fatal: the
     /// chart keeps its placeholder until the next attempt.
-    private func chartPoints(for symbol: String, query: String) async -> [PricePoint]? {
+    func chartPoints(for symbol: String, query: String) async -> [PricePoint]? {
         let encoded = symbol.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? symbol
         guard let url = URL(string: "https://query1.finance.yahoo.com/v8/finance/chart/\(encoded)?\(query)") else { return nil }
         do {
