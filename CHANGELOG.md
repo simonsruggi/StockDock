@@ -4,6 +4,14 @@ Every released version of StockDock. Updates are delivered through Sparkle
 (auto-update) and Homebrew; each version is also a
 [GitHub release](https://github.com/simonsruggi/StockDock/releases).
 
+## 1.13.4 — 2026-11-21
+
+*The chart follows the market around the clock*
+
+- **24H and 7D follow the 24/7 price.** With "Overnight & weekends" on, the portfolio chart and the symbol 24H chart keep moving with Hyperliquid's prices at night and over the weekend, instead of a flat line from the last Yahoo bar
+- **Hover shows every position.** Pointing at the portfolio chart lists, for that moment, each position's price, value and gain or loss against what you paid
+- **Past values at that day's exchange rate.** The estimated portfolio curve converts each day at the exchange rate of that day, not today's
+
 ## 1.13.3 — 2026-11-20
 
 *Today's P&L, done right*
